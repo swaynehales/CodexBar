@@ -80,9 +80,13 @@ struct MenuGridRowViewTests {
         row.applyMeasuredSize(width: 950, height: 120)
 
         row.setHighlighted(true)
-        #expect(row.cardViewsForTesting.allSatisfy(\._test_isHighlighted))
+        for card in row.cardViewsForTesting {
+            #expect(card._test_isHighlighted)
+        }
         row.setHighlighted(false)
-        #expect(row.cardViewsForTesting.allSatisfy { !$0._test_isHighlighted })
+        for card in row.cardViewsForTesting {
+            #expect(!card._test_isHighlighted)
+        }
         #expect(row.allowsMenuHighlight)
     }
 

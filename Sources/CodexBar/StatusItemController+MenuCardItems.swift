@@ -118,7 +118,8 @@ extension StatusItemController {
         return item
     }
 
-    private func menuCardHeight(for view: NSView, width: CGFloat) -> CGFloat {
+    /// Also used by the Overview grid path, which hosts multiple cards per menu item.
+    func menuCardHeight(for view: NSView, width: CGFloat) -> CGFloat {
         let basePadding: CGFloat = 6
         let descenderSafety: CGFloat = 1
 
