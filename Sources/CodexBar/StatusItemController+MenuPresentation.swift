@@ -190,6 +190,13 @@ final class MenuRowContainerView: NSView, MenuCardHighlighting, MenuCardMeasurin
     #if DEBUG
     private var testForwardedHostedControlMouseDown = false
     private var testForwardedHostedControlMouseUp = false
+    var _test_onClick: (() -> Void)? {
+        self.onClick
+    }
+
+    var _test_isHighlighted: Bool {
+        self.isRowHighlighted
+    }
     #endif
 
     private static let selectionHorizontalInset: CGFloat = 6
