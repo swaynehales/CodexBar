@@ -23,7 +23,13 @@ extension StatusItemController {
         } else {
             [(selectedProvider, descriptor.sections)]
         }
-        return self.measuredMenuCardWidth(for: sectionSets)
+        let measured = self.measuredMenuCardWidth(for: sectionSets)
+        guard self.settings.overviewGridLayout == .grid else { return measured }
+        // Grid mode lays Overview cards out three abreast; keep the menu at least three
+        // card widths wide so per-card layout matches the list mode exactly. Applies to
+        // every tab so width does not jump when switching between Overview and providers.
+        let gridMinimum = Self.menuCardBaseWidth * CGFloat(Self.overviewGridColumns)
+        return max(measured, gridMinimum)
     }
 
     func measuredMenuCardWidth(

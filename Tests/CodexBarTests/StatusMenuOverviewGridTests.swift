@@ -99,6 +99,46 @@ struct StatusMenuOverviewGridTests {
         #expect(menu.items
             .filter { ($0.representedObject as? String) == StatusItemController.overviewGridRowIdentifier }.isEmpty)
     }
+
+    @Test
+    func `grid layout widens menu width`() {
+        let settings = self.makeSettings(suite: "StatusMenuOverviewGridTests-width-\(UUID().uuidString)")
+        settings.statusChecksEnabled = false
+        settings.refreshFrequency = .manual
+        settings.mergeIcons = true
+        settings.overviewGridLayout = .grid
+        settings.selectedMenuProvider = .claude
+        settings.mergedMenuLastSelectedWasOverview = true
+        self.enableOnly([.codex, .claude, .cursor], settings: settings)
+
+        let controller = self.makeController(settings: settings)
+        let descriptor = controller.makeMenuDescriptor(provider: .claude, includeContextualActions: false)
+        let width = controller.menuCardWidth(
+            for: [.claude, .codex, .cursor],
+            selectedProvider: .claude,
+            descriptor: descriptor)
+        #expect(width >= StatusItemController.menuCardBaseWidth * CGFloat(StatusItemController.overviewGridColumns))
+    }
+
+    @Test
+    func `list layout keeps base width`() {
+        let settings = self.makeSettings(suite: "StatusMenuOverviewGridTests-width-list-\(UUID().uuidString)")
+        settings.statusChecksEnabled = false
+        settings.refreshFrequency = .manual
+        settings.mergeIcons = true
+        settings.overviewGridLayout = .list
+        settings.selectedMenuProvider = .claude
+        settings.mergedMenuLastSelectedWasOverview = true
+        self.enableOnly([.codex, .claude, .cursor], settings: settings)
+
+        let controller = self.makeController(settings: settings)
+        let descriptor = controller.makeMenuDescriptor(provider: .claude, includeContextualActions: false)
+        let width = controller.menuCardWidth(
+            for: [.claude, .codex, .cursor],
+            selectedProvider: .claude,
+            descriptor: descriptor)
+        #expect(width == StatusItemController.menuCardBaseWidth)
+    }
 }
 
 /// Walks a view tree and counts MenuRowContainerView instances whose payload carries an onClick.
