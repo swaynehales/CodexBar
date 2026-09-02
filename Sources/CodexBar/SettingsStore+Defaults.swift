@@ -709,6 +709,16 @@ extension SettingsStore {
         }
     }
 
+    var overviewGridLayout: OverviewGridLayout {
+        get {
+            OverviewGridLayout(rawValue: self.defaultsState.overviewGridLayoutRaw) ?? .list
+        }
+        set {
+            self.defaultsState.overviewGridLayoutRaw = newValue.rawValue
+            self.userDefaults.set(newValue.rawValue, forKey: "overviewGridLayout")
+        }
+    }
+
     var claudeOAuthKeychainPromptMode: ClaudeOAuthKeychainPromptMode {
         get {
             let raw = self.defaultsState.claudeOAuthKeychainPromptModeRaw

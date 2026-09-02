@@ -1544,3 +1544,6 @@
 "menu_bar_layout_conditional_default_either_high" = "Sesja lub tydzień na wysokim poziomie";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Tydzień modelu powyżej 60% zużycia";
 "Spending cap, not balance" = "Limit wydatków, nie saldo";
+
+"overview_layout_list" = "Lista";
+"overview_layout_grid" = "Siatka (3 × 2)";

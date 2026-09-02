@@ -639,6 +639,8 @@ extension SettingsStore {
             forKey: "mergedMenuLastSelectedWasOverview") as? Bool ?? false
         let mergedOverviewSelectedProvidersRaw = userDefaults.array(
             forKey: "mergedOverviewSelectedProviders") as? [String] ?? []
+        let overviewGridLayoutRaw = userDefaults.string(forKey: "overviewGridLayout")
+            ?? OverviewGridLayout.list.rawValue
         let selectedMenuProviderRaw = userDefaults.string(forKey: "selectedMenuProvider")
         let providerDetectionCompleted = userDefaults.object(forKey: "providerDetectionCompleted") as? Bool ?? false
         let providersSortedAlphabetically = userDefaults.object(
@@ -735,6 +737,7 @@ extension SettingsStore {
             switcherShowsIcons: switcherShowsIcons,
             mergedMenuLastSelectedWasOverview: mergedMenuLastSelectedWasOverview,
             mergedOverviewSelectedProvidersRaw: mergedOverviewSelectedProvidersRaw,
+            overviewGridLayoutRaw: overviewGridLayoutRaw,
             selectedMenuProviderRaw: selectedMenuProviderRaw,
             providerDetectionCompleted: providerDetectionCompleted,
             providersSortedAlphabetically: providersSortedAlphabetically,

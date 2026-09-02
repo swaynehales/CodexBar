@@ -99,6 +99,7 @@ extension SettingsStore {
         _ = self.mergeIcons
         _ = self.switcherShowsIcons
         _ = self.mergedOverviewSelectedProviders
+        _ = self.overviewGridLayout
         _ = self.zaiAPIToken
         _ = self[providerConfig: .synthetic, field: .apiKey]
         _ = self.codexCookieHeader

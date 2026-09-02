@@ -1540,3 +1540,6 @@
 "menu_bar_layout_conditional_default_either_high" = "Session ou semaine à un niveau élevé";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Semaine par modèle au-delà de 60 %";
 "Spending cap, not balance" = "Plafond de dépenses, pas le solde";
+
+"overview_layout_list" = "Liste";
+"overview_layout_grid" = "Grille (3 × 2)";

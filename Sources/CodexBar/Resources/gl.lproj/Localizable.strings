@@ -1540,3 +1540,6 @@
 "menu_bar_layout_conditional_default_either_high" = "Sesión ou semana en nivel alto";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Semana por modelo por riba do 60 %";
 "Spending cap, not balance" = "Límite de gasto, non saldo";
+
+"overview_layout_list" = "Lista";
+"overview_layout_grid" = "Grella (3 × 2)";
