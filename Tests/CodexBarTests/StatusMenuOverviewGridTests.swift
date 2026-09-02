@@ -56,6 +56,14 @@ struct StatusMenuOverviewGridTests {
     }
 
     @Test
+    func `grid card width matches fixed column slot for partial rows`() {
+        // Partial rows (1-2 cards) must size cards exactly like MenuGridRowView lays them
+        // out: fixed 3-column slots, not rows of (width - gaps) / cardCount.
+        let width = StatusItemController.gridCardWidth(menuWidth: StatusItemController.menuCardBaseWidth * 3)
+        #expect(width == (StatusItemController.menuCardBaseWidth * 3 - 2 * MenuGridRowView.gap) / 3)
+    }
+
+    @Test
     func `grid layout batches six providers into two rows`() throws {
         let (controller, menu) = try self.openOverviewMenu(
             suite: "StatusMenuOverviewGridTests-grid6-\(UUID().uuidString)",

@@ -35,13 +35,19 @@ extension StatusItemController {
     }
 
     @objc func selectOverviewProvider(_ sender: NSMenuItem) {
-        guard let represented = sender.representedObject as? String,
-              represented.hasPrefix(Self.overviewRowIdentifierPrefix)
-        else {
+        guard let represented = sender.representedObject as? String else { return }
+        // Grid rows host multiple cards per item; keyboard activation on a grid row falls
+        // back to the first provider in the batch (the top-left card in reading order).
+        if represented == Self.overviewGridRowIdentifier {
+            guard let menu = sender.menu,
+                  let firstProvider = self.store.enabledFirstPartyProvidersForDisplay().first
+            else { return }
+            self.selectOverviewProvider(firstProvider, menu: menu)
             return
         }
-        let rawProvider = String(represented.dropFirst(Self.overviewRowIdentifierPrefix.count))
-        guard let provider = UsageProvider(rawValue: rawProvider),
+        guard represented.hasPrefix(Self.overviewRowIdentifierPrefix) else { return }
+        let rawProvider = represented.dropFirst(Self.overviewRowIdentifierPrefix.count)
+        guard let provider = UsageProvider(rawValue: String(rawProvider)),
               let menu = sender.menu
         else {
             return
@@ -51,7 +57,9 @@ extension StatusItemController {
     }
 
     func selectOverviewProvider(_ provider: UsageProvider, menu: NSMenu) {
-        if !self.settings.mergedMenuLastSelectedWasOverview, self.selectedMenuProvider == provider.instanceID { return }
+        if !self.settings.mergedMenuLastSelectedWasOverview, self.selectedMenuProvider == provider.instanceID {
+            return
+        }
         self.preservingMergedSwitcherContentCachesDuringInvalidation {
             self.settings.mergedMenuLastSelectedWasOverview = false
             self.lastMergedSwitcherSelection = .provider(provider.instanceID)

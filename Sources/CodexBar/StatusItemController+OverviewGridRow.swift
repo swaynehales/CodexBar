@@ -154,7 +154,7 @@ extension StatusItemController {
                 let card = OverviewMenuCardRowView(
                     model: row.model,
                     storageText: storageText,
-                    width: Self.gridCardWidth(menuWidth: menuWidth, count: batch.count))
+                    width: Self.gridCardWidth(menuWidth: menuWidth))
                 payloads.append(MenuCardRowPayload(
                     content: AnyView(card),
                     showsSubmenuIndicator: false,
@@ -198,9 +198,12 @@ extension StatusItemController {
         return true
     }
 
-    static func gridCardWidth(menuWidth: CGFloat, count: Int) -> CGFloat {
-        let columns = max(1, min(Self.overviewGridColumns, count))
-        let gaps = CGFloat(columns - 1) * MenuGridRowView.gap
-        return (menuWidth - gaps) / CGFloat(columns)
+    /// Every grid card occupies a fixed 3-column slot regardless of how many cards its row
+    /// holds, matching `MenuGridRowView.layoutCards` exactly (partial rows stay centered).
+    static func gridCardWidth(menuWidth: CGFloat) -> CGFloat {
+        MenuGridRowView.cardWidth(
+            totalWidth: menuWidth,
+            columns: overviewGridColumns,
+            gap: MenuGridRowView.gap)
     }
 }
