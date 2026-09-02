@@ -5,6 +5,17 @@ enum OverviewScrollStep {
     case down
 }
 
+extension NSMenuItem {
+    /// True for any menu item that participates in Overview row navigation: classic
+    /// single-column rows and batched grid rows alike.
+    @MainActor
+    var isOverviewNavigableRow: Bool {
+        guard let id = self.representedObject as? String else { return false }
+        return id.hasPrefix(StatusItemController.overviewRowIdentifierPrefix) ||
+            id == StatusItemController.overviewGridRowIdentifier
+    }
+}
+
 extension StatusItemController {
     /// Line distance per highlight step for classic scroll wheels.
     private static let lineScrollStepThreshold: CGFloat = 0.9
@@ -61,9 +72,7 @@ extension StatusItemController {
     }
 
     func menuHasOverviewRows(_ menu: NSMenu) -> Bool {
-        menu.items.contains { item in
-            (item.representedObject as? String)?.hasPrefix(Self.overviewRowIdentifierPrefix) == true
-        }
+        menu.items.contains { $0.isOverviewNavigableRow }
     }
 
     func resetOverviewScrollAccumulation() {
@@ -104,9 +113,7 @@ extension StatusItemController {
     }
 
     func overviewScrollTargetItem(in menu: NSMenu, step: OverviewScrollStep) -> NSMenuItem? {
-        let rows = menu.items.filter { item in
-            (item.representedObject as? String)?.hasPrefix(Self.overviewRowIdentifierPrefix) == true
-        }
+        let rows = menu.items.filter(\.isOverviewNavigableRow)
         guard !rows.isEmpty else { return nil }
 
         guard let current = self.highlightedMenuItems[ObjectIdentifier(menu)],

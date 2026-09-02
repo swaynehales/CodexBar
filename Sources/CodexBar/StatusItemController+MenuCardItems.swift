@@ -19,6 +19,7 @@ extension StatusItemController {
                 continue
             }
             guard let view = item.view, let measuring = view as? any MenuCardMeasuring else { continue }
+            // MenuGridRowView conforms to MenuCardMeasuring, so grid rows re-measure here too.
             guard abs(view.frame.width - width) > 0.5 else { continue }
             let id = item.representedObject as? String ?? "menuCard"
             let scope = self.menuProvider(for: menu)?.rawValue ?? id

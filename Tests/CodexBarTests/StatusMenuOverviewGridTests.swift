@@ -101,6 +101,27 @@ struct StatusMenuOverviewGridTests {
     }
 
     @Test
+    func `refreshMenuCardHeights keeps grid rows at rendered width`() throws {
+        let (controller, menu) = try self.openOverviewMenu(
+            suite: "StatusMenuOverviewGridTests-rewidth-\(UUID().uuidString)",
+            layout: .grid,
+            enabled: [.codex, .claude, .cursor, .opencode, .warp, .gemini])
+        defer { controller.menuDidClose(menu) }
+
+        let gridRows = menu.items
+            .filter { ($0.representedObject as? String) == StatusItemController.overviewGridRowIdentifier }
+        #expect(gridRows.count == 2)
+
+        controller.refreshMenuCardHeights(in: menu)
+        let renderedWidth = controller.renderedMenuWidth(for: menu)
+        for item in gridRows {
+            let view = try #require(item.view)
+            #expect(abs(view.frame.width - renderedWidth) <= 0.5)
+            #expect(view.frame.height > 0)
+        }
+    }
+
+    @Test
     func `grid layout widens menu width`() {
         let settings = self.makeSettings(suite: "StatusMenuOverviewGridTests-width-\(UUID().uuidString)")
         settings.statusChecksEnabled = false

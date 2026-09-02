@@ -87,6 +87,30 @@ struct StatusMenuOverviewScrollTests {
         return menu
     }
 
+    private func makeGridMenu() -> NSMenu {
+        let menu = NSMenu()
+        for _ in 0..<2 {
+            let item = NSMenuItem()
+            item.representedObject = StatusItemController.overviewGridRowIdentifier
+            item.isEnabled = true
+            menu.addItem(item)
+        }
+        return menu
+    }
+
+    @Test
+    func `grid rows are navigable overview rows`() {
+        let menu = self.makeGridMenu()
+        for item in menu.items {
+            #expect(item.isOverviewNavigableRow)
+        }
+        let plain = NSMenu()
+        plain.addItem(NSMenuItem())
+        for item in plain.items {
+            #expect(!item.isOverviewNavigableRow)
+        }
+    }
+
     private func makeScrollEvent(deltaY: CGFloat, precise: Bool) -> NSEvent {
         // CGEvent line-scroll conversion can yield zero deltas depending on host state.
         // Supply the handler's NSEvent inputs directly without posting an event.
