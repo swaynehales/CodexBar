@@ -1,4 +1,5 @@
 import AppKit
+import CodexBarCore
 import SwiftUI
 
 /// A single Overview grid menu item: an AppKit container that lays out one to three
@@ -126,5 +127,80 @@ final class MenuGridRowView: NSView, MenuCardMeasuring, MenuCardHighlighting {
             card.frame = NSRect(x: x, y: 0, width: cardWidth, height: height)
             card.autoresizingMask = [.width, .height]
         }
+    }
+}
+
+// MARK: - Overview grid menu construction
+
+extension StatusItemController {
+    /// Grid mode: lay the Overview cards out in rows of `overviewGridColumns` cards each.
+    /// Cards keep today's per-card layout; the menu is widened to `menuCardBaseWidth * columns`
+    /// (see `menuCardWidth`). No per-card submenus in grid mode — detail charts stay available
+    /// from each provider's own tab.
+    func addOverviewGrid(
+        rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)],
+        to menu: NSMenu,
+        menuWidth: CGFloat,
+        captureMenu: NSMenu?) -> Bool
+    {
+        let interactionMenu = captureMenu ?? menu
+        var index = 0
+        while index < rows.count {
+            let batch = Array(rows[index..<min(index + Self.overviewGridColumns, rows.count)])
+            var payloads: [MenuCardRowPayload] = []
+            payloads.reserveCapacity(batch.count)
+            for row in batch {
+                let storageText = self.store.storageFootprintText(for: row.provider)
+                let card = OverviewMenuCardRowView(
+                    model: row.model,
+                    storageText: storageText,
+                    width: Self.gridCardWidth(menuWidth: menuWidth, count: batch.count))
+                payloads.append(MenuCardRowPayload(
+                    content: AnyView(card),
+                    showsSubmenuIndicator: false,
+                    submenuIndicatorAlignment: .topTrailing,
+                    submenuIndicatorTopPadding: 8,
+                    // Mirrors makeMenuCardItem: onClick != nil → the card container participates
+                    // in highlight tracking (forwarded from MenuGridRowView.setHighlighted).
+                    allowsMenuHighlight: true,
+                    containsInteractiveControls: row.model.subtitleStyle == .error || row.model.usesLiveSubtitle,
+                    usesGPUSelection: true,
+                    onClick: { [weak self, weak interactionMenu] in
+                        guard let self, let interactionMenu else { return }
+                        self.selectOverviewProvider(row.provider, menu: interactionMenu)
+                    }))
+            }
+            let hosting = MenuGridRowView(cards: payloads, refreshMonitor: self.menuCardRefreshMonitor)
+            let height = self.cachedMenuCardHeight(
+                for: Self.overviewGridRowIdentifier,
+                scope: "overviewGridRow-\(batch.count)",
+                width: menuWidth,
+                fingerprint: batch
+                    .map { $0.model.heightFingerprint(section: "overviewGrid") }
+                    .joined(separator: "|"))
+            {
+                self.menuCardHeight(for: hosting, width: menuWidth)
+            }
+            hosting.applyMeasuredSize(width: menuWidth, height: height)
+
+            let item = MenuCardMenuItem()
+            item.title = ""
+            item.view = hosting
+            item.isEnabled = true
+            item.representedObject = Self.overviewGridRowIdentifier
+            // No per-item submenu in grid mode. The action stays wired for keyboard
+            // activation; selectOverviewProvider(_:) ignores non-overviewRow items.
+            item.target = self
+            item.action = #selector(self.selectOverviewProvider(_:))
+            menu.addItem(item)
+            index += Self.overviewGridColumns
+        }
+        return true
+    }
+
+    static func gridCardWidth(menuWidth: CGFloat, count: Int) -> CGFloat {
+        let columns = max(1, min(Self.overviewGridColumns, count))
+        let gaps = CGFloat(columns - 1) * MenuGridRowView.gap
+        return (menuWidth - gaps) / CGFloat(columns)
     }
 }
