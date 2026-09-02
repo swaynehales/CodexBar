@@ -1546,3 +1546,6 @@
 
 "overview_layout_list" = "Llista";
 "overview_layout_grid" = "Graella (3 × 2)";
+
+"overview_layout_title" = "Disposició de la vista general";
+"overview_layout_subtitle" = "La graella mostra fins a sis proveïdors costat per costat en un menú més ampli.";

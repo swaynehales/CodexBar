@@ -1547,3 +1547,6 @@
 
 "overview_layout_list" = "Daftar";
 "overview_layout_grid" = "Kisi (3 × 2)";
+
+"overview_layout_title" = "Tata letak ringkasan";
+"overview_layout_subtitle" = "Kisi menampilkan hingga enam penyedia berdampingan dalam menu yang lebih lebar.";

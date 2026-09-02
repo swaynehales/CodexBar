@@ -1548,3 +1548,6 @@
 
 "overview_layout_list" = "القائمة";
 "overview_layout_grid" = "شبكة (3 × 2)";
+
+"overview_layout_title" = "تخطيط النظرة العامة";
+"overview_layout_subtitle" = "تعرض الشبكة ما يصل إلى ستة مزودين جنبًا إلى جنب في قائمة أوسع.";

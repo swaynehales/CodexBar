@@ -1544,3 +1544,6 @@
 
 "overview_layout_list" = "Liste";
 "overview_layout_grid" = "Raster (3 × 2)";
+
+"overview_layout_title" = "Übersicht-Layout";
+"overview_layout_subtitle" = "Das Raster zeigt bis zu sechs Anbieter in einem breiteren Menü nebeneinander.";

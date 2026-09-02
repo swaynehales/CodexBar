@@ -1575,3 +1575,6 @@
 
 "overview_layout_list" = "列表";
 "overview_layout_grid" = "網格 (3 × 2)";
+
+"overview_layout_title" = "概覽版面";
+"overview_layout_subtitle" = "網格版面在更寬的選單中並排顯示最多六個提供者。";

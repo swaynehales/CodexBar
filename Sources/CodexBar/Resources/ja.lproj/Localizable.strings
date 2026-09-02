@@ -1544,3 +1544,6 @@
 
 "overview_layout_list" = "リスト";
 "overview_layout_grid" = "グリッド (3 × 2)";
+
+"overview_layout_title" = "オーバービューのレイアウト";
+"overview_layout_subtitle" = "グリッドでは最大6つのプロバイダを幅の広いメニューに並べて表示します。";

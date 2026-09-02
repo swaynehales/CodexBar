@@ -1543,3 +1543,6 @@
 
 "overview_layout_list" = "Liste";
 "overview_layout_grid" = "Grille (3 × 2)";
+
+"overview_layout_title" = "Disposition de la vue d’ensemble";
+"overview_layout_subtitle" = "La grille affiche jusqu’à six fournisseurs côte à côte dans un menu plus large.";

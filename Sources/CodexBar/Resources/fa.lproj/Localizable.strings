@@ -1548,3 +1548,6 @@
 
 "overview_layout_list" = "فهرست";
 "overview_layout_grid" = "شبکه (3 × 2)";
+
+"overview_layout_title" = "چیدمان نمای کلی";
+"overview_layout_subtitle" = "شبکه تا شش ارائه‌دهنده را در منویی پهن‌تر کنار هم نشان می‌دهد.";

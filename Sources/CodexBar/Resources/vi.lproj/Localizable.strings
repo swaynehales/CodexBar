@@ -1545,3 +1545,6 @@
 
 "overview_layout_list" = "Danh sách";
 "overview_layout_grid" = "Lưới (3 × 2)";
+
+"overview_layout_title" = "Bố cục tổng quan";
+"overview_layout_subtitle" = "Lưới hiển thị tối đa sáu nhà cung cấp cạnh nhau trong menu rộng hơn.";

@@ -1543,3 +1543,6 @@
 
 "overview_layout_list" = "Lijst";
 "overview_layout_grid" = "Raster (3 × 2)";
+
+"overview_layout_title" = "Overzichtsindeling";
+"overview_layout_subtitle" = "Het raster toont maximaal zes providers naast elkaar in een breder menu.";

@@ -1545,3 +1545,6 @@
 
 "overview_layout_list" = "Список";
 "overview_layout_grid" = "Сетка (3 × 2)";
+
+"overview_layout_title" = "Раскладка обзора";
+"overview_layout_subtitle" = "Сетка показывает до шести провайдеров рядом в более широком меню.";

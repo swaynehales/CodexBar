@@ -1547,3 +1547,6 @@
 
 "overview_layout_list" = "List";
 "overview_layout_grid" = "Grid (3 × 2)";
+
+"overview_layout_title" = "Overview layout";
+"overview_layout_subtitle" = "Grid shows up to six providers side by side in a wider menu.";

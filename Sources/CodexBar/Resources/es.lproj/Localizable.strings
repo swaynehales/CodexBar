@@ -1542,3 +1542,6 @@
 
 "overview_layout_list" = "Lista";
 "overview_layout_grid" = "Cuadrícula (3 × 2)";
+
+"overview_layout_title" = "Disposición de vista general";
+"overview_layout_subtitle" = "La cuadrícula muestra hasta seis proveedores lado a lado en un menú más ancho.";

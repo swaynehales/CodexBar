@@ -1548,3 +1548,6 @@
 
 "overview_layout_list" = "รายการ";
 "overview_layout_grid" = "กริด (3 × 2)";
+
+"overview_layout_title" = "เลย์เอาต์ภาพรวม";
+"overview_layout_subtitle" = "กริดแสดงผู้ให้บริการได้สูงสุด 6 รายเคียงข้างกันในเมนูที่กว้างขึ้น";

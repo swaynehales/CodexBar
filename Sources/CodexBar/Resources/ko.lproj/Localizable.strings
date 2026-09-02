@@ -1513,3 +1513,6 @@
 
 "overview_layout_list" = "목록";
 "overview_layout_grid" = "그리드 (3 × 2)";
+
+"overview_layout_title" = "개요 레이아웃";
+"overview_layout_subtitle" = "그리드는 더 넓은 메뉴에 최대 6개 공급자를 나란히 표시합니다.";

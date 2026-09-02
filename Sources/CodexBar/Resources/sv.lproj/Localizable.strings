@@ -1543,3 +1543,6 @@
 
 "overview_layout_list" = "Lista";
 "overview_layout_grid" = "Rutnät (3 × 2)";
+
+"overview_layout_title" = "Översiktslayout";
+"overview_layout_subtitle" = "Rutnätet visar upp till sex leverantörer sida vid sida i en bredare meny.";

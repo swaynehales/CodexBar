@@ -1547,3 +1547,6 @@
 
 "overview_layout_list" = "Elenco";
 "overview_layout_grid" = "Griglia (3 × 2)";
+
+"overview_layout_title" = "Disposizione panoramica";
+"overview_layout_subtitle" = "La griglia mostra fino a sei provider affiancati in un menu più ampio.";

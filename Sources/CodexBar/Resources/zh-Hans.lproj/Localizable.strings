@@ -1556,3 +1556,6 @@
 
 "overview_layout_list" = "列表";
 "overview_layout_grid" = "网格（3 × 2）";
+
+"overview_layout_title" = "概览布局";
+"overview_layout_subtitle" = "网格布局在更宽的菜单中并排显示最多六个提供商。";

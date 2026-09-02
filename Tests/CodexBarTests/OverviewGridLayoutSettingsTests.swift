@@ -50,4 +50,44 @@ struct OverviewGridLayoutSettingsTests {
         #expect(!OverviewGridLayout.grid.label.isEmpty)
         #expect(OverviewGridLayout.list.label != OverviewGridLayout.grid.label)
     }
+
+    @Test
+    func `overview grid layout change invalidates menu observation`() throws {
+        let suite = "OverviewGridLayoutSettingsTests-observation-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        let settings = SettingsStore(
+            userDefaults: defaults,
+            configStore: testConfigStore(suiteName: suite),
+            zaiTokenStore: NoopZaiTokenStore(),
+            syntheticTokenStore: NoopSyntheticTokenStore())
+
+        let observed = CounterBox()
+        _ = withObservationTracking {
+            _ = settings.menuObservationToken
+        } onChange: {
+            observed.increment()
+        }
+
+        settings.overviewGridLayout = .grid
+        #expect(observed.value == 1)
+    }
+}
+
+/// Observation onChange handlers are @Sendable; a class box keeps the count concurrency-safe.
+private final class CounterBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+
+    var value: Int {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        return self.count
+    }
+
+    func increment() {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        self.count += 1
+    }
 }

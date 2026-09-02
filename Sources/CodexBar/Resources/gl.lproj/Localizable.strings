@@ -1543,3 +1543,6 @@
 
 "overview_layout_list" = "Lista";
 "overview_layout_grid" = "Grella (3 × 2)";
+
+"overview_layout_title" = "Deseño da vista xeral";
+"overview_layout_subtitle" = "A grella mostra ata seis provedores lado a lado nun menú máis ancho.";

@@ -1544,3 +1544,6 @@
 
 "overview_layout_list" = "Lista";
 "overview_layout_grid" = "Grade (3 × 2)";
+
+"overview_layout_title" = "Layout da visão geral";
+"overview_layout_subtitle" = "A grade exibe até seis provedores lado a lado em um menu mais largo.";

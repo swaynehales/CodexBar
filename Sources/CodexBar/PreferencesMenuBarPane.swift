@@ -75,6 +75,19 @@ struct MenuBarPane: View {
 
                 self.overviewProviderRow
                     .disabled(!self.settings.mergeIcons)
+
+                SettingsMenuPicker(
+                    selection: self.$settings.overviewGridLayout,
+                    options: OverviewGridLayout.allCases,
+                    label: {
+                        SettingsRowLabel(
+                            L("overview_layout_title"),
+                            subtitle: L("overview_layout_subtitle"))
+                    },
+                    optionLabel: { layout in
+                        Text(layout.label)
+                    })
+                    .disabled(!self.settings.mergeIcons)
             } header: {
                 Text(L("section_combined_icon"))
             }

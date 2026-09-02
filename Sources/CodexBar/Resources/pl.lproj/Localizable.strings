@@ -1547,3 +1547,6 @@
 
 "overview_layout_list" = "Lista";
 "overview_layout_grid" = "Siatka (3 × 2)";
+
+"overview_layout_title" = "Układ przeglądu";
+"overview_layout_subtitle" = "Siatka pokazuje do sześciu dostawców obok siebie w szerszym menu.";

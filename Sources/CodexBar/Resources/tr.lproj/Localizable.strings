@@ -1546,3 +1546,6 @@
 
 "overview_layout_list" = "Liste";
 "overview_layout_grid" = "Izgara (3 × 2)";
+
+"overview_layout_title" = "Genel bakış düzeni";
+"overview_layout_subtitle" = "Izgara, daha geniş bir menüde en fazla altı sağlayıcıyı yan yana gösterir.";
