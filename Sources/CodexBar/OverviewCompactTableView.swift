@@ -19,27 +19,46 @@ struct OverviewCompactTableBlockView: View {
     private static let inColumnWidth: CGFloat = 32
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if self.showsHeader {
-                Grid(horizontalSpacing: Self.columnSpacing, verticalSpacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            // One shared Grid so the header's columns resolve to the same widths as the
+            // body rows; separate Grids size columns independently and drift apart.
+            Grid(horizontalSpacing: Self.columnSpacing, verticalSpacing: 5) {
+                if self.showsHeader {
                     GridRow {
                         Text(L("compact_header_provider"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .frame(maxWidth: Self.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Text(L("compact_header_model"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .frame(width: Self.modelColumnWidth, alignment: .leading)
                         Text(L("compact_header_period"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .frame(width: Self.periodColumnWidth, alignment: .leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .frame(width: Self.usedColumnWidth, alignment: .trailing)
                             .gridColumnAlignment(.trailing)
                         Text(L("compact_header_in"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .frame(width: Self.inColumnWidth, alignment: .trailing)
                             .gridColumnAlignment(.trailing)
                     }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                    .textCase(.uppercase)
+                    GridRow {
+                        Divider().gridCellColumns(6)
+                    }
                 }
-                Divider()
-            }
-            Grid(horizontalSpacing: Self.columnSpacing, verticalSpacing: 5) {
                 ForEach(self.rows) { row in
                     GridRow {
                         Text(row.showProvider ? row.providerDisplayName : "")
@@ -65,12 +84,14 @@ struct OverviewCompactTableBlockView: View {
                                 .lineLimit(1)
                                 .frame(width: Self.usedColumnWidth, alignment: .trailing)
                         case .value:
-                            // Balance/renewal text spans the bar + USED columns.
+                            // Balance/renewal text spans the bar + USED columns. Caption
+                            // size keeps the row height and baseline matching bar rows.
                             if let valueText = row.valueText, !valueText.isEmpty {
                                 Text(valueText)
-                                    .font(.footnote.weight(.semibold))
+                                    .font(.caption.weight(.semibold).monospacedDigit())
                                     .lineLimit(1)
                                     .truncationMode(.tail)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                     .gridCellColumns(2)
                             } else {
                                 Color.clear.gridCellUnsizedAxes(.vertical)

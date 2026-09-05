@@ -111,6 +111,8 @@ enum OverviewCompactTableModel {
         if let loginMethod = snapshot?.loginMethod(for: provider),
            let balance = CompactTableBalanceParser.balanceValue(loginMethod: loginMethod, provider: provider)
         {
+            // Parser output has the "balance:" prefix stripped; the card's plan text
+            // would double the label ("Balance: Balance: $7.99").
             rows.append(CompactTableRow(
                 id: "\(provider.rawValue):balance",
                 provider: provider,
@@ -121,7 +123,7 @@ enum OverviewCompactTableModel {
                 periodLabel: Self.periodLabel(.credits),
                 presentation: .value,
                 percent: 0,
-                valueText: model.planText ?? balance,
+                valueText: balance,
                 statusText: nil,
                 usedText: "",
                 resetsInText: "—",
