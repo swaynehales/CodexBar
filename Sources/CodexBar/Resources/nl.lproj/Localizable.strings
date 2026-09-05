@@ -1542,3 +1542,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Sessie of week loopt hoog op";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Modelweek boven 60% gebruikt";
 "Spending cap, not balance" = "Uitgavenlimiet, geen saldo";
+
+"compact_header_provider" = "Aanbieder";
+"compact_header_model" = "Model";
+"compact_header_period" = "Periode";
+"compact_header_used" = "Gebruikt";
+"compact_header_in" = "Over";
+"compact_period_session" = "Sessie";
+"compact_period_weekly" = "Wekelijks";
+"compact_period_monthly" = "Maandelijks";
+"compact_period_credits" = "Credits";
+"compact_period_other" = "Overig";
+"overview_compact_table_title" = "Compacte tabel";
+"overview_compact_table_subtitle" = "Dichte gebruikstabel op één scherm in plaats van gestapelde kaarten.";

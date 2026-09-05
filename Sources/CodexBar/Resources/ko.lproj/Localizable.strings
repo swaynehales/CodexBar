@@ -1512,3 +1512,16 @@
 "menu_bar_layout_conditional_default_either_high" = "세션 또는 주간 사용량 높음";
 "menu_bar_layout_conditional_default_scoped_weekly" = "모델별 주간 60% 초과 사용";
 "Spending cap, not balance" = "지출 한도이며 잔액이 아닙니다";
+
+"compact_header_provider" = "공급자";
+"compact_header_model" = "모델";
+"compact_header_period" = "기간";
+"compact_header_used" = "사용량";
+"compact_header_in" = "남음";
+"compact_period_session" = "세션";
+"compact_period_weekly" = "주간";
+"compact_period_monthly" = "월간";
+"compact_period_credits" = "크레딧";
+"compact_period_other" = "기타";
+"overview_compact_table_title" = "컴팩트 표";
+"overview_compact_table_subtitle" = "카드 나열 대신 한 화면에 담긴 밀도 높은 사용량 표를 표시합니다.";

@@ -1546,3 +1546,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Sessione o settimana a livello alto";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Settimana per modello oltre il 60%";
 "Spending cap, not balance" = "Limite di spesa, non saldo";
+
+"compact_header_provider" = "Fornitore";
+"compact_header_model" = "Modello";
+"compact_header_period" = "Periodo";
+"compact_header_used" = "Usato";
+"compact_header_in" = "Tra";
+"compact_period_session" = "Sessione";
+"compact_period_weekly" = "Settimanale";
+"compact_period_monthly" = "Mensile";
+"compact_period_credits" = "Crediti";
+"compact_period_other" = "Altro";
+"overview_compact_table_title" = "Tabella compatta";
+"overview_compact_table_subtitle" = "Tabella di utilizzo densa su una schermata invece di schede impilate.";

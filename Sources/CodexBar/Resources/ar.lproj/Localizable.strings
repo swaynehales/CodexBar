@@ -1547,3 +1547,16 @@
 "menu_bar_layout_conditional_default_either_high" = "الجلسة أو الأسبوع في مستوى مرتفع";
 "menu_bar_layout_conditional_default_scoped_weekly" = "نافذة الطراز الأسبوعية فوق 60٪";
 "Spending cap, not balance" = "حد الإنفاق، وليس الرصيد";
+
+"compact_header_provider" = "موفر";
+"compact_header_model" = "النموذج";
+"compact_header_period" = "الفترة";
+"compact_header_used" = "المستخدم";
+"compact_header_in" = "بعد";
+"compact_period_session" = "جلسة";
+"compact_period_weekly" = "أسبوعي";
+"compact_period_monthly" = "شهري";
+"compact_period_credits" = "رصيد";
+"compact_period_other" = "أخرى";
+"overview_compact_table_title" = "جدول مضغوط";
+"overview_compact_table_subtitle" = "جدول استخدام مكثف في شاشة واحدة بدلاً من البطاقات المتراكبة.";

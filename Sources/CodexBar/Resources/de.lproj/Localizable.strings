@@ -1543,3 +1543,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Sitzung oder Woche läuft hoch";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Modellfenster über 60 % genutzt";
 "Spending cap, not balance" = "Ausgabenlimit, kein Guthaben";
+
+"compact_header_provider" = "Anbieter";
+"compact_header_model" = "Modell";
+"compact_header_period" = "Zeitraum";
+"compact_header_used" = "Verwendet";
+"compact_header_in" = "In";
+"compact_period_session" = "Sitzung";
+"compact_period_weekly" = "Wöchentlich";
+"compact_period_monthly" = "Monatlich";
+"compact_period_credits" = "Guthaben";
+"compact_period_other" = "Sonstige";
+"overview_compact_table_title" = "Kompakte Tabelle";
+"overview_compact_table_subtitle" = "Dichte Nutzungstabelle auf einem Bildschirm statt gestapelter Karten.";

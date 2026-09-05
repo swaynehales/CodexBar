@@ -1544,3 +1544,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Сессия или неделя на высоком уровне";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Недельное окно модели более 60 %";
 "Spending cap, not balance" = "Лимит расходов, не баланс";
+
+"compact_header_provider" = "Провайдер";
+"compact_header_model" = "Модель";
+"compact_header_period" = "Период";
+"compact_header_used" = "Использовано";
+"compact_header_in" = "Через";
+"compact_period_session" = "Сессия";
+"compact_period_weekly" = "Недельный";
+"compact_period_monthly" = "Месячный";
+"compact_period_credits" = "Кредиты";
+"compact_period_other" = "Другое";
+"overview_compact_table_title" = "Компактная таблица";
+"overview_compact_table_subtitle" = "Плотная таблица использования на одном экране вместо стопки карточек.";

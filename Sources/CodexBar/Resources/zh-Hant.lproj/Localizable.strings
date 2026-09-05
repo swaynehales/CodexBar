@@ -1574,3 +1574,16 @@
 "menu_bar_layout_conditional_default_either_high" = "工作階段或每週用量偏高";
 "menu_bar_layout_conditional_default_scoped_weekly" = "模型專屬每週已用超過 60%";
 "Spending cap, not balance" = "支出上限，並非餘額";
+
+"compact_header_provider" = "提供者";
+"compact_header_model" = "模型";
+"compact_header_period" = "期間";
+"compact_header_used" = "已使用";
+"compact_header_in" = "剩";
+"compact_period_session" = "工作階段";
+"compact_period_weekly" = "每週";
+"compact_period_monthly" = "每月";
+"compact_period_credits" = "額度";
+"compact_period_other" = "其他";
+"overview_compact_table_title" = "緊湊表格";
+"overview_compact_table_subtitle" = "以單一畫面的高密度用量表格取代堆疊卡片。";

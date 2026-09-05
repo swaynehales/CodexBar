@@ -1545,3 +1545,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Oturum veya haftalık kullanım yükseldi";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Model haftasının %60'ından fazlası kullanıldı";
 "Spending cap, not balance" = "Harcama sınırı, bakiye değil";
+
+"compact_header_provider" = "Sağlayıcı";
+"compact_header_model" = "Model";
+"compact_header_period" = "Dönem";
+"compact_header_used" = "Kullanılan";
+"compact_header_in" = "Kalan";
+"compact_period_session" = "Oturum";
+"compact_period_weekly" = "Haftalık";
+"compact_period_monthly" = "Aylık";
+"compact_period_credits" = "Kredi";
+"compact_period_other" = "Diğer";
+"overview_compact_table_title" = "Kompakt tablo";
+"overview_compact_table_subtitle" = "Yığılmış kartlar yerine tek ekranda yoğun kullanım tablosu.";

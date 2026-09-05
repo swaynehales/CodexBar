@@ -1547,3 +1547,16 @@
 "menu_bar_layout_conditional_default_either_high" = "เซสชันหรือรายสัปดาห์อยู่ในระดับสูง";
 "menu_bar_layout_conditional_default_scoped_weekly" = "รายสัปดาห์ตามโมเดลเกิน 60%";
 "Spending cap, not balance" = "เพดานการใช้จ่าย ไม่ใช่ยอดคงเหลือ";
+
+"compact_header_provider" = "ผู้ให้บริการ";
+"compact_header_model" = "โมเดล";
+"compact_header_period" = "ช่วงเวลา";
+"compact_header_used" = "ใช้ไป";
+"compact_header_in" = "อีก";
+"compact_period_session" = "เซสชัน";
+"compact_period_weekly" = "รายสัปดาห์";
+"compact_period_monthly" = "รายเดือน";
+"compact_period_credits" = "เครดิต";
+"compact_period_other" = "อื่น ๆ";
+"overview_compact_table_title" = "ตารางกระชับ";
+"overview_compact_table_subtitle" = "ตารางการใช้งานที่กระชับในหนึ่งหน้าจอแทนการ์ดซ้อนกัน";

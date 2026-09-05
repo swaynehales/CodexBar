@@ -1546,3 +1546,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Sesja lub tydzień na wysokim poziomie";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Tydzień modelu powyżej 60% zużycia";
 "Spending cap, not balance" = "Limit wydatków, nie saldo";
+
+"compact_header_provider" = "Dostawca";
+"compact_header_model" = "Model";
+"compact_header_period" = "Okres";
+"compact_header_used" = "Użyte";
+"compact_header_in" = "Za";
+"compact_period_session" = "Sesja";
+"compact_period_weekly" = "Tygodniowy";
+"compact_period_monthly" = "Miesięczny";
+"compact_period_credits" = "Kredyty";
+"compact_period_other" = "Inne";
+"overview_compact_table_title" = "Zwięzła tabela";
+"overview_compact_table_subtitle" = "Gęsta tabela użycia na jednym ekranie zamiast stosu kart.";

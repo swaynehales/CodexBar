@@ -1544,3 +1544,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Phiên hoặc tuần đang ở mức cao";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Tuần theo mô hình đã dùng trên 60%";
 "Spending cap, not balance" = "Hạn mức chi tiêu, không phải số dư";
+
+"compact_header_provider" = "Nhà cung cấp";
+"compact_header_model" = "Mô hình";
+"compact_header_period" = "Giai đoạn";
+"compact_header_used" = "Đã dùng";
+"compact_header_in" = "Còn";
+"compact_period_session" = "Phiên";
+"compact_period_weekly" = "Hàng tuần";
+"compact_period_monthly" = "Hàng tháng";
+"compact_period_credits" = "Tín dụng";
+"compact_period_other" = "Khác";
+"overview_compact_table_title" = "Bảng gọn";
+"overview_compact_table_subtitle" = "Bảng sử dụng dày đặc trên một màn hình thay vì các thẻ xếp chồng.";

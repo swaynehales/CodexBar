@@ -1543,3 +1543,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Сесія або тиждень на високому рівні";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Тижневе вікно моделі понад 60 %";
 "Spending cap, not balance" = "Ліміт витрат, не баланс";
+
+"compact_header_provider" = "Постачальник";
+"compact_header_model" = "Модель";
+"compact_header_period" = "Період";
+"compact_header_used" = "Використано";
+"compact_header_in" = "Через";
+"compact_period_session" = "Сесія";
+"compact_period_weekly" = "Тижневий";
+"compact_period_monthly" = "Місячний";
+"compact_period_credits" = "Кредити";
+"compact_period_other" = "Інше";
+"overview_compact_table_title" = "Компактна таблиця";
+"overview_compact_table_subtitle" = "Щільна таблиця використання на одному екрані замість карток.";

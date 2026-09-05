@@ -1542,3 +1542,16 @@
 "menu_bar_layout_conditional_default_either_high" = "Sesión ou semana en nivel alto";
 "menu_bar_layout_conditional_default_scoped_weekly" = "Semana por modelo por riba do 60 %";
 "Spending cap, not balance" = "Límite de gasto, non saldo";
+
+"compact_header_provider" = "Provedor";
+"compact_header_model" = "Modelo";
+"compact_header_period" = "Período";
+"compact_header_used" = "Usado";
+"compact_header_in" = "En";
+"compact_period_session" = "Sesión";
+"compact_period_weekly" = "Semanal";
+"compact_period_monthly" = "Mensual";
+"compact_period_credits" = "Créditos";
+"compact_period_other" = "Outros";
+"overview_compact_table_title" = "Táboa compacta";
+"overview_compact_table_subtitle" = "Táboa de uso densa nunha pantalla no canto de tarxetas apiladas.";

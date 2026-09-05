@@ -1547,3 +1547,16 @@
 "menu_bar_layout_conditional_default_either_high" = "نشست یا هفته در سطح بالا";
 "menu_bar_layout_conditional_default_scoped_weekly" = "پنجره هفتگی مدل بیش از ۶۰٪";
 "Spending cap, not balance" = "سقف هزینه، نه موجودی";
+
+"compact_header_provider" = "ارائه‌دهنده";
+"compact_header_model" = "مدل";
+"compact_header_period" = "دوره";
+"compact_header_used" = "استفاده‌شده";
+"compact_header_in" = "تا";
+"compact_period_session" = "جلسه";
+"compact_period_weekly" = "هفتگی";
+"compact_period_monthly" = "ماهانه";
+"compact_period_credits" = "اعتبار";
+"compact_period_other" = "سایر";
+"overview_compact_table_title" = "جدول فشرده";
+"overview_compact_table_subtitle" = "جدول استفاده فشرده در یک صفحه به‌جای کارت‌های انباشته.";

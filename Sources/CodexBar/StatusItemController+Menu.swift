@@ -574,18 +574,7 @@ extension StatusItemController {
                 return (provider: provider, model: model)
             }
         guard !rows.isEmpty else { return false }
-        let displayRows: [(provider: UsageProvider, model: UsageMenuCardView.Model, tableRows: [CompactTableRow]?)] =
-            rows.compactMap { row in
-                guard self.settings.overviewCompactTableEnabled else {
-                    return (row.provider, row.model, nil)
-                }
-                let tableRows = OverviewCompactTableModel.rows(
-                    provider: row.provider,
-                    model: row.model,
-                    snapshot: self.store.presentationSnapshot(for: row.provider))
-                guard !tableRows.isEmpty else { return nil }
-                return (row.provider, row.model, tableRows)
-            }
+        let displayRows = self.overviewDisplayRows(rows: rows)
         guard !displayRows.isEmpty else { return false }
 
         let t0 = CACurrentMediaTime()
@@ -630,22 +619,13 @@ extension StatusItemController {
                 provider: row.provider,
                 model: row.model,
                 width: menuWidth)
-            let item: NSMenuItem = if let tableRows = row.tableRows {
-                self.makeMenuCardItem(
-                    OverviewCompactTableBlockView(rows: tableRows, showsHeader: index == 0, width: menuWidth),
-                    id: identifier,
-                    width: menuWidth,
-                    heightCacheScope: "\(row.provider.rawValue)-compact",
-                    heightCacheFingerprint: tableRows
-                        .map { [$0.id, $0.usedText, $0.resetsInText, $0.valueText ?? ""].joined(separator: ",") }
-                        .joined(separator: "|"),
+            let item: NSMenuItem = if row.tableRows != nil {
+                self.makeOverviewCompactItem(
+                    row: row,
+                    showsHeader: index == 0,
                     submenu: submenu,
-                    containsInteractiveControls: row.model.subtitleStyle == .error || row.model.usesLiveSubtitle,
-                    usesGPUSelection: true,
-                    onClick: { [weak self, weak interactionMenu] in
-                        guard let self, let interactionMenu else { return }
-                        self.selectOverviewProvider(row.provider, menu: interactionMenu)
-                    })
+                    menuWidth: menuWidth,
+                    interactionMenu: interactionMenu)
             } else {
                 self.makeMenuCardItem(
                     OverviewMenuCardRowView(model: row.model, storageText: storageText, width: menuWidth),

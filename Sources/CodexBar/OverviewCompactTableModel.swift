@@ -44,11 +44,12 @@ enum OverviewCompactTableModel {
                 rows.append(Self.valueRow(
                     provider: provider,
                     model: model,
-                    id: "\(provider.rawValue):mistral-balance",
-                    modelText: "",
-                    period: .credits,
-                    valueText: metric.statusText,
-                    metric: metric,
+                    spec: ValueRowSpec(
+                        id: "\(provider.rawValue):mistral-balance",
+                        modelText: "",
+                        period: .credits,
+                        valueText: metric.statusText,
+                        metric: metric),
                     tint: tint,
                     now: now))
                 continue
@@ -57,11 +58,12 @@ enum OverviewCompactTableModel {
                 rows.append(Self.valueRow(
                     provider: provider,
                     model: model,
-                    id: "\(provider.rawValue):renewal",
-                    modelText: "",
-                    period: .credits,
-                    valueText: metric.resetText ?? metric.title,
-                    metric: metric,
+                    spec: ValueRowSpec(
+                        id: "\(provider.rawValue):renewal",
+                        modelText: "",
+                        period: .credits,
+                        valueText: metric.resetText ?? metric.title,
+                        metric: metric),
                     tint: tint,
                     now: now))
                 continue
@@ -77,11 +79,12 @@ enum OverviewCompactTableModel {
                 rows.append(Self.valueRow(
                     provider: provider,
                     model: model,
-                    id: "\(provider.rawValue):\(metric.id)",
-                    modelText: classification.modelQualifier ?? "",
-                    period: classification.period,
-                    valueText: metric.statusText,
-                    metric: metric,
+                    spec: ValueRowSpec(
+                        id: "\(provider.rawValue):\(metric.id)",
+                        modelText: classification.modelQualifier ?? "",
+                        period: classification.period,
+                        valueText: metric.statusText,
+                        metric: metric),
                     tint: tint,
                     now: now))
                 continue
@@ -156,34 +159,38 @@ enum OverviewCompactTableModel {
         }
     }
 
+    private struct ValueRowSpec {
+        let id: String
+        let modelText: String
+        let period: TablePeriod
+        let valueText: String?
+        let metric: UsageMenuCardView.Model.Metric?
+    }
+
     private static func valueRow(
         provider: UsageProvider,
         model: UsageMenuCardView.Model,
-        id: String,
-        modelText: String,
-        period: TablePeriod,
-        valueText: String?,
-        metric: UsageMenuCardView.Model.Metric?,
+        spec: ValueRowSpec,
         tint: ProviderColor,
         now: Date) -> CompactTableRow
     {
         CompactTableRow(
-            id: id,
+            id: spec.id,
             provider: provider,
             providerDisplayName: model.providerName,
             showProvider: false,
-            model: modelText,
-            period: period,
-            periodLabel: self.periodLabel(period),
+            model: spec.modelText,
+            period: spec.period,
+            periodLabel: self.periodLabel(spec.period),
             presentation: .value,
             percent: 0,
-            valueText: valueText,
-            statusText: metric?.statusText,
+            valueText: spec.valueText,
+            statusText: spec.metric?.statusText,
             usedText: "",
-            resetsInText: self.resetsInText(resetsAt: metric?.resetsAt, now: now),
-            resetsAt: metric?.resetsAt,
+            resetsInText: self.resetsInText(resetsAt: spec.metric?.resetsAt, now: now),
+            resetsAt: spec.metric?.resetsAt,
             tint: tint,
-            metric: metric)
+            metric: spec.metric)
     }
 
     private static func resetsInText(resetsAt: Date?, now: Date) -> String {

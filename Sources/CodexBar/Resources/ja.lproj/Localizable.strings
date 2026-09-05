@@ -1543,3 +1543,16 @@
 "menu_bar_layout_conditional_default_either_high" = "セッションまたは週間が高水準";
 "menu_bar_layout_conditional_default_scoped_weekly" = "モデル別週間の使用率 60% 超";
 "Spending cap, not balance" = "利用上限額（残高ではありません）";
+
+"compact_header_provider" = "プロバイダ";
+"compact_header_model" = "モデル";
+"compact_header_period" = "期間";
+"compact_header_used" = "使用量";
+"compact_header_in" = "あと";
+"compact_period_session" = "セッション";
+"compact_period_weekly" = "週次";
+"compact_period_monthly" = "月次";
+"compact_period_credits" = "クレジット";
+"compact_period_other" = "その他";
+"overview_compact_table_title" = "コンパクトテーブル";
+"overview_compact_table_subtitle" = "カードの積み重ねの代わりに、1画面に収まる密度の高い使用量テーブルを表示します。";

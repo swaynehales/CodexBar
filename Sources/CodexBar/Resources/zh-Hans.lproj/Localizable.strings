@@ -1555,3 +1555,16 @@
 "in %@m" = "%@ 分钟后";
 "now" = "现在";
 "Spending cap, not balance" = "支出上限，并非余额";
+
+"compact_header_provider" = "提供商";
+"compact_header_model" = "模型";
+"compact_header_period" = "周期";
+"compact_header_used" = "已使用";
+"compact_header_in" = "剩";
+"compact_period_session" = "会话";
+"compact_period_weekly" = "每周";
+"compact_period_monthly" = "每月";
+"compact_period_credits" = "额度";
+"compact_period_other" = "其他";
+"overview_compact_table_title" = "紧凑表格";
+"overview_compact_table_subtitle" = "以单屏高密度用量表格取代堆叠卡片。";
