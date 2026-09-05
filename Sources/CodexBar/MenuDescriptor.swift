@@ -478,18 +478,9 @@ struct MenuDescriptor {
                 entries.append(.text("\(L("Activity")): \(detail)", .secondary))
             }
         } else if let loginMethodText, !loginMethodText.isEmpty {
-            if provider == .openrouter || provider == .mimo || provider == .poe,
-               loginMethodText.localizedCaseInsensitiveContains("balance:")
-            {
-                let balanceValue = loginMethodText
-                    .replacingOccurrences(
-                        of: #"(?i)^\s*balance:\s*"#,
-                        with: "",
-                        options: [.regularExpression])
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                let value = balanceValue.isEmpty ? loginMethodText : balanceValue
+            if let balance = CompactTableBalanceParser.balanceValue(loginMethod: loginMethodText, provider: provider) {
                 entries.append(
-                    .text("\(L("Balance")): \(AccountFormatter.plan(value, provider: provider))", .secondary))
+                    .text("\(L("Balance")): \(AccountFormatter.plan(balance, provider: provider))", .secondary))
             } else {
                 entries.append(
                     .text(
