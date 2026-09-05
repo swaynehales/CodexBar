@@ -566,7 +566,17 @@ extension StatusItemController {
         // Rows may be built into a detached scratch menu for in-place reconciliation;
         // interaction closures must always reference the live menu they end up serving.
         let interactionMenu = captureMenu ?? menu
-        let providerScopes = self.overviewProviderScopes(enabledProviders: enabledProviders)
+        // Compact mode ignores the Overview provider cap: table rows are dense enough to
+        // show every enabled provider in one pass, which is the mode's whole point.
+        let compactEnabled = self.settings.overviewCompactTableEnabled
+        let providerScopes: (visible: [UsageProvider], spend: [UsageProvider]) = if compactEnabled {
+            (visible: enabledProviders, spend: self.overviewProviderScopes(enabledProviders: enabledProviders).spend)
+        } else {
+            self.overviewProviderScopes(enabledProviders: enabledProviders)
+        }
+        // The compact table needs a fixed wide frame; the descriptor-derived menu width is
+        // sized for stacked cards and starves the six-column layout.
+        let tableMenuWidth = compactEnabled ? Self.compactOverviewMenuWidth : menuWidth
         let rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)] = providerScopes.visible
             .compactMap { provider in
                 guard let model = self.menuCardModel(for: provider) else { return nil }
@@ -574,7 +584,7 @@ extension StatusItemController {
                 return (provider: provider, model: model)
             }
         guard !rows.isEmpty else { return false }
-        let displayRows = self.overviewDisplayRows(rows: rows)
+        let displayRows = self.overviewDisplayRows(rows: rows, compactEnabled: compactEnabled)
         guard !displayRows.isEmpty else { return false }
 
         let t0 = CACurrentMediaTime()
@@ -618,13 +628,13 @@ extension StatusItemController {
             let submenu = self.makeOverviewRowSubmenu(
                 provider: row.provider,
                 model: row.model,
-                width: menuWidth)
+                width: tableMenuWidth)
             let item: NSMenuItem = if row.tableRows != nil {
                 self.makeOverviewCompactItem(
                     row: row,
                     showsHeader: index == 0,
                     submenu: submenu,
-                    menuWidth: menuWidth,
+                    menuWidth: tableMenuWidth,
                     interactionMenu: interactionMenu)
             } else {
                 self.makeMenuCardItem(

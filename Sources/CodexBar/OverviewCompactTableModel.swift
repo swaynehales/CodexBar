@@ -197,7 +197,9 @@ enum OverviewCompactTableModel {
         guard let resetsAt else { return "—" }
         let countdown = UsageFormatter.resetCountdownDescription(from: resetsAt, now: now)
         if countdown.hasPrefix("in ") {
-            return String(countdown.dropFirst(3))
+            // Largest unit only ("in 1d 2h" -> "1d"): the IN column is 32pt wide and the
+            // full multi-unit string truncates.
+            return String(countdown.dropFirst(3).split(separator: " ").first ?? "—")
         }
         return countdown
     }

@@ -10,12 +10,13 @@ struct OverviewCompactTableBlockView: View {
     let width: CGFloat
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
-    private static let horizontalPadding: CGFloat = 20
-    private static let modelColumnWidth: CGFloat = 44
-    private static let periodColumnWidth: CGFloat = 56
-    private static let usedColumnWidth: CGFloat = 40
-    private static let inColumnWidth: CGFloat = 30
-    private static let columnSpacing: CGFloat = 8
+    private static let horizontalPadding: CGFloat = 16
+    private static let columnSpacing: CGFloat = 6
+    private static let providerMaxWidth: CGFloat = 104
+    private static let modelColumnWidth: CGFloat = 40
+    private static let periodColumnWidth: CGFloat = 44
+    private static let usedColumnWidth: CGFloat = 32
+    private static let inColumnWidth: CGFloat = 32
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -45,6 +46,7 @@ struct OverviewCompactTableBlockView: View {
                             .font(.footnote.weight(.semibold))
                             .lineLimit(1)
                             .truncationMode(.tail)
+                            .frame(maxWidth: Self.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Text(row.model)
                             .font(.caption)
@@ -55,11 +57,26 @@ struct OverviewCompactTableBlockView: View {
                             .font(.caption)
                             .lineLimit(1)
                             .frame(width: Self.periodColumnWidth, alignment: .leading)
-                        self.measureCell(for: row)
-                        Text(row.presentation == .bar ? row.usedText : "")
-                            .font(.caption.monospacedDigit())
-                            .lineLimit(1)
-                            .frame(width: Self.usedColumnWidth, alignment: .trailing)
+                        switch row.presentation {
+                        case .bar:
+                            self.measureCell(for: row)
+                            Text(row.usedText)
+                                .font(.caption.monospacedDigit())
+                                .lineLimit(1)
+                                .frame(width: Self.usedColumnWidth, alignment: .trailing)
+                        case .value:
+                            // Balance/renewal text spans the bar + USED columns.
+                            if let valueText = row.valueText, !valueText.isEmpty {
+                                Text(valueText)
+                                    .font(.footnote.weight(.semibold))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .gridCellColumns(2)
+                            } else {
+                                Color.clear.gridCellUnsizedAxes(.vertical)
+                                    .gridCellColumns(2)
+                            }
+                        }
                         Text(row.resetsInText)
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
@@ -77,26 +94,16 @@ struct OverviewCompactTableBlockView: View {
 
     @ViewBuilder
     private func measureCell(for row: CompactTableRow) -> some View {
-        switch row.presentation {
-        case .bar:
-            if let metric = row.metric {
-                UsageProgressBar(
-                    percent: metric.percent,
-                    tint: Color(red: row.tint.red, green: row.tint.green, blue: row.tint.blue),
-                    accessibilityLabel: metric.percentStyle.accessibilityLabel,
-                    pacePercent: metric.pacePercent,
-                    paceOnTop: metric.paceOnTop,
-                    warningMarkerPercents: metric.warningMarkerPercents,
-                    workdayMarkerPercents: metric.workdayMarkerPercents,
-                    workdayTickAppearance: metric.workdayTickAppearance)
-            }
-        case .value:
-            if let valueText = row.valueText, !valueText.isEmpty {
-                Text(valueText)
-                    .font(.footnote.weight(.semibold))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
+        if let metric = row.metric {
+            UsageProgressBar(
+                percent: metric.percent,
+                tint: Color(red: row.tint.red, green: row.tint.green, blue: row.tint.blue),
+                accessibilityLabel: metric.percentStyle.accessibilityLabel,
+                pacePercent: metric.pacePercent,
+                paceOnTop: metric.paceOnTop,
+                warningMarkerPercents: metric.warningMarkerPercents,
+                workdayMarkerPercents: metric.workdayMarkerPercents,
+                workdayTickAppearance: metric.workdayTickAppearance)
         }
     }
 }

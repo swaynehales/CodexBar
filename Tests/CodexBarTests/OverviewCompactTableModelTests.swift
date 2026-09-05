@@ -212,4 +212,18 @@ struct OverviewCompactTableModelTests {
         #expect(rows[0].resetsInText == "4h")
         #expect(rows[1].resetsInText == "—")
     }
+
+    @Test
+    func `multi unit countdowns keep only the largest unit`() {
+        let rows = OverviewCompactTableModel.rows(
+            provider: .codex,
+            model: Self.model(metrics: [
+                Self.metric(id: "primary", resetsAt: Self.now.addingTimeInterval(26 * 24 * 3600 + 2 * 3600)),
+                Self.metric(id: "secondary", resetsAt: Self.now.addingTimeInterval(2 * 24 * 3600 + 4 * 3600)),
+            ]),
+            snapshot: Self.snapshot(),
+            now: Self.now)
+        #expect(rows[0].resetsInText == "26d")
+        #expect(rows[1].resetsInText == "2d")
+    }
 }

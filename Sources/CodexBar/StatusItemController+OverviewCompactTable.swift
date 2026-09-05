@@ -4,6 +4,11 @@ import CodexBarCore
 /// Compact-table wiring for the Overview menu (option B). Kept out of
 /// StatusItemController+Menu.swift to stay under that file's length gate.
 extension StatusItemController {
+    /// Fixed width for compact Overview table blocks. The descriptor-derived menu width is
+    /// sized for stacked cards (~310pt) and starves the six-column table; the mock's 440pt
+    /// fits every column without truncation.
+    static let compactOverviewMenuWidth: CGFloat = 440
+
     struct OverviewDisplayRow {
         let provider: UsageProvider
         let model: UsageMenuCardView.Model
@@ -12,10 +17,11 @@ extension StatusItemController {
     }
 
     func overviewDisplayRows(
-        rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)]) -> [OverviewDisplayRow]
+        rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)],
+        compactEnabled: Bool) -> [OverviewDisplayRow]
     {
         rows.compactMap { row in
-            guard self.settings.overviewCompactTableEnabled else {
+            guard compactEnabled else {
                 return OverviewDisplayRow(provider: row.provider, model: row.model, tableRows: nil)
             }
             let tableRows = OverviewCompactTableModel.rows(
