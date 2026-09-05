@@ -60,49 +60,16 @@ struct OverviewCompactTableBlockView: View {
                     }
                 }
                 ForEach(self.rows) { row in
-                    GridRow {
-                        Text(row.showProvider ? row.providerDisplayName : "")
-                            .font(.footnote.weight(.semibold))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .frame(maxWidth: Self.providerMaxWidth, alignment: .leading)
-                            .gridColumnAlignment(.leading)
-                        Text(row.model)
-                            .font(.caption)
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .lineLimit(1)
-                            .frame(width: Self.modelColumnWidth, alignment: .leading)
-                        Text(row.periodLabel)
-                            .font(.caption)
-                            .lineLimit(1)
-                            .frame(width: Self.periodColumnWidth, alignment: .leading)
-                        switch row.presentation {
-                        case .bar:
-                            self.measureCell(for: row)
-                            Text(row.usedText)
-                                .font(.caption.monospacedDigit())
-                                .lineLimit(1)
-                                .frame(width: Self.usedColumnWidth, alignment: .trailing)
-                        case .value:
-                            // Balance/renewal text spans the bar + USED columns. Caption
-                            // size keeps the row height and baseline matching bar rows.
-                            if let valueText = row.valueText, !valueText.isEmpty {
-                                Text(valueText)
-                                    .font(.caption.weight(.semibold).monospacedDigit())
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .gridCellColumns(2)
-                            } else {
-                                Color.clear.gridCellUnsizedAxes(.vertical)
-                                    .gridCellColumns(2)
-                            }
+                    // Value rows have no bar cell, so center alignment reads as vertically
+                    // off against the footnote provider name; baseline-align them instead.
+                    if row.presentation == .value {
+                        GridRow(alignment: .firstTextBaseline) {
+                            self.rowCells(for: row)
                         }
-                        Text(row.resetsInText)
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .lineLimit(1)
-                            .frame(width: Self.inColumnWidth, alignment: .trailing)
+                    } else {
+                        GridRow {
+                            self.rowCells(for: row)
+                        }
                     }
                 }
             }
@@ -111,6 +78,52 @@ struct OverviewCompactTableBlockView: View {
         .padding(.top, 6)
         .padding(.bottom, 6)
         .frame(width: self.width, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func rowCells(for row: CompactTableRow) -> some View {
+        Text(row.showProvider ? row.providerDisplayName : "")
+            .font(.footnote.weight(.semibold))
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(maxWidth: Self.providerMaxWidth, alignment: .leading)
+            .gridColumnAlignment(.leading)
+        Text(row.model)
+            .font(.caption)
+            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+            .lineLimit(1)
+            .frame(width: Self.modelColumnWidth, alignment: .leading)
+        Text(row.periodLabel)
+            .font(.caption)
+            .lineLimit(1)
+            .frame(width: Self.periodColumnWidth, alignment: .leading)
+        switch row.presentation {
+        case .bar:
+            self.measureCell(for: row)
+            Text(row.usedText)
+                .font(.caption.monospacedDigit())
+                .lineLimit(1)
+                .frame(width: Self.usedColumnWidth, alignment: .trailing)
+        case .value:
+            // Balance/renewal text spans the bar + USED columns. Caption
+            // size keeps the row height and baseline matching bar rows.
+            if let valueText = row.valueText, !valueText.isEmpty {
+                Text(valueText)
+                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .gridCellColumns(2)
+            } else {
+                Color.clear.gridCellUnsizedAxes(.vertical)
+                    .gridCellColumns(2)
+            }
+        }
+        Text(row.resetsInText)
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+            .lineLimit(1)
+            .frame(width: Self.inColumnWidth, alignment: .trailing)
     }
 
     @ViewBuilder
