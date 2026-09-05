@@ -106,12 +106,28 @@ public struct NamedRateWindow: Codable, Equatable, Sendable {
     /// context, but mark them so clients do not render `usedPercent` as a real
     /// exhausted quota. Missing values decode as `true` for older cached payloads.
     public let usageKnown: Bool
+    /// Compact-table MODEL qualifier ("Core", "Fable", …). Nil renders as "All".
+    /// Set at construction by providers with structured scope knowledge; the table
+    /// falls back to id rules when nil. Missing values decode as nil.
+    public let modelQualifier: String?
+    /// Compact-table PERIOD bucket. Nil falls back to id rules and the
+    /// `windowMinutes` mapping. Missing values decode as nil.
+    public let periodKind: TablePeriod?
 
-    public init(id: String, title: String, window: RateWindow, usageKnown: Bool = true) {
+    public init(
+        id: String,
+        title: String,
+        window: RateWindow,
+        usageKnown: Bool = true,
+        modelQualifier: String? = nil,
+        periodKind: TablePeriod? = nil)
+    {
         self.id = id
         self.title = title
         self.window = window
         self.usageKnown = usageKnown
+        self.modelQualifier = modelQualifier
+        self.periodKind = periodKind
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -119,6 +135,8 @@ public struct NamedRateWindow: Codable, Equatable, Sendable {
         case title
         case window
         case usageKnown
+        case modelQualifier
+        case periodKind
     }
 
     public init(from decoder: Decoder) throws {
@@ -127,6 +145,8 @@ public struct NamedRateWindow: Codable, Equatable, Sendable {
         self.title = try container.decode(String.self, forKey: .title)
         self.window = try container.decode(RateWindow.self, forKey: .window)
         self.usageKnown = try container.decodeIfPresent(Bool.self, forKey: .usageKnown) ?? true
+        self.modelQualifier = try container.decodeIfPresent(String.self, forKey: .modelQualifier)
+        self.periodKind = try container.decodeIfPresent(TablePeriod.self, forKey: .periodKind)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -137,6 +157,8 @@ public struct NamedRateWindow: Codable, Equatable, Sendable {
         if !self.usageKnown {
             try container.encode(false, forKey: .usageKnown)
         }
+        try container.encodeIfPresent(self.modelQualifier, forKey: .modelQualifier)
+        try container.encodeIfPresent(self.periodKind, forKey: .periodKind)
     }
 }
 
