@@ -26,6 +26,7 @@ extension SettingsStore {
         _ = self.weeklyProgressWorkDays
         _ = self.workdayTickAppearance
         _ = self.usageBarsShowUsed
+        _ = self.overviewCompactTableEnabled
         _ = self.resetTimesShowAbsolute
         _ = self.providerChangelogLinksEnabled
         _ = self.menuBarShowsBrandIconWithPercent

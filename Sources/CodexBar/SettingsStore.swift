@@ -533,6 +533,7 @@ extension SettingsStore {
         let workdayTickAppearanceRaw = userDefaults.string(forKey: "workdayTickAppearance")
             ?? WorkdayTickAppearance.subtle.rawValue
         let usageBarsShowUsed = userDefaults.object(forKey: "usageBarsShowUsed") as? Bool ?? false
+        let overviewCompactTableEnabled = userDefaults.object(forKey: "overviewCompactTableEnabled") as? Bool ?? false
         let resetTimesShowAbsolute = userDefaults.object(forKey: "resetTimesShowAbsolute") as? Bool ?? false
         let providerChangelogLinksEnabled = userDefaults.object(
             forKey: "providerChangelogLinksEnabled") as? Bool ?? false
@@ -684,6 +685,7 @@ extension SettingsStore {
             weeklyProgressWorkDays: weeklyProgressWorkDays,
             workdayTickAppearanceRaw: workdayTickAppearanceRaw,
             usageBarsShowUsed: usageBarsShowUsed,
+            overviewCompactTableEnabled: overviewCompactTableEnabled,
             resetTimesShowAbsolute: resetTimesShowAbsolute,
             providerChangelogLinksEnabled: providerChangelogLinksEnabled,
             menuBarShowsBrandIconWithPercent: menuBarShowsBrandIconWithPercent,

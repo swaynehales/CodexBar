@@ -574,6 +574,19 @@ extension StatusItemController {
                 return (provider: provider, model: model)
             }
         guard !rows.isEmpty else { return false }
+        let displayRows: [(provider: UsageProvider, model: UsageMenuCardView.Model, tableRows: [CompactTableRow]?)] =
+            rows.compactMap { row in
+                guard self.settings.overviewCompactTableEnabled else {
+                    return (row.provider, row.model, nil)
+                }
+                let tableRows = OverviewCompactTableModel.rows(
+                    provider: row.provider,
+                    model: row.model,
+                    snapshot: self.store.presentationSnapshot(for: row.provider))
+                guard !tableRows.isEmpty else { return nil }
+                return (row.provider, row.model, tableRows)
+            }
+        guard !displayRows.isEmpty else { return false }
 
         let t0 = CACurrentMediaTime()
         defer { self.logChartRenderDurationIfSlow("addOverviewRows(\(rows.count))", startedAt: t0) }
@@ -610,35 +623,53 @@ extension StatusItemController {
             menu.addItem(.separator())
         }
 
-        for (index, row) in rows.enumerated() {
+        for (index, row) in displayRows.enumerated() {
             let identifier = "\(Self.overviewRowIdentifierPrefix)\(row.provider.rawValue)"
             let storageText = self.store.storageFootprintText(for: row.provider)
             let submenu = self.makeOverviewRowSubmenu(
                 provider: row.provider,
                 model: row.model,
                 width: menuWidth)
-            let item = self.makeMenuCardItem(
-                OverviewMenuCardRowView(model: row.model, storageText: storageText, width: menuWidth),
-                id: identifier,
-                width: menuWidth,
-                heightCacheScope: row.provider.rawValue,
-                heightCacheFingerprint: row.model.heightFingerprint(
-                    section: "overview",
-                    additional: [UsageMenuCardView.Model.heightFingerprintField("storage", storageText)]),
-                submenu: submenu,
-                containsInteractiveControls: row.model.subtitleStyle == .error || row.model.usesLiveSubtitle,
-                usesGPUSelection: true,
-                onClick: { [weak self, weak interactionMenu] in
-                    guard let self, let interactionMenu else { return }
-                    self.selectOverviewProvider(row.provider, menu: interactionMenu)
-                })
+            let item: NSMenuItem = if let tableRows = row.tableRows {
+                self.makeMenuCardItem(
+                    OverviewCompactTableBlockView(rows: tableRows, showsHeader: index == 0, width: menuWidth),
+                    id: identifier,
+                    width: menuWidth,
+                    heightCacheScope: "\(row.provider.rawValue)-compact",
+                    heightCacheFingerprint: tableRows
+                        .map { [$0.id, $0.usedText, $0.resetsInText, $0.valueText ?? ""].joined(separator: ",") }
+                        .joined(separator: "|"),
+                    submenu: submenu,
+                    containsInteractiveControls: row.model.subtitleStyle == .error || row.model.usesLiveSubtitle,
+                    usesGPUSelection: true,
+                    onClick: { [weak self, weak interactionMenu] in
+                        guard let self, let interactionMenu else { return }
+                        self.selectOverviewProvider(row.provider, menu: interactionMenu)
+                    })
+            } else {
+                self.makeMenuCardItem(
+                    OverviewMenuCardRowView(model: row.model, storageText: storageText, width: menuWidth),
+                    id: identifier,
+                    width: menuWidth,
+                    heightCacheScope: row.provider.rawValue,
+                    heightCacheFingerprint: row.model.heightFingerprint(
+                        section: "overview",
+                        additional: [UsageMenuCardView.Model.heightFingerprintField("storage", storageText)]),
+                    submenu: submenu,
+                    containsInteractiveControls: row.model.subtitleStyle == .error || row.model.usesLiveSubtitle,
+                    usesGPUSelection: true,
+                    onClick: { [weak self, weak interactionMenu] in
+                        guard let self, let interactionMenu else { return }
+                        self.selectOverviewProvider(row.provider, menu: interactionMenu)
+                    })
+            }
             if submenu == nil {
                 // Keep plain rows wired for keyboard activation and accessibility action paths.
                 item.target = self
                 item.action = #selector(self.selectOverviewProvider(_:))
             }
             menu.addItem(item)
-            if index < rows.count - 1 {
+            if index < displayRows.count - 1 {
                 menu.addItem(.separator())
             }
         }

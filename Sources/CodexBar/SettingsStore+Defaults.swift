@@ -293,6 +293,14 @@ extension SettingsStore {
         }
     }
 
+    var overviewCompactTableEnabled: Bool {
+        get { self.defaultsState.overviewCompactTableEnabled }
+        set {
+            self.defaultsState.overviewCompactTableEnabled = newValue
+            self.userDefaults.set(newValue, forKey: "overviewCompactTableEnabled")
+        }
+    }
+
     var resetTimesShowAbsolute: Bool {
         get { self.defaultsState.resetTimesShowAbsolute }
         set {

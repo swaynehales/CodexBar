@@ -49,6 +49,8 @@ struct UsageMenuCardView: View {
             let workdayTickAppearance: WorkdayTickAppearance
             let cardStyle: Bool
             let sessionEquivalentDetail: UsagePaceText.SessionEquivalentDetail?
+            /// Source window reset date for dense table layouts. Nil for status/value rows.
+            let resetsAt: Date?
 
             init(
                 id: String,
@@ -67,7 +69,8 @@ struct UsageMenuCardView: View {
                 workdayMarkerPercents: [Double] = [],
                 workdayTickAppearance: WorkdayTickAppearance = .subtle,
                 cardStyle: Bool = false,
-                sessionEquivalentDetail: UsagePaceText.SessionEquivalentDetail? = nil)
+                sessionEquivalentDetail: UsagePaceText.SessionEquivalentDetail? = nil,
+                resetsAt: Date? = nil)
             {
                 self.id = id
                 self.title = title
@@ -86,6 +89,7 @@ struct UsageMenuCardView: View {
                 self.workdayTickAppearance = workdayTickAppearance
                 self.cardStyle = cardStyle
                 self.sessionEquivalentDetail = sessionEquivalentDetail
+                self.resetsAt = resetsAt
             }
 
             var percentLabel: String {
@@ -1350,7 +1354,8 @@ extension UsageMenuCardView.Model {
                 paceOnTop: tertiaryPaceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.warningMarkerPercents(
                     thresholds: input.quotaWarningThresholds[.weekly],
-                    showUsed: input.usageBarsShowUsed)))
+                    showUsed: input.usageBarsShowUsed),
+                resetsAt: opus.resetsAt))
         }
         metrics.append(contentsOf: Self.extraRateWindowMetrics(
             snapshot: snapshot,
@@ -1374,7 +1379,8 @@ extension UsageMenuCardView.Model {
            let remaining = codexProjection.remainingPercent(for: .codeReview)
         {
             let percent = input.usageBarsShowUsed ? (100 - remaining) : remaining
-            let resetText = codexProjection.limitWindow(for: .codeReview).flatMap {
+            let codeReviewWindow = codexProjection.limitWindow(for: .codeReview)
+            let resetText = codeReviewWindow.flatMap {
                 Self.resetText(for: $0, style: input.resetTimeDisplayStyle, now: input.now)
             }
             metrics.append(Metric(
@@ -1387,7 +1393,8 @@ extension UsageMenuCardView.Model {
                 detailLeftText: nil,
                 detailRightText: nil,
                 pacePercent: nil,
-                paceOnTop: true))
+                paceOnTop: true,
+                resetsAt: codeReviewWindow?.resetsAt))
         }
         return metrics
     }
@@ -1447,7 +1454,8 @@ extension UsageMenuCardView.Model {
             sessionEquivalentDetail: Self.sessionEquivalentDetail(
                 input: input,
                 weeklyWindow: primary,
-                weeklyWindowID: nil))
+                weeklyWindowID: nil),
+            resetsAt: bindingProjection?.resetsAt ?? primary.resetsAt)
     }
 
     private static func secondaryMetric(
@@ -1582,7 +1590,8 @@ extension UsageMenuCardView.Model {
             sessionEquivalentDetail: Self.sessionEquivalentDetail(
                 input: input,
                 weeklyWindow: weekly,
-                weeklyWindowID: nil))
+                weeklyWindowID: nil),
+            resetsAt: weekly.resetsAt)
     }
 }
 

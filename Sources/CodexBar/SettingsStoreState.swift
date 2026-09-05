@@ -27,6 +27,7 @@ struct SettingsDefaultsState {
     var weeklyProgressWorkDays: Int?
     var workdayTickAppearanceRaw: String
     var usageBarsShowUsed: Bool
+    var overviewCompactTableEnabled: Bool
     var resetTimesShowAbsolute: Bool
     var providerChangelogLinksEnabled: Bool
     var menuBarShowsBrandIconWithPercent: Bool

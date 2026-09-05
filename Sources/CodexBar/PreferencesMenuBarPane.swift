@@ -75,6 +75,13 @@ struct MenuBarPane: View {
 
                 self.overviewProviderRow
                     .disabled(!self.settings.mergeIcons)
+
+                Toggle(isOn: self.$settings.overviewCompactTableEnabled) {
+                    SettingsRowLabel(
+                        L("overview_compact_table_title"),
+                        subtitle: L("overview_compact_table_subtitle"))
+                }
+                .disabled(!self.settings.mergeIcons)
             } header: {
                 Text(L("section_combined_icon"))
             }

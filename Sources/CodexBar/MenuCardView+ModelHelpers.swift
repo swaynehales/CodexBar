@@ -264,7 +264,8 @@ extension UsageMenuCardView.Model {
                 workdayMarkerPercents: metric.workdayMarkerPercents,
                 workdayTickAppearance: metric.workdayTickAppearance,
                 cardStyle: metric.cardStyle,
-                sessionEquivalentDetail: nil)
+                sessionEquivalentDetail: nil,
+                resetsAt: metric.resetsAt)
         }
     }
 
@@ -295,7 +296,8 @@ extension UsageMenuCardView.Model {
                 workdayMarkerPercents: metric.workdayMarkerPercents,
                 workdayTickAppearance: metric.workdayTickAppearance,
                 cardStyle: metric.cardStyle,
-                sessionEquivalentDetail: metric.sessionEquivalentDetail)
+                sessionEquivalentDetail: metric.sessionEquivalentDetail,
+                resetsAt: metric.resetsAt)
         }
     }
 
@@ -1003,7 +1005,8 @@ extension UsageMenuCardView.Model {
                         input: input,
                         weeklyWindow: namedWindow.window,
                         weeklyWindowID: namedWindow.id)
-                    : nil)
+                    : nil,
+                resetsAt: namedWindow.window.resetsAt)
         }
     }
 
@@ -1177,7 +1180,8 @@ extension UsageMenuCardView.Model {
             detailRightText: paceDetail?.rightLabel,
             pacePercent: paceDetail?.pacePercent,
             detailIsPaceDerived: paceDetail?.isPaceDerived ?? false,
-            paceOnTop: paceDetail?.paceOnTop ?? true)
+            paceOnTop: paceDetail?.paceOnTop ?? true,
+            resetsAt: window.resetsAt)
     }
 
     static func syntheticRegenDetail(

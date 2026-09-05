@@ -80,7 +80,8 @@ extension UsageMenuCardView.Model {
                 workdayTickAppearance: input.workdayTickAppearance,
                 sessionEquivalentDetail: lane == .weekly
                     ? Self.sessionEquivalentDetail(input: input, weeklyWindow: window, weeklyWindowID: nil)
-                    : nil)
+                    : nil,
+                resetsAt: window.resetsAt)
         }
     }
 
