@@ -117,7 +117,7 @@ extension AmpUsageSnapshot {
         }
         let primary = subscriptionPrimary ?? freeWindow
         let extraRateWindows: [NamedRateWindow]? = if self.subscription != nil, let freeWindow {
-            [NamedRateWindow(id: "amp-free", title: "Amp Free", window: freeWindow)]
+            [NamedRateWindow(id: "amp-free", title: "Amp Free", window: freeWindow, modelQualifier: "Free")]
         } else {
             nil
         }

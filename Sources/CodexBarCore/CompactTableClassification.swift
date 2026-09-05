@@ -70,6 +70,8 @@ public enum CompactTablePeriodMapper {
         provider: UsageProvider,
         slot: CompactTableLaneSlot) -> CompactTableClassification
     {
+        // Provider-specific by design: quota-lane semantics (session vs weekly vs monthly
+        // slots, scoped model weeklies) differ per provider API and cannot be derived globally.
         switch (provider, slot) {
         case (.kimi, .primary):
             // Kimi's primary lane is its weekly coding window; the 5-hour rate
@@ -111,6 +113,8 @@ public enum CompactTablePeriodMapper {
         if let periodKind = window.periodKind {
             return CompactTableClassification(modelQualifier: window.modelQualifier, period: periodKind)
         }
+        // Provider-specific by design: extra-window ids are provider-owned wire contracts
+        // (scoped weeklies, core pools, spark lanes); each rule is gated on provider AND id.
         if provider == .claude, window.id.hasPrefix("claude-weekly-scoped-") {
             let slug = String(window.id.dropFirst("claude-weekly-scoped-".count))
             let qualifier = slug
@@ -152,6 +156,8 @@ public enum CompactTablePeriodMapper {
         if provider == .kimi, window.id == "kimi-code-7d" {
             return CompactTableClassification(modelQualifier: "Code", period: .weekly)
         }
+        // Provider-specific by design: balance/credit-pool extras carry provider-owned
+        // ids with no shared Core representation.
         if provider == .amp, window.id == "amp-free" {
             return CompactTableClassification(
                 modelQualifier: "Free",

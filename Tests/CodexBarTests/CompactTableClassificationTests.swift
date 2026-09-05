@@ -134,6 +134,24 @@ struct CompactTableClassificationTests {
     }
 
     @Test
+    func `scoped weekly mapper emits explicit fields end to end`() throws {
+        let windows = ClaudeScopedWeeklyLimitMapper.extraRateWindows(from: [
+            ClaudeScopedWeeklyLimitMapper.Limit(
+                kind: "weekly_scoped",
+                group: "weekly",
+                percent: 37,
+                resetsAt: nil,
+                modelID: "fable",
+                modelName: "Fable"),
+        ])
+        let window = try #require(windows.first)
+        #expect(window.modelQualifier == "Fable")
+        #expect(window.periodKind == .weekly)
+        #expect(CompactTablePeriodMapper.extraClassification(provider: .claude, window: window) ==
+            CompactTableClassification(modelQualifier: "Fable", period: .weekly))
+    }
+
+    @Test
     func `new fields decode missing as nil and stay out of encoded payloads`() throws {
         let legacyJSON = Data("""
         {"id":"x","title":"X","window":{"usedPercent":10.0}}

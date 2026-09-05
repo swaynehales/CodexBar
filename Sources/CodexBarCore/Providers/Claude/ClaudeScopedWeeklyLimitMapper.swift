@@ -37,13 +37,19 @@ enum ClaudeScopedWeeklyLimitMapper {
                     usedPercent: percent,
                     windowMinutes: 7 * 24 * 60,
                     resetsAt: limit.resetsAt,
-                    resetDescription: limit.resetsAt.flatMap { resetDescription?($0) }))
+                    resetDescription: limit.resetsAt.flatMap { resetDescription?($0) }),
+                modelQualifier: modelName,
+                periodKind: .weekly)
         }
     }
 
     private static func nonEmpty(_ value: String?) -> String? {
         let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
-        return if let trimmed, !trimmed.isEmpty { trimmed } else { nil }
+        return if let trimmed, !trimmed.isEmpty {
+            trimmed
+        } else {
+            nil
+        }
     }
 
     private static func slug(_ value: String) -> String {

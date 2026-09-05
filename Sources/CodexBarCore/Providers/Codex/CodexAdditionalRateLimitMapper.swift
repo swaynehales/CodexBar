@@ -62,7 +62,13 @@ package enum CodexAdditionalRateLimitMapper {
             guard let snapshot else { return nil }
             let kind = self.sparkWindowKind(for: snapshot, fallback: fallbackKind)
             guard usedIDs.insert(kind.id).inserted else { return nil }
-            return self.namedWindow(id: kind.id, title: kind.title, snapshot: snapshot, now: now)
+            return self.namedWindow(
+                id: kind.id,
+                title: kind.title,
+                snapshot: snapshot,
+                now: now,
+                modelQualifier: "Spark",
+                periodKind: kind.tablePeriod)
         }
     }
 
@@ -70,17 +76,25 @@ package enum CodexAdditionalRateLimitMapper {
         id: String,
         title: String,
         snapshot: CodexUsageResponse.WindowSnapshot,
-        now: Date) -> NamedRateWindow
+        now: Date,
+        modelQualifier: String? = nil,
+        periodKind: TablePeriod? = nil) -> NamedRateWindow
     {
         let resetDate: Date? = snapshot.resetAt > 0
             ? Date(timeIntervalSince1970: TimeInterval(snapshot.resetAt))
             : nil
+        let windowMinutes = snapshot.limitWindowSeconds > 0 ? snapshot.limitWindowSeconds / 60 : nil
         let window = RateWindow(
             usedPercent: Double(snapshot.usedPercent),
-            windowMinutes: snapshot.limitWindowSeconds > 0 ? snapshot.limitWindowSeconds / 60 : nil,
+            windowMinutes: windowMinutes,
             resetsAt: resetDate,
             resetDescription: resetDate.map { UsageFormatter.resetDescription(from: $0, now: now) })
-        return NamedRateWindow(id: id, title: title, window: window)
+        return NamedRateWindow(
+            id: id,
+            title: title,
+            window: window,
+            modelQualifier: modelQualifier,
+            periodKind: periodKind ?? CompactTablePeriodMapper.period(windowMinutes: windowMinutes))
     }
 
     private enum SparkWindowKind {
@@ -100,6 +114,13 @@ package enum CodexAdditionalRateLimitMapper {
             case .weekly: CodexAdditionalRateLimitMapper.sparkWeeklyWindowTitle
             }
         }
+
+        var tablePeriod: TablePeriod {
+            switch self {
+            case .fiveHour: .session
+            case .weekly: .weekly
+            }
+        }
     }
 
     private static func sparkWindowKind(
@@ -107,8 +128,12 @@ package enum CodexAdditionalRateLimitMapper {
         fallback: SparkWindowKind) -> SparkWindowKind
     {
         let minutes = snapshot.limitWindowSeconds > 0 ? snapshot.limitWindowSeconds / 60 : 0
-        if minutes > 0, minutes <= 6 * 60 { return .fiveHour }
-        if minutes >= 6 * 24 * 60 { return .weekly }
+        if minutes > 0, minutes <= 6 * 60 {
+            return .fiveHour
+        }
+        if minutes >= 6 * 24 * 60 {
+            return .weekly
+        }
         return fallback
     }
 
@@ -131,7 +156,9 @@ package enum CodexAdditionalRateLimitMapper {
     private static func firstNonEmpty(_ values: String?...) -> String? {
         for value in values {
             let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
-            if let trimmed, !trimmed.isEmpty { return trimmed }
+            if let trimmed, !trimmed.isEmpty {
+                return trimmed
+            }
         }
         return nil
     }

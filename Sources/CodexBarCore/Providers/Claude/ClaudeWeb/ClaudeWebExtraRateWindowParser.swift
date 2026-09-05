@@ -70,7 +70,8 @@ enum ClaudeWebExtraRateWindowParser {
                 usedPercent: usedPercent,
                 windowMinutes: 7 * 24 * 60,
                 resetsAt: resetsAt,
-                resetDescription: nil))
+                resetDescription: nil),
+            periodKind: id == "claude-routines" ? .weekly : nil)
     }
 
     private static func firstUsageWindow(

@@ -250,7 +250,11 @@ struct MistralWebFetchStrategy: ProviderFetchStrategy {
             windowMinutes: nil,
             resetsAt: vibeResult.resetAt,
             resetDescription: nil)
-        let named = NamedRateWindow(id: "mistral-monthly-plan", title: "Monthly Plan", window: window)
+        let named = NamedRateWindow(
+            id: "mistral-monthly-plan",
+            title: "Monthly Plan",
+            window: window,
+            periodKind: .monthly)
         let existing = usageSnapshot.extraRateWindows?.filter { $0.id != named.id } ?? []
         return usageSnapshot.with(extraRateWindows: existing + [named])
     }

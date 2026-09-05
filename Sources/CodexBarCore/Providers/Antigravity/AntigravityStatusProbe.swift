@@ -69,7 +69,9 @@ private struct AntigravityModelVersion: Comparable {
     let minor: Int
 
     static func < (lhs: AntigravityModelVersion, rhs: AntigravityModelVersion) -> Bool {
-        if lhs.major != rhs.major { return lhs.major < rhs.major }
+        if lhs.major != rhs.major {
+            return lhs.major < rhs.major
+        }
         return lhs.minor < rhs.minor
     }
 }
@@ -277,7 +279,11 @@ public struct AntigravityStatusSnapshot: Sendable {
                     id: Self.quotaSummaryWindowID(for: bucket),
                     title: "\(groupTitle) \(bucketTitle)",
                     window: window,
-                    usageKnown: !bucket.disabled && bucket.remainingFraction != nil)
+                    usageKnown: !bucket.disabled && bucket.remainingFraction != nil,
+                    modelQualifier: groupTitle,
+                    // windowMinutes(forQuotaBucket:) returns exactly 300/10080/nil, which the
+                    // shared mapping resolves to session/weekly/other — no separate helper.
+                    periodKind: CompactTablePeriodMapper.period(windowMinutes: window.windowMinutes))
             }
         }
     }
@@ -607,9 +613,15 @@ public struct AntigravityStatusSnapshot: Sendable {
 
     private static func parseTier(from label: String, modelId: String) -> Int {
         let combined = label + " " + modelId
-        if combined.contains("high") { return 0 }
-        if combined.contains("medium") { return 1 }
-        if combined.contains("low") { return 2 }
+        if combined.contains("high") {
+            return 0
+        }
+        if combined.contains("medium") {
+            return 1
+        }
+        if combined.contains("low") {
+            return 2
+        }
         return 1
     }
 
@@ -666,7 +678,8 @@ public struct AntigravityStatusSnapshot: Sendable {
                 id: pool.id,
                 title: pool.title,
                 window: Self.rateWindow(for: resetOnly.quota),
-                usageKnown: false)
+                usageKnown: false,
+                modelQualifier: pool == .geminiAI ? "Gemini" : "Claude")
         }
 
         let distinctWindows = Dictionary(grouping: models.filter {
@@ -829,6 +842,7 @@ public enum AntigravityStatusProbeError: LocalizedError, Sendable, Equatable {
     }
 }
 
+// swiftlint:disable:next type_body_length
 public struct AntigravityStatusProbe: Sendable {
     /// Which local Antigravity processes the probe may attach to.
     public enum ProcessScope: Sendable {
@@ -1036,7 +1050,9 @@ public struct AntigravityStatusProbe: Sendable {
 
     static func invalidCode(_ code: CodeValue?) -> String? {
         guard let code else { return nil }
-        if code.isOK { return nil }
+        if code.isOK {
+            return nil
+        }
         return "\(code.rawValue)"
     }
 
@@ -1162,7 +1178,9 @@ public struct AntigravityStatusProbe: Sendable {
         var results: [ProcessInfoResult] = []
         for entry in entries {
             guard let kind = Self.antigravityProcessKind(entry.command) else { continue }
-            if !Self.processKind(kind, matches: scope) { continue }
+            if !Self.processKind(kind, matches: scope) {
+                continue
+            }
             // The IDE language server authenticates local requests with a
             // `--csrf_token` and must keep requiring it: skip a tokenless IDE
             // or app match so a later valid server can still be found (and surface
@@ -1277,13 +1295,23 @@ public struct AntigravityStatusProbe: Sendable {
     }
 
     private static func isAntigravityCommandLine(_ command: String) -> Bool {
-        if command.contains("--app_data_dir") && command.contains("antigravity") { return true }
-        if command.contains("antigravity.app/") || command.contains("antigravity.app\\") { return true }
+        if command.contains("--app_data_dir") && command.contains("antigravity") {
+            return true
+        }
+        if command.contains("antigravity.app/") || command.contains("antigravity.app\\") {
+            return true
+        }
         // The renamed Gemini desktop app (#2836). Require a leading path
         // separator so unrelated names like "notgemini.app" cannot match.
-        if command.contains("/gemini.app/") || command.contains("\\gemini.app\\") { return true }
-        if command.contains("antigravity ide.app/") || command.contains("antigravity ide.app\\") { return true }
-        if command.contains("/antigravity/") || command.contains("\\antigravity\\") { return true }
+        if command.contains("/gemini.app/") || command.contains("\\gemini.app\\") {
+            return true
+        }
+        if command.contains("antigravity ide.app/") || command.contains("antigravity ide.app\\") {
+            return true
+        }
+        if command.contains("/antigravity/") || command.contains("\\antigravity\\") {
+            return true
+        }
         return false
     }
 
@@ -1443,7 +1471,9 @@ public struct AntigravityStatusProbe: Sendable {
                 throw AntigravityStatusProbeError.timedOut
             }
             let ok = await testConnectivity(endpoint, attemptTimeout)
-            if ok { return endpoint }
+            if ok {
+                return endpoint
+            }
         }
         if let fallback = fallbackProbeEndpoint(candidateEndpoints) {
             self.log.debug("Port probe fell back to best-effort endpoint", metadata: [

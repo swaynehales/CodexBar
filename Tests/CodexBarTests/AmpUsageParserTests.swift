@@ -177,7 +177,8 @@ struct AmpUsageParserTests {
                 usedPercent: 39,
                 windowMinutes: 1440,
                 resetsAt: self.date("2026-08-04T00:00:00Z"),
-                resetDescription: "resets daily"))])
+                resetDescription: "resets daily"),
+            modelQualifier: "Free")])
         #expect(usage.primary?.usedPercent == 27)
         #expect(usage.secondary?.usedPercent == 9)
     }

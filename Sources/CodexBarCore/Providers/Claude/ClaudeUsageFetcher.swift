@@ -1164,7 +1164,8 @@ extension ClaudeUsageFetcher {
                     usedPercent: utilization,
                     windowMinutes: Self.weeklyWindowMinutes,
                     resetsAt: resetDate,
-                    resetDescription: resetDescription))
+                    resetDescription: resetDescription),
+                periodKind: .weekly)
         }
         // Keep the same row order as the Web path: model-scoped weekly limits first,
         // Daily Routines last.

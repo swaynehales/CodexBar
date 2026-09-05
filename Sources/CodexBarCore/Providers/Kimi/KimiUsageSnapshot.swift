@@ -134,7 +134,7 @@ extension KimiUsageSnapshot {
                 windowMinutes: ProviderPaceCapability.monthlyWindowSentinelMinutes,
                 resetsAt: Self.parseDate(balance.expireTime),
                 resetDescription: nil)
-            return NamedRateWindow(id: "kimi-monthly", title: "Total usage", window: window)
+            return NamedRateWindow(id: "kimi-monthly", title: "Total usage", window: window, periodKind: .monthly)
         }
 
         let subscriptionCodeWeeklyWindow = self.subscriptionCodeWeeklyLimit.flatMap { limit -> NamedRateWindow? in
@@ -145,7 +145,12 @@ extension KimiUsageSnapshot {
                 windowMinutes: KimiProviderDescriptor.weeklyWindowMinutes,
                 resetsAt: Self.parseDate(limit.resetTime),
                 resetDescription: nil)
-            return NamedRateWindow(id: "kimi-code-7d", title: "Code 7-day", window: window)
+            return NamedRateWindow(
+                id: "kimi-code-7d",
+                title: "Code 7-day",
+                window: window,
+                modelQualifier: "Code",
+                periodKind: .weekly)
         }
 
         // The membership 7-day Code ratio and the FEATURE_CODING weekly detail report the same
