@@ -195,6 +195,42 @@ enum OverviewCompactTableModel {
             metric: spec.metric)
     }
 
+    struct PeriodSection: Identifiable {
+        let period: TablePeriod
+        let title: String
+        /// Contiguous provider groups within the section, in provider order.
+        let groups: [[CompactTableRow]]
+
+        var id: TablePeriod {
+            self.period
+        }
+    }
+
+    /// Groups rows into period sections (canonical order) with contiguous provider groups
+    /// inside each — the By-period transpose of `providerRows` in the mock's tableRows.
+    static func periodSections(rows: [CompactTableRow]) -> [PeriodSection] {
+        let order: [TablePeriod] = [.session, .weekly, .monthly, .credits, .other]
+        var grouped: [TablePeriod: [CompactTableRow]] = [:]
+        for row in rows {
+            grouped[row.period, default: []].append(row)
+        }
+        return order.compactMap { period in
+            guard let periodRows = grouped[period], !periodRows.isEmpty else { return nil }
+            var groups: [[CompactTableRow]] = []
+            for row in periodRows {
+                if let last = groups.last, last.first?.provider == row.provider {
+                    groups[groups.count - 1].append(row)
+                } else {
+                    groups.append([row])
+                }
+            }
+            return PeriodSection(
+                period: period,
+                title: Self.periodLabel(period),
+                groups: groups)
+        }
+    }
+
     private static func resetsInText(resetsAt: Date?, now: Date) -> String {
         guard let resetsAt else { return "—" }
         let countdown = UsageFormatter.resetCountdownDescription(from: resetsAt, now: now)

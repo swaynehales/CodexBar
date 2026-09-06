@@ -1555,3 +1555,5 @@
 "compact_period_other" = "Overig";
 "overview_compact_table_title" = "Compacte tabel";
 "overview_compact_table_subtitle" = "Dichte gebruikstabel op één scherm in plaats van gestapelde kaarten.";
+"overview_grouping_provider" = "Per aanbieder";
+"overview_grouping_period" = "Per periode";

@@ -278,6 +278,9 @@ final class StatusItemController: NSObject, NSMenuDelegate, StatusItemControllin
     var lastSwitcherProviders: [ProviderInstanceID] = []
     /// Tracks which switcher tab state was used for the current merged-menu switcher instance.
     var lastMergedSwitcherSelection: ProviderSwitcherSelection?
+    /// Compact Overview table grouping (By provider / By period). Transient per spec §6:
+    /// resets to `.provider` on relaunch.
+    var overviewTableGroupingState: OverviewTableGrouping = .provider
     /// Tracks which provider/overview content is currently attached below the merged-menu switcher.
     var lastMergedMenuContentSelection: ProviderSwitcherSelection?
     /// Tracks the visible Codex account switcher contents for merged-menu smart updates.

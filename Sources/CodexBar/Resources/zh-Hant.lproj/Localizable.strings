@@ -1587,3 +1587,5 @@
 "compact_period_other" = "其他";
 "overview_compact_table_title" = "緊湊表格";
 "overview_compact_table_subtitle" = "以單一畫面的高密度用量表格取代堆疊卡片。";
+"overview_grouping_provider" = "按提供者";
+"overview_grouping_period" = "按期間";

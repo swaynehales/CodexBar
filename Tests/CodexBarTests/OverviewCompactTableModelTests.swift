@@ -214,6 +214,41 @@ struct OverviewCompactTableModelTests {
     }
 
     @Test
+    func `period sections group rows in canonical order with contiguous providers`() {
+        let codex = OverviewCompactTableModel.rows(
+            provider: .codex,
+            model: Self.model(provider: .codex, name: "Codex", metrics: [
+                Self.metric(id: "primary"),
+                Self.metric(id: "secondary"),
+            ]),
+            snapshot: Self.snapshot(provider: .codex),
+            now: Self.now)
+        let droid = OverviewCompactTableModel.rows(
+            provider: .factory,
+            model: Self.model(provider: .factory, name: "Droid", metrics: [
+                Self.metric(id: "primary"),
+                Self.metric(id: "tertiary"),
+            ]),
+            snapshot: Self.snapshot(provider: .factory),
+            now: Self.now)
+        let sections = OverviewCompactTableModel.periodSections(rows: codex + droid)
+
+        #expect(sections.map(\.period) == [.session, .weekly, .monthly])
+        let session = sections[0]
+        #expect(session.title == "Session")
+        #expect(session.groups.count == 2)
+        #expect(session.groups[0].first?.providerDisplayName == "Codex")
+        #expect(session.groups[1].first?.providerDisplayName == "Droid")
+        let weekly = sections[1]
+        #expect(weekly.groups.count == 1)
+        #expect(weekly.groups[0].map(\.period) == [.weekly])
+        #expect(weekly.groups[0].first?.provider == .codex)
+        let monthly = sections[2]
+        #expect(monthly.groups.count == 1)
+        #expect(monthly.groups[0].allSatisfy { $0.provider == .factory })
+    }
+
+    @Test
     func `multi unit countdowns keep only the largest unit`() {
         let rows = OverviewCompactTableModel.rows(
             provider: .codex,

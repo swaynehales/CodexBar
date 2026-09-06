@@ -1559,3 +1559,5 @@
 "compact_period_other" = "Lainnya";
 "overview_compact_table_title" = "Tabel ringkas";
 "overview_compact_table_subtitle" = "Tabel penggunaan padat satu layar sebagai ganti kartu bertumpuk.";
+"overview_grouping_provider" = "Per penyedia";
+"overview_grouping_period" = "Per periode";

@@ -1557,3 +1557,5 @@
 "compact_period_other" = "Другое";
 "overview_compact_table_title" = "Компактная таблица";
 "overview_compact_table_subtitle" = "Плотная таблица использования на одном экране вместо стопки карточек.";
+"overview_grouping_provider" = "По провайдеру";
+"overview_grouping_period" = "По периоду";

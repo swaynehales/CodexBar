@@ -1560,3 +1560,5 @@
 "compact_period_other" = "أخرى";
 "overview_compact_table_title" = "جدول مضغوط";
 "overview_compact_table_subtitle" = "جدول استخدام مكثف في شاشة واحدة بدلاً من البطاقات المتراكبة.";
+"overview_grouping_provider" = "حسب الموفر";
+"overview_grouping_period" = "حسب الفترة";

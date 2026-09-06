@@ -1557,3 +1557,5 @@
 "compact_period_other" = "Khác";
 "overview_compact_table_title" = "Bảng gọn";
 "overview_compact_table_subtitle" = "Bảng sử dụng dày đặc trên một màn hình thay vì các thẻ xếp chồng.";
+"overview_grouping_provider" = "Theo nhà cung cấp";
+"overview_grouping_period" = "Theo giai đoạn";

@@ -1555,3 +1555,5 @@
 "compact_period_other" = "Övrigt";
 "overview_compact_table_title" = "Kompakt tabell";
 "overview_compact_table_subtitle" = "Tät användningstabell på en skärm istället för staplade kort.";
+"overview_grouping_provider" = "Per leverantör";
+"overview_grouping_period" = "Per period";

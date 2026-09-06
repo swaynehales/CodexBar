@@ -429,12 +429,17 @@ extension StatusItemController {
             defer { self.clearMenuCardViewRecyclePool() }
             menu.removeAllItems()
             let contentSelection = context.switcherSelection ?? .provider(context.currentProvider.instanceID)
-            self.addProviderSwitcherIfNeeded(
-                to: menu,
-                enabledProviders: context.enabledProviders,
-                includesOverview: context.includesOverview,
-                selection: context.switcherSelection ?? .provider(context.currentProvider.instanceID),
-                width: context.menuWidth)
+            if contentSelection == .overview, self.settings.overviewCompactTableEnabled {
+                menu.addItem(self.makeOverviewGroupingToggleItem(menu: menu, width: Self.compactOverviewMenuWidth))
+                menu.addItem(.separator())
+            } else {
+                self.addProviderSwitcherIfNeeded(
+                    to: menu,
+                    enabledProviders: context.enabledProviders,
+                    includesOverview: context.includesOverview,
+                    selection: context.switcherSelection ?? .provider(context.currentProvider.instanceID),
+                    width: context.menuWidth)
+            }
             // Track which providers the switcher was built with for smart update detection
             if self.shouldMergeIcons, context.enabledProviders.count > 1 {
                 self.rememberMergedSwitcherState(
@@ -569,13 +574,11 @@ extension StatusItemController {
         // Compact mode ignores the Overview provider cap: table rows are dense enough to
         // show every enabled provider in one pass, which is the mode's whole point.
         let compactEnabled = self.settings.overviewCompactTableEnabled
-        let providerScopes: (visible: [UsageProvider], spend: [UsageProvider]) = if compactEnabled {
-            (visible: enabledProviders, spend: self.overviewProviderScopes(enabledProviders: enabledProviders).spend)
-        } else {
-            self.overviewProviderScopes(enabledProviders: enabledProviders)
-        }
-        // The compact table needs a fixed wide frame; the descriptor-derived menu width is
-        // sized for stacked cards and starves the six-column layout.
+        let providerScopes = self.overviewProviderScopes(
+            enabledProviders: enabledProviders,
+            compactEnabled: compactEnabled)
+        // Fixed wide frame: the descriptor-derived width is sized for stacked cards and
+        // starves the six-column layout.
         let tableMenuWidth = compactEnabled ? Self.compactOverviewMenuWidth : menuWidth
         let rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)] = providerScopes.visible
             .compactMap { provider in
@@ -586,6 +589,9 @@ extension StatusItemController {
         guard !rows.isEmpty else { return false }
         let displayRows = self.overviewDisplayRows(rows: rows, compactEnabled: compactEnabled)
         guard !displayRows.isEmpty else { return false }
+        if compactEnabled, self.overviewTableGrouping == .period {
+            return self.addOverviewPeriodTableItem(displayRows: displayRows, menu: menu, width: tableMenuWidth)
+        }
 
         let t0 = CACurrentMediaTime()
         defer { self.logChartRenderDurationIfSlow("addOverviewRows(\(rows.count))", startedAt: t0) }

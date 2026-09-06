@@ -1559,3 +1559,5 @@
 "compact_period_other" = "Altro";
 "overview_compact_table_title" = "Tabella compatta";
 "overview_compact_table_subtitle" = "Tabella di utilizzo densa su una schermata invece di schede impilate.";
+"overview_grouping_provider" = "Per fornitore";
+"overview_grouping_period" = "Per periodo";
