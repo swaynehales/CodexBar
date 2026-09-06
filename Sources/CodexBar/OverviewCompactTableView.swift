@@ -2,14 +2,15 @@ import CodexBarCore
 import SwiftUI
 
 /// Shared column metrics for both compact table views so the two groupings can never
-/// drift apart in width.
+/// drift apart in width. Tight paddings/spacings deliberately maximize the flexible
+/// measure (bar) column — comparison legibility lives in the bars.
 enum CompactTableMetrics {
-    static let horizontalPadding: CGFloat = 16
-    static let columnSpacing: CGFloat = 6
-    static let providerMaxWidth: CGFloat = 104
+    static let horizontalPadding: CGFloat = 12
+    static let columnSpacing: CGFloat = 4
+    static let providerMaxWidth: CGFloat = 90
     static let modelColumnWidth: CGFloat = 40
     static let periodColumnWidth: CGFloat = 44
-    static let usedColumnWidth: CGFloat = 32
+    static let usedColumnWidth: CGFloat = 36
     static let inColumnWidth: CGFloat = 32
 }
 
@@ -109,18 +110,18 @@ struct OverviewCompactTableBlockView: View {
                 .lineLimit(1)
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
-            // Balance/renewal text spans the bar + USED columns. Caption
-            // size keeps the row height and baseline matching bar rows.
+            // Balance text right-aligns in the USED column (mock placement); the bar
+            // cell stays empty and IN reads "—".
+            Color.clear.gridCellUnsizedAxes(.vertical)
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .gridCellColumns(2)
+                    .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
             } else {
                 Color.clear.gridCellUnsizedAxes(.vertical)
-                    .gridCellColumns(2)
+                    .frame(width: CompactTableMetrics.usedColumnWidth)
             }
         }
         Text(row.resetsInText)
@@ -199,6 +200,7 @@ struct OverviewCompactPeriodTableView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .gridCellColumns(6)
                             .padding(.top, 6)
                     }
@@ -237,10 +239,10 @@ struct OverviewCompactPeriodTableView: View {
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-        Text(row.periodLabel)
-            .font(.caption)
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
+        // The section header carries the period label; per-row period cells stay empty
+        // so the column does not repeat "Session" under its own header.
+        Color.clear
+            .frame(width: CompactTableMetrics.periodColumnWidth)
         switch row.presentation {
         case .bar:
             if let metric = row.metric {
@@ -259,16 +261,17 @@ struct OverviewCompactPeriodTableView: View {
                 .lineLimit(1)
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
+            // Balance right-aligns in the USED column (mock placement).
+            Color.clear
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .gridCellColumns(2)
+                    .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
             } else {
-                Color.clear.gridCellUnsizedAxes(.vertical)
-                    .gridCellColumns(2)
+                Color.clear
+                    .frame(width: CompactTableMetrics.usedColumnWidth)
             }
         }
         Text(row.resetsInText)
