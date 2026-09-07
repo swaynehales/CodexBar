@@ -9,6 +9,7 @@ extension UsageMenuCardView.Model {
         return MenuCardHeightFingerprint.join([
             "section=\(section)",
             "provider=\(self.provider.rawValue)",
+            "compactCards=\(self.compactCards ? 1 : 0)",
             "localization=\(codexBarLocalizationSignature())",
             MenuCardHeightFingerprint.field("name", self.providerName),
             MenuCardHeightFingerprint.field("email", self.email),
