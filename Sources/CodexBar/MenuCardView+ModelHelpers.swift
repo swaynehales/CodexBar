@@ -1061,12 +1061,17 @@ extension UsageMenuCardView.Model {
            namedWindow.window.resetsAt == nil,
            self.isAntigravityQuotaSummaryWindow(namedWindow)
         {
-            return self.antigravityQuotaSummaryResetText(namedWindow.window.resetDescription)
+            return self.antigravityQuotaSummaryResetText(
+                namedWindow.window.resetDescription,
+                compact: input.compactCards)
         }
         return self.resetText(for: namedWindow.window, input: input)
     }
 
-    private static func antigravityQuotaSummaryResetText(_ description: String?) -> String? {
+    private static func antigravityQuotaSummaryResetText(
+        _ description: String?,
+        compact: Bool) -> String?
+    {
         guard let description = description?.trimmingCharacters(in: .whitespacesAndNewlines),
               !description.isEmpty
         else { return nil }
@@ -1078,7 +1083,9 @@ extension UsageMenuCardView.Model {
                 suffix.removeLast()
             }
             guard !suffix.isEmpty else { return description }
-            return String(format: L("Resets in %@"), suffix)
+            return compact
+                ? String(format: L("reset_in_short_format"), suffix)
+                : String(format: L("Resets in %@"), suffix)
         }
 
         return description
