@@ -248,6 +248,24 @@ struct CompactResetLineTests {
     }
 
     @Test
+    func `bare now remainder localizes in compact form`() {
+        let window = RateWindow(
+            usedPercent: 10,
+            windowMinutes: 10080,
+            resetsAt: nil,
+            resetDescription: "Resets now")
+        #expect(UsageFormatter.resetLine(for: window, style: .absolute) == "Resets now")
+        #expect(UsageFormatter.resetLine(for: window, style: .absolute, includesPrefix: false) == "now")
+
+        let uppercase = RateWindow(
+            usedPercent: 10,
+            windowMinutes: 10080,
+            resetsAt: nil,
+            resetDescription: "reset NOW")
+        #expect(UsageFormatter.resetLine(for: uppercase, style: .absolute, includesPrefix: false) == "now")
+    }
+
+    @Test
     func `reset now keeps a word in compact form`() {
         let now = Date()
         let window = RateWindow(usedPercent: 10, windowMinutes: 300, resetsAt: now, resetDescription: nil)
