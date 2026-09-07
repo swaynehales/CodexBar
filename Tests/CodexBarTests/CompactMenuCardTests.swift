@@ -114,6 +114,45 @@ struct CompactMenuCardTests {
     }
 
     @Test
+    func `compact drops informational usage notes`() throws {
+        let now = Date()
+        let metadata = try #require(ProviderDefaults.metadata[.claude])
+        let snapshot = UsageSnapshot(
+            primary: RateWindow(
+                usedPercent: 33,
+                windowMinutes: 300,
+                resetsAt: now.addingTimeInterval(3600),
+                resetDescription: nil),
+            secondary: nil,
+            updatedAt: now,
+            dataConfidence: .percentOnly)
+        func make(compact: Bool) -> UsageMenuCardView.Model {
+            UsageMenuCardView.Model.make(.init(
+                provider: .claude,
+                metadata: metadata,
+                snapshot: snapshot,
+                credits: nil,
+                creditsError: nil,
+                dashboard: nil,
+                dashboardError: nil,
+                tokenSnapshot: nil,
+                tokenError: nil,
+                account: AccountInfo(email: nil, plan: nil),
+                isRefreshing: false,
+                lastError: nil,
+                usageBarsShowUsed: true,
+                resetTimeDisplayStyle: .absolute,
+                tokenCostUsageEnabled: false,
+                showOptionalCreditsAndExtraUsage: true,
+                hidePersonalInfo: false,
+                compactCards: compact,
+                now: now))
+        }
+        #expect(!make(compact: false).usageNotes.isEmpty)
+        #expect(make(compact: true).usageNotes.isEmpty)
+    }
+
+    @Test
     func `compact keeps the subtitle model so errors can still surface`() throws {
         let now = Date()
         let metadata = try #require(ProviderDefaults.metadata[.claude])

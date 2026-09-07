@@ -952,7 +952,8 @@ extension UsageMenuCardView.Model {
             hidePersonalInfo: input.hidePersonalInfo)
         let openAIAPIUsage = input.snapshot?.openAIAPIUsage
         let inlineUsageDashboard = Self.inlineUsageDashboard(input: input)
-        let usageNotes = Self.usageNotes(input: input)
+        // Compact cards drop informational notes; errors still surface through the subtitle.
+        let usageNotes = input.compactCards ? [] : Self.usageNotes(input: input)
         let presentation = ProviderDescriptorRegistry.descriptor(for: input.provider).presentation
         let menuCard = presentation.menuCard
         let rawCreditsText: String? = if !menuCard.showsCreditsSection ||
