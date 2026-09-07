@@ -603,6 +603,10 @@
 "show_quota_warning_markers_subtitle" = "配置配额预警后，在用量条上绘制阈值刻度标记。";
 "show_pace_title" = "显示用量节奏";
 "show_pace_subtitle" = "在用量条上显示领先或落后的标记线和预测文本。";
+"compact_menu_cards_title" = "紧凑卡片";
+"compact_menu_cards_subtitle" = "隐藏状态行、“重置”标签以及用量条下方的预测文本。";
+"reset_in_short_format" = "%@后";
+"reset_now_short" = "立即";
 "show_provider_changelog_links_title" = "显示提供商变更日志链接";
 "show_provider_changelog_links_subtitle" = "在菜单中为支持的 CLI 提供商添加发布说明链接。";
 "show_credits_extra_usage_title" = "显示额度 + 额外用量";

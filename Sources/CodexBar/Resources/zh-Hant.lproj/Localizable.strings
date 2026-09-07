@@ -620,6 +620,10 @@
 "show_quota_warning_markers_subtitle" = "設定配額提醒後，在使用量條上繪製門檻刻度標記。";
 "show_pace_title" = "顯示用量節奏";
 "show_pace_subtitle" = "在用量條上顯示領先或落後的標記線和預測文字。";
+"compact_menu_cards_title" = "精簡卡片";
+"compact_menu_cards_subtitle" = "隱藏狀態列、「重置」標籤以及用量列下方的預測文字。";
+"reset_in_short_format" = "%@ 後";
+"reset_now_short" = "即將";
 "weekly_progress_work_days_title" = "每週進度工作日標記";
 "weekly_progress_work_days_subtitle" = "設定用於每週用量條刻度與進度計算的工作日。";
 "workday_tick_appearance_title" = "工作日刻度外觀";

@@ -627,6 +627,10 @@
 "show_quota_warning_markers_subtitle" = "Kota uyarıları yapılandırıldığında kullanım çubuklarına eşik çizgileri çizer.";
 "show_pace_title" = "Kullanım temposunu göster";
 "show_pace_subtitle" = "Kullanım çubuklarında önde veya geride olduğunuzu gösteren şeridi ve tahmin metnini gösterir.";
+"compact_menu_cards_title" = "Kompakt kartlar";
+"compact_menu_cards_subtitle" = "Durum satırını, \"Sıfırlanır\" etiketini ve kullanım çubuklarının altındaki tahmin metnini gizler.";
+"reset_in_short_format" = "%@ içinde";
+"reset_now_short" = "şimdi";
 "weekly_progress_work_days_title" = "Haftalık ilerleme iş günleri";
 "weekly_progress_work_days_subtitle" = "Haftalık kullanım çubuğu işaretleri ve tempo hesaplamaları için iş günlerini belirler.";
 "workday_tick_appearance_title" = "İş günü işaretlerinin görünümü";

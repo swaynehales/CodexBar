@@ -268,6 +268,32 @@ extension UsageMenuCardView.Model {
         }
     }
 
+    /// Compact cards keep the bar and every stripe but drop the text lines
+    /// beneath it: pace forecast, session equivalents, and provider detail.
+    static func compactGatedMetrics(_ metrics: [Metric], compact: Bool) -> [Metric] {
+        guard compact else { return metrics }
+        return metrics.map { metric in
+            Metric(
+                id: metric.id,
+                title: metric.title,
+                percent: metric.percent,
+                percentStyle: metric.percentStyle,
+                statusText: metric.statusText,
+                resetText: metric.resetText,
+                detailText: nil,
+                detailLeftText: nil,
+                detailRightText: nil,
+                pacePercent: metric.pacePercent,
+                detailIsPaceDerived: metric.detailIsPaceDerived,
+                paceOnTop: metric.paceOnTop,
+                warningMarkerPercents: metric.warningMarkerPercents,
+                workdayMarkerPercents: metric.workdayMarkerPercents,
+                workdayTickAppearance: metric.workdayTickAppearance,
+                cardStyle: metric.cardStyle,
+                sessionEquivalentDetail: nil)
+        }
+    }
+
     static func redactedMetrics(
         _ metrics: [Metric],
         provider: UsageProvider,
@@ -624,12 +650,12 @@ extension UsageMenuCardView.Model {
         }
     }
 
-    static func resetText(
-        for window: RateWindow,
-        style: ResetTimeDisplayStyle,
-        now: Date) -> String?
-    {
-        UsageFormatter.resetLine(for: window, style: style, now: now)
+    static func resetText(for window: RateWindow, input: Input) -> String? {
+        UsageFormatter.resetLine(
+            for: window,
+            style: input.resetTimeDisplayStyle,
+            includesPrefix: !input.compactCards,
+            now: input.now)
     }
 
     static func placeholder(input: Input) -> String? {
@@ -1036,10 +1062,7 @@ extension UsageMenuCardView.Model {
         {
             return self.antigravityQuotaSummaryResetText(namedWindow.window.resetDescription)
         }
-        return self.resetText(
-            for: namedWindow.window,
-            style: input.resetTimeDisplayStyle,
-            now: input.now)
+        return self.resetText(for: namedWindow.window, input: input)
     }
 
     private static func antigravityQuotaSummaryResetText(_ description: String?) -> String? {
@@ -1137,7 +1160,7 @@ extension UsageMenuCardView.Model {
             title: title,
             percent: Self.clamped(percent),
             percentStyle: percentStyle,
-            resetText: Self.resetText(for: window, style: input.resetTimeDisplayStyle, now: input.now),
+            resetText: Self.resetText(for: window, input: input),
             detailText: nil,
             detailLeftText: paceDetail?.leftLabel,
             detailRightText: paceDetail?.rightLabel,

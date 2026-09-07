@@ -44,6 +44,8 @@ extension UsageMenuCardView.Model {
         let workDaysPerWeek: Int?
         let workdayTickAppearance: WorkdayTickAppearance
         let paceVisible: Bool
+        /// Hides the header status line, the "Resets" prefix, and forecast text; keeps bars and stripes.
+        let compactCards: Bool
         let usesLiveSubtitle: Bool
         let preferredCurrencyCode: String
         let costUsageBucketCalendar: Calendar
@@ -89,6 +91,7 @@ extension UsageMenuCardView.Model {
             workDaysPerWeek: Int? = nil,
             workdayTickAppearance: WorkdayTickAppearance = .subtle,
             paceVisible: Bool = true,
+            compactCards: Bool = false,
             usesLiveSubtitle: Bool = false,
             preferredCurrencyCode: String = "auto",
             costUsageBucketCalendar: Calendar = .current,
@@ -133,6 +136,7 @@ extension UsageMenuCardView.Model {
             self.workDaysPerWeek = workDaysPerWeek
             self.workdayTickAppearance = workdayTickAppearance
             self.paceVisible = paceVisible
+            self.compactCards = compactCards
             self.usesLiveSubtitle = usesLiveSubtitle
             self.preferredCurrencyCode = preferredCurrencyCode
             self.costUsageBucketCalendar = costUsageBucketCalendar

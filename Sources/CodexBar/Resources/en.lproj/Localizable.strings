@@ -608,6 +608,8 @@
 "show_quota_warning_markers_subtitle" = "Draw threshold tick marks on usage bars when quota warnings are configured.";
 "show_pace_title" = "Show pace";
 "show_pace_subtitle" = "Show the ahead/behind stripe and forecast text on usage bars.";
+"compact_menu_cards_title" = "Compact cards";
+"compact_menu_cards_subtitle" = "Hide the status line, the \"Resets\" label, and forecast text under usage bars.";
 "weekly_progress_work_days_title" = "Work days";
 "weekly_progress_work_days_subtitle" = "Set work days for weekly usage-bar markers and pace calculations.";
 "workday_tick_appearance_title" = "Workday tick appearance";
@@ -849,6 +851,8 @@
 "Resets %@" = "Resets %@";
 "Resets in %@" = "Resets in %@";
 "Resets now" = "Resets now";
+"reset_in_short_format" = "in %@";
+"reset_now_short" = "now";
 "reset_tomorrow_format" = "tomorrow, %@";
 "Lasts until reset" = "Lasts until reset";
 "1.5× headroom" = "1.5× headroom";

@@ -627,6 +627,10 @@
 "show_quota_warning_markers_subtitle" = "علامت تیک آستانه را روی نوارهای استفاده هنگام پیکربندی هشدارهای سهمیه رسم کنید.";
 "show_pace_title" = "نمایش آهنگ مصرف";
 "show_pace_subtitle" = "نوار جلوتر یا عقب‌تر بودن و متن پیش‌بینی را روی نوارهای مصرف نشان می‌دهد.";
+"compact_menu_cards_title" = "کارت‌های فشرده";
+"compact_menu_cards_subtitle" = "پنهان کردن خط وضعیت، برچسب «بازنشانی» و متن پیش‌بینی زیر نوارهای مصرف.";
+"reset_in_short_format" = "در %@";
+"reset_now_short" = "اکنون";
 "weekly_progress_work_days_title" = "روزهای کاری پیشرفت هفتگی";
 "weekly_progress_work_days_subtitle" = "روزهای کاری را برای نشانگرهای نوار مصرف هفتگی و محاسبات سرعت تعیین کنید.";
 "workday_tick_appearance_title" = "نمایش نشانه‌های روز کاری";

@@ -29,6 +29,12 @@ struct MenuPane: View {
                         subtitle: L("show_pace_subtitle"))
                 }
 
+                Toggle(isOn: self.$settings.compactMenuCards) {
+                    SettingsRowLabel(
+                        L("compact_menu_cards_title"),
+                        subtitle: L("compact_menu_cards_subtitle"))
+                }
+
                 SettingsMenuPicker(
                     selection: self.$settings.weeklyProgressWorkDays,
                     options: MenuSettingsMenuOptions.weeklyProgressWorkDays,

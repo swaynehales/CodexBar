@@ -529,6 +529,7 @@ extension SettingsStore {
         if Self.isRunningTests, paceVisibleDefault == nil {
             userDefaults.set(true, forKey: "paceVisible")
         }
+        let compactMenuCards = userDefaults.object(forKey: "compactMenuCards") as? Bool ?? false
         let weeklyProgressWorkDays = userDefaults.object(forKey: "weeklyProgressWorkDays") as? Int
         let workdayTickAppearanceRaw = userDefaults.string(forKey: "workdayTickAppearance")
             ?? WorkdayTickAppearance.subtle.rawValue
@@ -681,6 +682,7 @@ extension SettingsStore {
             quotaWarningOnScreenAlertEnabled: quotaWarnings.onScreenAlertEnabled,
             quotaWarningMarkersVisible: quotaWarningMarkersVisible,
             paceVisible: paceVisible,
+            compactMenuCards: compactMenuCards,
             weeklyProgressWorkDays: weeklyProgressWorkDays,
             workdayTickAppearanceRaw: workdayTickAppearanceRaw,
             usageBarsShowUsed: usageBarsShowUsed,

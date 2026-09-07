@@ -611,6 +611,10 @@
 "show_quota_warning_markers_subtitle" = "할당량 경고가 구성된 경우 사용량 막대에 임계값 눈금 표시를 그립니다.";
 "show_pace_title" = "사용 속도 표시";
 "show_pace_subtitle" = "사용량 막대에 예상보다 빠른지 느린지를 나타내는 선과 예측 텍스트를 표시합니다.";
+"compact_menu_cards_title" = "간결한 카드";
+"compact_menu_cards_subtitle" = "상태 줄, \"재설정\" 레이블, 사용량 막대 아래 예측 텍스트를 숨깁니다.";
+"reset_in_short_format" = "%@ 후";
+"reset_now_short" = "지금";
 "weekly_progress_work_days_title" = "주간 진행률 근무일";
 "weekly_progress_work_days_subtitle" = "주간 사용량 막대 눈금과 페이스 계산에 사용할 근무일을 설정합니다.";
 "workday_tick_appearance_title" = "근무일 눈금 모양";

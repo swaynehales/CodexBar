@@ -170,6 +170,8 @@ struct UsageMenuCardView: View {
         let subtitleText: String
         let subtitleStyle: SubtitleStyle
         var usesLiveSubtitle: Bool = false
+        /// Compact cards drop the header status line; errors still show.
+        var compactCards: Bool = false
         let planText: String?
         let metrics: [Metric]
         let usageNotes: [String]
@@ -336,61 +338,63 @@ private struct UsageMenuCardHeaderView: View {
             // until the next rebuild; a recovered error keeps its reserved height until then.
             let usesErrorLayout = self.model.subtitleStyle == .error
             let subtitleAlignment: VerticalAlignment = usesErrorLayout ? .top : .firstTextBaseline
-            HStack(alignment: subtitleAlignment, spacing: UsageMenuCardLayout.headerColumnSpacing) {
-                if usesErrorLayout {
-                    Text(self.model.subtitleText)
-                        .font(.footnote)
-                        .lineLimit(4)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.bottom, 4)
-                        .hidden()
-                        .overlay(alignment: .topLeading) {
-                            Text(liveSubtitle.text)
-                                .font(.footnote)
-                                .foregroundStyle(self.subtitleColor(for: liveSubtitle.style))
-                                .lineLimit(4)
-                                .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .clipped()
-                        .layoutPriority(1)
-                } else {
-                    Text(liveSubtitle.text)
-                        .font(.footnote)
-                        .foregroundStyle(self.subtitleColor(for: liveSubtitle.style))
-                        .lineLimit(1)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                }
-                Spacer()
-                if usesErrorLayout {
-                    let showsCopyButton = liveSubtitle.style == .error && !liveSubtitle.text.isEmpty
-                    CopyIconButton(
-                        copyText: liveSubtitle.text,
-                        isHighlighted: self.isHighlighted,
-                        isInteractive: showsCopyButton)
-                        .opacity(showsCopyButton ? 1 : 0)
-                        .allowsHitTesting(showsCopyButton)
-                        .accessibilityHidden(!showsCopyButton)
-                }
-                if let plan = self.model.planText {
-                    Group {
-                        if let planAction {
-                            Button(action: planAction) {
+            if !self.model.compactCards || usesErrorLayout {
+                HStack(alignment: subtitleAlignment, spacing: UsageMenuCardLayout.headerColumnSpacing) {
+                    if usesErrorLayout {
+                        Text(self.model.subtitleText)
+                            .font(.footnote)
+                            .lineLimit(4)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 4)
+                            .hidden()
+                            .overlay(alignment: .topLeading) {
+                                Text(liveSubtitle.text)
+                                    .font(.footnote)
+                                    .foregroundStyle(self.subtitleColor(for: liveSubtitle.style))
+                                    .lineLimit(4)
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .clipped()
+                            .layoutPriority(1)
+                    } else {
+                        Text(liveSubtitle.text)
+                            .font(.footnote)
+                            .foregroundStyle(self.subtitleColor(for: liveSubtitle.style))
+                            .lineLimit(1)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .layoutPriority(1)
+                    }
+                    Spacer()
+                    if usesErrorLayout {
+                        let showsCopyButton = liveSubtitle.style == .error && !liveSubtitle.text.isEmpty
+                        CopyIconButton(
+                            copyText: liveSubtitle.text,
+                            isHighlighted: self.isHighlighted,
+                            isInteractive: showsCopyButton)
+                            .opacity(showsCopyButton ? 1 : 0)
+                            .allowsHitTesting(showsCopyButton)
+                            .accessibilityHidden(!showsCopyButton)
+                    }
+                    if let plan = self.model.planText {
+                        Group {
+                            if let planAction {
+                                Button(action: planAction) {
+                                    Text(plan)
+                                }
+                                .buttonStyle(.plain)
+                                .menuCardInteractiveControl()
+                                .accessibilityLabel(plan)
+                            } else {
                                 Text(plan)
                             }
-                            .buttonStyle(.plain)
-                            .menuCardInteractiveControl()
-                            .accessibilityLabel(plan)
-                        } else {
-                            Text(plan)
                         }
+                        .font(.footnote)
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .lineLimit(1)
                     }
-                    .font(.footnote)
-                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                    .lineLimit(1)
                 }
             }
         }
@@ -941,7 +945,9 @@ extension UsageMenuCardView.Model {
         let paceVisible = input.paceVisible && ProviderDescriptorRegistry.descriptor(for: input.provider).pace
             .allowsPace(dataConfidence: input.snapshot?.dataConfidence ?? .unknown)
         let metrics = Self.redactedMetrics(
-            Self.paceGatedMetrics(Self.metrics(input: input), paceVisible: paceVisible),
+            Self.compactGatedMetrics(
+                Self.paceGatedMetrics(Self.metrics(input: input), paceVisible: paceVisible),
+                compact: input.compactCards),
             provider: input.provider,
             hidePersonalInfo: input.hidePersonalInfo)
         let openAIAPIUsage = input.snapshot?.openAIAPIUsage
@@ -1021,6 +1027,7 @@ extension UsageMenuCardView.Model {
             subtitleText: redacted.subtitleText,
             subtitleStyle: subtitle.style,
             usesLiveSubtitle: input.usesLiveSubtitle,
+            compactCards: input.compactCards,
             planText: planText,
             metrics: metrics,
             usageNotes: usageNotes,
@@ -1334,7 +1341,7 @@ extension UsageMenuCardView.Model {
             // Perplexity purchased credits don't reset; show balance without "Resets" prefix.
             let opusResetText: String? = input.provider == .perplexity || input.provider == .sub2api
                 ? opus.resetDescription?.trimmingCharacters(in: .whitespacesAndNewlines)
-                : Self.resetText(for: opus, style: input.resetTimeDisplayStyle, now: input.now)
+                : Self.resetText(for: opus, input: input)
             let tertiaryPaceDetail = Self.resetWindowPaceDetail(window: opus, input: input)
             metrics.append(Metric(
                 id: "tertiary",
@@ -1375,7 +1382,7 @@ extension UsageMenuCardView.Model {
         {
             let percent = input.usageBarsShowUsed ? (100 - remaining) : remaining
             let resetText = codexProjection.limitWindow(for: .codeReview).flatMap {
-                Self.resetText(for: $0, style: input.resetTimeDisplayStyle, now: input.now)
+                Self.resetText(for: $0, input: input)
             }
             metrics.append(Metric(
                 id: "code-review",
@@ -1400,7 +1407,7 @@ extension UsageMenuCardView.Model {
         title: String? = nil) -> Metric
     {
         var presentation = PrimaryMetricPresentation(
-            resetText: Self.resetText(for: primary, style: input.resetTimeDisplayStyle, now: input.now),
+            resetText: Self.resetText(for: primary, input: input),
             detailText: nil)
         Self.applyPrimaryQuotaPresentation(
             &presentation,
@@ -1422,10 +1429,7 @@ extension UsageMenuCardView.Model {
                 windowMinutes: primary.windowMinutes,
                 resetsAt: bindingProjection.resetsAt,
                 resetDescription: bindingProjection.resetDescription)
-            presentation.resetText = Self.resetText(
-                for: resetWindow,
-                style: input.resetTimeDisplayStyle,
-                now: input.now)
+            presentation.resetText = Self.resetText(for: resetWindow, input: input)
         }
         let displayedUsedPercent = bindingProjection?.usedPercent ?? primary.usedPercent
         return Metric(
@@ -1471,7 +1475,7 @@ extension UsageMenuCardView.Model {
                 pace: input.weeklyPace,
                 showUsed: input.usageBarsShowUsed)
         }
-        var weeklyResetText = Self.resetText(for: weekly, style: input.resetTimeDisplayStyle, now: input.now)
+        var weeklyResetText = Self.resetText(for: weekly, input: input)
         var weeklyDetailText: String?
         if input.provider == .warp,
            let detail = weekly.resetDescription,

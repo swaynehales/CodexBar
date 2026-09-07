@@ -613,6 +613,10 @@
 "show_quota_warning_markers_subtitle" = "Dibuja marcas de umbral en las barras de uso cuando hay avisos de cuota configurados.";
 "show_pace_title" = "Mostrar el ritmo";
 "show_pace_subtitle" = "Muestra la franja de adelanto o retraso y el texto de previsión en las barras de uso.";
+"compact_menu_cards_title" = "Tarjetas compactas";
+"compact_menu_cards_subtitle" = "Oculta la línea de estado, la etiqueta «Se restablece» y el texto de previsión bajo las barras de uso.";
+"reset_in_short_format" = "en %@";
+"reset_now_short" = "ahora";
 "weekly_progress_work_days_title" = "Días laborables del progreso semanal";
 "weekly_progress_work_days_subtitle" = "Define los días laborables para los marcadores de las barras de uso semanal y los cálculos de ritmo.";
 "workday_tick_appearance_title" = "Aspecto de las marcas de días laborables";

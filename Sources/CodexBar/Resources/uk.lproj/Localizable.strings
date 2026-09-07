@@ -621,6 +621,10 @@
 "show_quota_warning_markers_subtitle" = "Малюйте порогові позначки на панелях використання, коли налаштовано попередження про квоту.";
 "show_pace_title" = "Показувати темп";
 "show_pace_subtitle" = "Показує смугу випередження або відставання та текст прогнозу на смугах використання.";
+"compact_menu_cards_title" = "Компактні картки";
+"compact_menu_cards_subtitle" = "Приховати рядок стану, підпис «Скидання» і текст прогнозу під смугами використання.";
+"reset_in_short_format" = "через %@";
+"reset_now_short" = "зараз";
 "weekly_progress_work_days_title" = "Щотижневі робочі дні";
 "weekly_progress_work_days_subtitle" = "Задайте робочі дні для позначок на смугах тижневого використання та розрахунків темпу.";
 "workday_tick_appearance_title" = "Вигляд позначок робочих днів";

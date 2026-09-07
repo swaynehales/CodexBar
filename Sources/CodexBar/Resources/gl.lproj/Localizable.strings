@@ -600,6 +600,10 @@
 "show_quota_warning_markers_subtitle" = "Debuxa marcas de limiar nas barras de uso cando hai avisos de cota configurados.";
 "show_pace_title" = "Amosar o ritmo";
 "show_pace_subtitle" = "Amosa a franxa de adianto ou atraso e o texto de previsión nas barras de uso.";
+"compact_menu_cards_title" = "Tarxetas compactas";
+"compact_menu_cards_subtitle" = "Agocha a liña de estado, a etiqueta «Restablécese» e o texto de previsión baixo as barras de uso.";
+"reset_in_short_format" = "en %@";
+"reset_now_short" = "agora";
 "weekly_progress_work_days_title" = "Días laborables do progreso semanal";
 "weekly_progress_work_days_subtitle" = "Define os días laborables para os marcadores das barras de uso semanal e os cálculos de ritmo.";
 "workday_tick_appearance_title" = "Aspecto das marcas dos días laborables";

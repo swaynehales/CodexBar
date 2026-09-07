@@ -619,6 +619,10 @@
 "show_quota_warning_markers_subtitle" = "Zeichnen Sie Schwellenwertmarkierungen auf Nutzungsbalken, wenn Kontingentwarnungen konfiguriert sind.";
 "show_pace_title" = "Tempo anzeigen";
 "show_pace_subtitle" = "Zeigt den Streifen für Vorsprung oder Rückstand und den Prognosetext auf den Nutzungsbalken.";
+"compact_menu_cards_title" = "Kompakte Karten";
+"compact_menu_cards_subtitle" = "Statuszeile, „Zurückgesetzt“-Beschriftung und Prognosetext unter den Nutzungsbalken ausblenden.";
+"reset_in_short_format" = "in %@";
+"reset_now_short" = "jetzt";
 "weekly_progress_work_days_title" = "Wöchentliche Fortschrittsarbeitstage";
 "weekly_progress_work_days_subtitle" = "Legt Arbeitstage für Markierungen in wöchentlichen Nutzungsbalken und Tempo-Berechnungen fest.";
 "workday_tick_appearance_title" = "Darstellung der Arbeitstagsmarkierungen";

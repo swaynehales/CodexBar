@@ -621,6 +621,10 @@
 "show_quota_warning_markers_subtitle" = "Dessinez des coches de seuil sur les barres d’utilisation lorsque des avertissements de quota sont configurés.";
 "show_pace_title" = "Afficher le rythme";
 "show_pace_subtitle" = "Affiche la bande d'avance ou de retard et le texte de prévision sur les barres d'utilisation.";
+"compact_menu_cards_title" = "Cartes compactes";
+"compact_menu_cards_subtitle" = "Masque la ligne d'état, le libellé « Réinitialisé » et le texte de prévision sous les barres d'utilisation.";
+"reset_in_short_format" = "dans %@";
+"reset_now_short" = "maintenant";
 "weekly_progress_work_days_title" = "Jours de travail hebdomadaires";
 "weekly_progress_work_days_subtitle" = "Définit les jours ouvrés pour les repères des barres d’utilisation hebdomadaire et le calcul du rythme.";
 "workday_tick_appearance_title" = "Apparence des repères de jours ouvrés";

@@ -265,6 +265,14 @@ extension SettingsStore {
         }
     }
 
+    var compactMenuCards: Bool {
+        get { self.defaultsState.compactMenuCards }
+        set {
+            self.defaultsState.compactMenuCards = newValue
+            self.userDefaults.set(newValue, forKey: "compactMenuCards")
+        }
+    }
+
     var weeklyProgressWorkDays: Int? {
         get { self.defaultsState.weeklyProgressWorkDays }
         set {

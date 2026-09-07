@@ -24,6 +24,7 @@ struct SettingsDefaultsState {
     var quotaWarningOnScreenAlertEnabled: Bool
     var quotaWarningMarkersVisible: Bool
     var paceVisible: Bool
+    var compactMenuCards: Bool
     var weeklyProgressWorkDays: Int?
     var workdayTickAppearanceRaw: String
     var usageBarsShowUsed: Bool

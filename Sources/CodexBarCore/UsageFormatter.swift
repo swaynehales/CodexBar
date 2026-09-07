@@ -55,10 +55,14 @@ public enum UsageFormatter {
         // fallback below; app localization is injected through localizationProvider.
         let coreBundle = Bundle(for: BundleToken.self)
         let coreValue = NSLocalizedString(key, tableName: "Localizable", bundle: coreBundle, value: key, comment: "")
-        if coreValue != key { return coreValue }
+        if coreValue != key {
+            return coreValue
+        }
 
         let mainValue = NSLocalizedString(key, tableName: "Localizable", bundle: .main, value: key, comment: "")
-        if mainValue != key { return mainValue }
+        if mainValue != key {
+            return mainValue
+        }
         #endif
 
         switch key {
@@ -67,6 +71,8 @@ public enum UsageFormatter {
         case "usage_percent_suffix_left": return "left"
         case "usage_percent_suffix_used": return "used"
         case "reset_tomorrow_format": return "tomorrow, %@"
+        case "reset_in_short_format": return "in %@"
+        case "reset_now_short": return "now"
         case "byte_unit_byte": return "byte"
         case "byte_unit_bytes": return "bytes"
         case "byte_unit_kilobyte": return "kilobyte"
@@ -102,13 +108,17 @@ public enum UsageFormatter {
 
     public static func percentString(_ percent: Double) -> String {
         let clamped = min(100, max(0, percent))
-        if clamped > 0, clamped < 1 { return "<1%" }
+        if clamped > 0, clamped < 1 {
+            return "<1%"
+        }
         return String(format: "%.0f%%", clamped)
     }
 
     public static func resetCountdownDescription(from date: Date, now: Date = .init()) -> String {
         let seconds = max(0, date.timeIntervalSince(now))
-        if seconds < 1 { return "now" }
+        if seconds < 1 {
+            return "now"
+        }
 
         let totalMinutes = max(1, Int(ceil(seconds / 60.0)))
         let days = totalMinutes / (24 * 60)
@@ -116,12 +126,18 @@ public enum UsageFormatter {
         let minutes = totalMinutes % 60
 
         if days > 0 {
-            if hours > 0 { return "in \(days)d \(hours)h" }
-            if minutes > 0 { return "in \(days)d \(minutes)m" }
+            if hours > 0 {
+                return "in \(days)d \(hours)h"
+            }
+            if minutes > 0 {
+                return "in \(days)d \(minutes)m"
+            }
             return "in \(days)d"
         }
         if hours > 0 {
-            if minutes > 0 { return "in \(hours)h \(minutes)m" }
+            if minutes > 0 {
+                return "in \(hours)h \(minutes)m"
+            }
             return "in \(hours)h"
         }
         return "in \(totalMinutes)m"
@@ -142,24 +158,30 @@ public enum UsageFormatter {
         return date.formatted(.dateTime.month(.abbreviated).day().hour().minute().locale(self.currentLocale()))
     }
 
+    /// - Parameter includesPrefix: When false, the "Resets" word is omitted and only the
+    ///   date, countdown, or provider description is returned (compact menu cards).
     public static func resetLine(
         for window: RateWindow,
         style: ResetTimeDisplayStyle,
+        includesPrefix: Bool = true,
         now: Date = .init()) -> String?
     {
         if let date = window.resetsAt {
             if style == .countdown {
                 let countdown = self.resetCountdownDescription(from: date, now: now)
                 if countdown == "now" {
-                    return self.localized("Resets now")
+                    return includesPrefix ? self.localized("Resets now") : self.localized("reset_now_short")
                 }
                 if countdown.hasPrefix("in ") {
-                    return self.localized("Resets in %@", String(countdown.dropFirst(3)))
+                    let remainder = String(countdown.dropFirst(3))
+                    return includesPrefix
+                        ? self.localized("Resets in %@", remainder)
+                        : self.localized("reset_in_short_format", remainder)
                 }
-                return self.localized("Resets %@", countdown)
+                return includesPrefix ? self.localized("Resets %@", countdown) : countdown
             }
             let text = self.resetDescription(from: date, now: now)
-            return self.localized("Resets %@", text)
+            return includesPrefix ? self.localized("Resets %@", text) : text
         }
 
         if let desc = window.resetDescription {
@@ -167,12 +189,16 @@ public enum UsageFormatter {
             guard !trimmed.isEmpty else { return nil }
             let lowercased = trimmed.lowercased()
             for prefix in ["resets in ", "reset in "] where lowercased.hasPrefix(prefix) {
-                return self.localized("Resets in %@", String(trimmed.dropFirst(prefix.count)))
+                let remainder = String(trimmed.dropFirst(prefix.count))
+                return includesPrefix
+                    ? self.localized("Resets in %@", remainder)
+                    : self.localized("reset_in_short_format", remainder)
             }
             for prefix in ["resets ", "reset "] where lowercased.hasPrefix(prefix) {
-                return self.localized("Resets %@", String(trimmed.dropFirst(prefix.count)))
+                let remainder = String(trimmed.dropFirst(prefix.count))
+                return includesPrefix ? self.localized("Resets %@", remainder) : remainder
             }
-            return self.localized("Resets %@", trimmed)
+            return includesPrefix ? self.localized("Resets %@", trimmed) : trimmed
         }
         return nil
     }
@@ -348,7 +374,9 @@ public enum UsageFormatter {
                 formatted = String(format: "%.0f", scaled)
             } else {
                 var s = String(format: "%.1f", scaled)
-                if s.hasSuffix(".0") { s.removeLast(2) }
+                if s.hasSuffix(".0") {
+                    s.removeLast(2)
+                }
                 formatted = s
             }
             return "\(sign)\(formatted)\(unit.suffix)"
@@ -440,8 +468,12 @@ public enum UsageFormatter {
     public static func modelDisplayName(_ raw: String) -> String {
         var cleaned = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return raw }
-        if cleaned == "codex-auto-review" { return "Codex Auto Review" }
-        if CostUsagePricing.isCodexUnattributedModel(cleaned) { return "Unknown model" }
+        if cleaned == "codex-auto-review" {
+            return "Codex Auto Review"
+        }
+        if CostUsagePricing.isCodexUnattributedModel(cleaned) {
+            return "Unknown model"
+        }
 
         let patterns = [
             #"(?:-|\s)\d{8}$"#,
