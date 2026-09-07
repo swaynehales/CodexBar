@@ -1822,7 +1822,7 @@ struct ProviderArchitectureGatekeeperTests {
             reason: "This exact shared construct dispatches a provider-owned capability at the generic integration boundary."),
         AllowedProviderConstruct(
             path: "Sources/CodexBar/MenuCardView+CodexResetCredits.swift",
-            line: 122,
+            line: 130,
             anchor: "guard input.provider == .codex,",
             expectedProviderIDs: ["codex"],
             expectedReferenceCount: 1,
