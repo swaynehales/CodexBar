@@ -275,6 +275,69 @@ struct CompactResetLineTests {
 }
 
 @MainActor
+struct CompactAntigravityQuotaSummaryResetTests {
+    @Test
+    func `antigravity quota summary reset drops the prefix in compact form`() throws {
+        let now = Date()
+        let metadata = try #require(ProviderDefaults.metadata[.antigravity])
+        let snapshot = UsageSnapshot(
+            primary: RateWindow(
+                usedPercent: 20,
+                windowMinutes: 300,
+                resetsAt: now.addingTimeInterval(2 * 3600),
+                resetDescription: nil),
+            secondary: nil,
+            extraRateWindows: [
+                NamedRateWindow(
+                    id: "antigravity-quota-summary-codex",
+                    title: "Codex",
+                    window: RateWindow(
+                        usedPercent: 30,
+                        windowMinutes: 10080,
+                        resetsAt: nil,
+                        resetDescription: "fully refresh in 3 hours")),
+            ],
+            updatedAt: now,
+            identity: ProviderIdentitySnapshot(
+                providerID: .antigravity,
+                accountEmail: "antigravity@example.com",
+                accountOrganization: nil,
+                loginMethod: nil))
+        func input(compactCards: Bool) -> UsageMenuCardView.Model.Input {
+            .init(
+                provider: .antigravity,
+                metadata: metadata,
+                snapshot: snapshot,
+                credits: nil,
+                creditsError: nil,
+                dashboard: nil,
+                dashboardError: nil,
+                tokenSnapshot: nil,
+                tokenError: nil,
+                account: AccountInfo(email: "antigravity@example.com", plan: "Pro"),
+                isRefreshing: false,
+                lastError: nil,
+                usageBarsShowUsed: true,
+                resetTimeDisplayStyle: .absolute,
+                tokenCostUsageEnabled: false,
+                showOptionalCreditsAndExtraUsage: true,
+                hidePersonalInfo: false,
+                paceVisible: true,
+                compactCards: compactCards,
+                now: now)
+        }
+
+        let standard = UsageMenuCardView.Model.make(input(compactCards: false))
+        let compact = UsageMenuCardView.Model.make(input(compactCards: true))
+        let windowID = "antigravity-quota-summary-codex"
+        let standardReset = try #require(standard.metrics.first { $0.id == windowID }?.resetText)
+        let compactReset = try #require(compact.metrics.first { $0.id == windowID }?.resetText)
+        #expect(standardReset == "Resets in 3 hours")
+        #expect(compactReset == "in 3 hours")
+    }
+}
+
+@MainActor
 struct CompactMenuCardSettingsTests {
     @Test
     func `defaults compact cards to off`() throws {
