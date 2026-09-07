@@ -57,6 +57,7 @@ extension SettingsStore {
             quotaWarningOnScreenAlertEnabled: self.quotaWarningOnScreenAlertEnabled,
             quotaWarningMarkersVisible: self.quotaWarningMarkersVisible,
             paceVisible: self.paceVisible,
+            compactMenuCards: self.compactMenuCards,
             weeklyProgressWorkDays: self.weeklyProgressWorkDays,
             workdayTickAppearance: self.workdayTickAppearance.rawValue,
             usageBarsShowUsed: self.usageBarsShowUsed,
@@ -92,6 +93,9 @@ extension SettingsStore {
         self.quotaWarningMarkersVisible = preferences.quotaWarningMarkersVisible
         if let paceVisible = preferences.paceVisible {
             self.paceVisible = paceVisible
+        }
+        if let compactMenuCards = preferences.compactMenuCards {
+            self.compactMenuCards = compactMenuCards
         }
         self.weeklyProgressWorkDays = preferences.weeklyProgressWorkDays
         if let rawAppearance = preferences.workdayTickAppearance,

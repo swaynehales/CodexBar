@@ -152,6 +152,74 @@ struct CompactMenuCardTests {
         #expect(make(compact: true).usageNotes.isEmpty)
     }
 
+    /// Both gates clear overlapping detail slots; together they must still leave the
+    /// bar, the stripe-free pace state, and the metric set intact.
+    @Test
+    func `compact combined with hidden pace keeps metrics and drops all detail text`() throws {
+        let now = Date()
+        let metadata = try #require(ProviderDefaults.metadata[.kiro])
+        let snapshot = try UsageSnapshot(
+            primary: RateWindow(
+                usedPercent: 40,
+                windowMinutes: 300,
+                resetsAt: now.addingTimeInterval(3600),
+                resetDescription: nil),
+            secondary: RateWindow(
+                usedPercent: 30,
+                windowMinutes: 10080,
+                resetsAt: now.addingTimeInterval(86400),
+                resetDescription: nil),
+            details: [ProviderDetailSection(rows: [
+                ProviderDetailSection.Row(label: "Bonus credits left", value: "500", secondaryValue: "of 1000"),
+            ])],
+            updatedAt: now)
+        func make(compact: Bool, paceVisible: Bool) -> UsageMenuCardView.Model {
+            UsageMenuCardView.Model.make(.init(
+                provider: .kiro,
+                metadata: metadata,
+                snapshot: snapshot,
+                credits: nil,
+                creditsError: nil,
+                dashboard: nil,
+                dashboardError: nil,
+                tokenSnapshot: nil,
+                tokenError: nil,
+                account: AccountInfo(email: nil, plan: nil),
+                isRefreshing: false,
+                lastError: nil,
+                usageBarsShowUsed: true,
+                resetTimeDisplayStyle: .countdown,
+                tokenCostUsageEnabled: false,
+                showOptionalCreditsAndExtraUsage: true,
+                hidePersonalInfo: false,
+                paceVisible: paceVisible,
+                compactCards: compact,
+                now: now))
+        }
+        let baseline = make(compact: false, paceVisible: true)
+        let both = make(compact: true, paceVisible: false)
+        #expect(both.metrics.count == baseline.metrics.count)
+        #expect(both.metrics.map(\.id) == baseline.metrics.map(\.id))
+        for metric in both.metrics {
+            #expect(metric.pacePercent == nil)
+            #expect(metric.detailText == nil)
+            #expect(metric.detailLeftText == nil)
+            #expect(metric.detailRightText == nil)
+            #expect(metric.sessionEquivalentDetail == nil)
+            #expect(metric.resetText != nil)
+        }
+    }
+
+    @Test
+    func `toggling compact invalidates tracked layout compatibility`() throws {
+        let now = Date()
+        let metadata = try #require(ProviderDefaults.metadata[.claude])
+        let standard = UsageMenuCardView.Model.make(Self.input(now: now, metadata: metadata, compactCards: false))
+        let compact = UsageMenuCardView.Model.make(Self.input(now: now, metadata: metadata, compactCards: true))
+        #expect(standard.hasCompatibleTrackedLayout(with: standard))
+        #expect(!standard.hasCompatibleTrackedLayoutIgnoringMetrics(with: compact))
+    }
+
     @Test
     func `compact keeps the subtitle model so errors can still surface`() throws {
         let now = Date()
