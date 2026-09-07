@@ -1268,6 +1268,8 @@
 "Limit Reset Credits" = "Кредиты сброса лимита";
 "1 available" = "1 доступен";
 "%d available" = "%d доступен";
+"1 reset available" = "1 сброс доступен";
+"%d resets available" = "%d сбросов доступно";
 "Next expires %@" = "Следующий срок действия истекает %@";
 "Expires %@" = "Истекает %@";
 "No expiry" = "Без срока действия";

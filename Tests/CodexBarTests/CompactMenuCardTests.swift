@@ -167,6 +167,34 @@ struct CompactMenuCardTests {
     }
 }
 
+struct CompactCodexResetCreditsTests {
+    @Test
+    func `compact names the reset count because the header is hidden`() {
+        let now = Date()
+        let snapshot = CodexRateLimitResetCreditsSnapshot(
+            credits: [CodexRateLimitResetCredit(
+                id: "reset-credit",
+                resetType: "codex_rate_limits",
+                status: .available,
+                grantedAt: now.addingTimeInterval(-86400),
+                expiresAt: now.addingTimeInterval(86400),
+                redeemStartedAt: nil,
+                redeemedAt: nil,
+                title: nil,
+                description: nil)],
+            availableCount: 1,
+            updatedAt: now)
+        let standard = CodexResetCreditsPresentation.make(snapshot: snapshot, resetStyle: .absolute, now: now)
+        let compact = CodexResetCreditsPresentation.make(
+            snapshot: snapshot,
+            resetStyle: .absolute,
+            compact: true,
+            now: now)
+        #expect(standard?.text == "1 available")
+        #expect(compact?.text == "1 reset available")
+    }
+}
+
 struct CompactResetLineTests {
     @Test
     func `provider reset descriptions lose the prefix in compact form`() {

@@ -1280,6 +1280,8 @@
 "Limit Reset Credits" = "เครดิตรีเซ็ตขีดจำกัด";
 "1 available" = "1 รายการ";
 "%d available" = "%d รายการ";
+"1 reset available" = "รีเซ็ตได้ 1 ครั้ง";
+"%d resets available" = "รีเซ็ตได้ %d ครั้ง";
 "Next expires %@" = "รายการถัดไปหมดอายุ %@";
 "Expires %@" = "หมดอายุ %@";
 "No expiry" = "ไม่มีวันหมดอายุ";

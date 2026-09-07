@@ -1259,6 +1259,8 @@
 "Limit Reset Credits" = "上限リセットクレジット";
 "1 available" = "1件利用可能";
 "%d available" = "%d件利用可能";
+"1 reset available" = "リセット1件利用可能";
+"%d resets available" = "リセット%d件利用可能";
 "Next expires %@" = "次回の有効期限：%@";
 "Expires %@" = "%@ に期限切れ";
 "No expiry" = "有効期限なし";

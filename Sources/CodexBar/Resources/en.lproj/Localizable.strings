@@ -1261,6 +1261,8 @@
 "Limit Reset Credits" = "Limit Reset Credits";
 "1 available" = "1 available";
 "%d available" = "%d available";
+"1 reset available" = "1 reset available";
+"%d resets available" = "%d resets available";
 "Next expires %@" = "Next expires %@";
 "Expires %@" = "Expires %@";
 "No expiry" = "No expiry";

@@ -1280,6 +1280,8 @@
 "Limit Reset Credits" = "أرصدة إعادة تعيين الحد";
 "1 available" = "1 متاح";
 "%d available" = "%d متاح";
+"1 reset available" = "1 إعادة تعيين متاحة";
+"%d resets available" = "%d إعادات تعيين متاحة";
 "Next expires %@" = "تنتهي صلاحية التالية %@";
 "Expires %@" = "تنتهي الصلاحية %@";
 "No expiry" = "لا انتهاء صلاحية";

@@ -1116,6 +1116,8 @@
 "Limit Reset Credits" = "Crèdits de restabliment del límit";
 "1 available" = "1 disponible";
 "%d available" = "%d disponibles";
+"1 reset available" = "1 reinici disponible";
+"%d resets available" = "%d reinicis disponibles";
 "Next expires %@" = "El següent caduca %@";
 "Expires %@" = "Caduca %@";
 "No expiry" = "Sense caducitat";

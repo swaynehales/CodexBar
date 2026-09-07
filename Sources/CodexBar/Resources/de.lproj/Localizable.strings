@@ -1258,6 +1258,8 @@
 "Limit Reset Credits" = "Credits zum Zurücksetzen des Limits";
 "1 available" = "1 verfügbar";
 "%d available" = "%d verfügbar";
+"1 reset available" = "1 Reset verfügbar";
+"%d resets available" = "%d Resets verfügbar";
 "Next expires %@" = "Nächster Ablauf %@";
 "Expires %@" = "Läuft %@ ab";
 "No expiry" = "Kein Ablaufdatum";

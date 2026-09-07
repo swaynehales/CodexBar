@@ -1259,6 +1259,8 @@
 "Limit Reset Credits" = "Lượt đặt lại giới hạn";
 "1 available" = "1 lượt";
 "%d available" = "%d lượt";
+"1 reset available" = "1 lượt đặt lại";
+"%d resets available" = "%d lượt đặt lại";
 "Next expires %@" = "Lượt tiếp theo hết hạn %@";
 "Expires %@" = "Hết hạn %@";
 "No expiry" = "Không hết hạn";
