@@ -32,6 +32,7 @@ struct CodexResetCreditsPresentation: Equatable {
     static func make(
         snapshot: CodexRateLimitResetCreditsSnapshot,
         resetStyle: ResetTimeDisplayStyle,
+        compact: Bool = false,
         now: Date) -> CodexResetCreditsPresentation?
     {
         let inventory = snapshot.availableInventory(at: now)
@@ -40,12 +41,16 @@ struct CodexResetCreditsPresentation: Equatable {
             Self.presentationItem(for: credit, resetStyle: resetStyle, now: now)
         }
         return CodexResetCreditsPresentation(
-            text: Self.availableText(count: inventory.count),
+            text: Self.availableText(count: inventory.count, compact: compact),
             items: items)
     }
 
-    private static func availableText(count: Int) -> String {
-        count == 1 ? L("1 available") : String(format: L("%d available"), count)
+    /// Compact cards drop the section header, so the count names what it counts.
+    private static func availableText(count: Int, compact: Bool) -> String {
+        if compact {
+            return count == 1 ? L("1 reset available") : String(format: L("%d resets available"), count)
+        }
+        return count == 1 ? L("1 available") : String(format: L("%d available"), count)
     }
 
     private static func presentationItem(
@@ -82,14 +87,17 @@ struct CodexResetCreditsPresentation: Equatable {
 
 struct CodexResetCreditsContent: View {
     let presentation: CodexResetCreditsPresentation
+    var showsHeader = true
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(L("Limit Reset Credits"))
-                .font(.body)
-                .fontWeight(.medium)
-                .lineLimit(1)
+            if self.showsHeader {
+                Text(L("Limit Reset Credits"))
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+            }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(self.presentation.text)
                     .font(.footnote.weight(.semibold))
@@ -127,6 +135,7 @@ extension UsageMenuCardView.Model {
         return CodexResetCreditsPresentation.make(
             snapshot: resetCredits,
             resetStyle: input.resetTimeDisplayStyle,
+            compact: input.compactCards,
             now: input.now)
     }
 }

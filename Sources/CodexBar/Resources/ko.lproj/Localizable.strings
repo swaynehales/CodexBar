@@ -1229,6 +1229,8 @@
 "Limit Reset Credits" = "한도 재설정 크레딧";
 "1 available" = "1회 사용 가능";
 "%d available" = "%d회 사용 가능";
+"1 reset available" = "재설정 1회 사용 가능";
+"%d resets available" = "재설정 %d회 사용 가능";
 "Next expires %@" = "다음 만료: %@";
 "Expires %@" = "%@에 만료";
 "No expiry" = "만료 없음";

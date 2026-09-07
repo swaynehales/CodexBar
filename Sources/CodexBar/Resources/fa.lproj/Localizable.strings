@@ -1280,6 +1280,8 @@
 "Limit Reset Credits" = "اعتبارهای بازنشانی محدودیت";
 "1 available" = "۱ مورد موجود";
 "%d available" = "%d مورد موجود";
+"1 reset available" = "۱ بازنشانی موجود";
+"%d resets available" = "%d بازنشانی موجود";
 "Next expires %@" = "مورد بعدی در %@ منقضی می‌شود";
 "Expires %@" = "انقضا %@";
 "No expiry" = "بدون انقضا";

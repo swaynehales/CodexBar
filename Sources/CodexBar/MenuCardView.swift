@@ -710,7 +710,7 @@ private struct UsageMenuCardUsageContentView: View {
                 if !self.model.metrics.isEmpty, self.showsSectionDividers {
                     Divider()
                 }
-                CodexResetCreditsContent(presentation: resetCredits)
+                CodexResetCreditsContent(presentation: resetCredits, showsHeader: !self.model.compactCards)
             }
             if let dashboard = self.model.inlineUsageDashboard {
                 InlineUsageDashboardContent(model: dashboard)
