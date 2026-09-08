@@ -952,7 +952,7 @@ extension UsageMenuCardView.Model {
             hidePersonalInfo: input.hidePersonalInfo)
         let openAIAPIUsage = input.snapshot?.openAIAPIUsage
         let inlineUsageDashboard = Self.inlineUsageDashboard(input: input)
-        // Compact cards drop informational notes; errors still surface through the subtitle.
+        // Compact cards drop informational notes and inline fetch errors.
         let usageNotes = input.compactCards ? [] : Self.usageNotes(input: input)
         let presentation = ProviderDescriptorRegistry.descriptor(for: input.provider).presentation
         let menuCard = presentation.menuCard
@@ -1015,7 +1015,7 @@ extension UsageMenuCardView.Model {
             ?? Self.subtitle(
                 snapshot: input.snapshot,
                 isRefreshing: input.isRefreshing,
-                lastError: Self.lastError(input: input),
+                lastError: input.compactCards ? nil : Self.lastError(input: input),
                 now: input.now)
         let redacted = Self.redactedText(input: input, subtitle: subtitle)
         let placeholder = Self.placeholder(input: input)
