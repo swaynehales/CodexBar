@@ -221,17 +221,24 @@ struct CompactMenuCardTests {
     }
 
     @Test
-    func `compact keeps the subtitle model so errors can still surface`() throws {
+    func `compact cards hide fetch errors while standard cards show them`() throws {
         let now = Date()
         let metadata = try #require(ProviderDefaults.metadata[.claude])
-        let model = UsageMenuCardView.Model.make(Self.input(
+        let compact = UsageMenuCardView.Model.make(Self.input(
             now: now,
             metadata: metadata,
             compactCards: true,
             lastError: "Token expired"))
+        let standard = UsageMenuCardView.Model.make(Self.input(
+            now: now,
+            metadata: metadata,
+            compactCards: false,
+            lastError: "Token expired"))
 
-        #expect(model.subtitleStyle == .error)
-        #expect(model.subtitleText.contains("Token expired"))
+        #expect(compact.subtitleStyle != .error)
+        #expect(!compact.subtitleText.contains("Token expired"))
+        #expect(standard.subtitleStyle == .error)
+        #expect(standard.subtitleText.contains("Token expired"))
     }
 }
 
