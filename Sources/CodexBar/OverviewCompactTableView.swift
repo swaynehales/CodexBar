@@ -7,11 +7,11 @@ import SwiftUI
 enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
-    static let providerMaxWidth: CGFloat = 90
-    static let modelColumnWidth: CGFloat = 40
-    static let periodColumnWidth: CGFloat = 44
-    static let usedColumnWidth: CGFloat = 36
-    static let inColumnWidth: CGFloat = 32
+    static let providerMaxWidth: CGFloat = 112
+    static let modelColumnWidth: CGFloat = 56
+    static let periodColumnWidth: CGFloat = 58
+    static let usedColumnWidth: CGFloat = 46
+    static let inColumnWidth: CGFloat = 46
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
     /// control text so the table stays slightly smaller than toggles/footer.
     static let bodyFontSize: CGFloat = 12.5

@@ -55,14 +55,16 @@ extension StatusItemController {
         control.selectedSegment = self.overviewTableGrouping == .period ? 1 : 0
         control.trackedMenu = menu
         let contentWidth = width - 2 * CompactTableMetrics.horizontalPadding
-        // Standard iOS switch height (51×38 accessible variant, HIG); the old 22pt control
-        // sat claustrophobically tight under the menu bar.
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 44))
+        // Grow the control itself, not just its padding: 42pt segment (roughly 2x the
+        // original 22pt) with a 13pt label, inside a 48pt container for breathing room
+        // under the menu bar.
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 48))
+        control.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
             y: 3,
             width: contentWidth,
-            height: 38)
+            height: 42)
         control.autoresizingMask = [.width]
         container.addSubview(control)
         let item = NSMenuItem()
@@ -98,9 +100,9 @@ extension StatusItemController {
     }
 
     /// Fixed width for compact Overview table blocks. The descriptor-derived menu width is
-    /// sized for stacked cards (~310pt) and starves the six-column table; the mock's 440pt
-    /// fits every column without truncation.
-    static let compactOverviewMenuWidth: CGFloat = 440
+    /// sized for stacked cards (~310pt) and starves the six-column table; 480pt fits every
+    /// column at the enlarged body font without truncation.
+    static let compactOverviewMenuWidth: CGFloat = 480
 
     struct OverviewDisplayRow {
         let provider: UsageProvider
