@@ -8,7 +8,6 @@ enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
     static let providerMaxWidth: CGFloat = 112
-    static let modelColumnWidth: CGFloat = 56
     static let periodColumnWidth: CGFloat = 24
     static let usedColumnWidth: CGFloat = 46
     static let inColumnWidth: CGFloat = 46
@@ -18,6 +17,14 @@ enum CompactTableMetrics {
     /// Provider and used-percentage cells render at control-text size; the semibold
     /// weight carries the emphasis the operator asked for.
     static let emphasisFontSize: CGFloat = 13
+
+    /// The bar track occupies the declared remainder after the fixed columns, so every
+    /// bar starts and ends at shared x-positions instead of sizing to its intrinsic
+    /// width. `fixedColumns` is the sum of the leading/trailing fixed column widths and
+    /// `gaps` the Grid's horizontal gaps for that view's column count.
+    static func measureWidth(totalWidth: CGFloat, fixedColumns: CGFloat, gaps: Int) -> CGFloat {
+        totalWidth - 2 * self.horizontalPadding - fixedColumns - CGFloat(gaps) * self.columnSpacing
+    }
 }
 
 /// One provider's block of the compact Overview table (By provider grouping).
@@ -65,16 +72,10 @@ struct OverviewCompactTableBlockView: View {
                     }
                 }
                 ForEach(self.rows) { row in
-                    // Value rows have no bar cell, so center alignment reads as vertically
-                    // off against the footnote provider name; baseline-align them instead.
-                    if row.presentation == .value {
-                        GridRow(alignment: .firstTextBaseline) {
-                            self.rowCells(for: row)
-                        }
-                    } else {
-                        GridRow {
-                            self.rowCells(for: row)
-                        }
+                    // All rows share center alignment: the merged provider/model cell is
+                    // two lines tall in every row, so USED/IN stay vertically aligned.
+                    GridRow {
+                        self.rowCells(for: row)
                     }
                 }
             }
@@ -116,8 +117,15 @@ struct OverviewCompactTableBlockView: View {
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
             // Balance text right-aligns in the USED column (mock placement); the bar
-            // cell stays empty and IN reads "—".
-            Color.clear.gridCellUnsizedAxes(.vertical)
+            // cell keeps the declared track width so USED/IN anchors never shift.
+            Color.clear
+                .frame(width: CompactTableMetrics.measureWidth(
+                    totalWidth: self.width,
+                    fixedColumns: CompactTableMetrics.providerMaxWidth
+                        + CompactTableMetrics.periodColumnWidth
+                        + CompactTableMetrics.usedColumnWidth
+                        + CompactTableMetrics.inColumnWidth,
+                    gaps: 4))
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
                     .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
@@ -148,6 +156,13 @@ struct OverviewCompactTableBlockView: View {
                 warningMarkerPercents: metric.warningMarkerPercents,
                 workdayMarkerPercents: metric.workdayMarkerPercents,
                 workdayTickAppearance: metric.workdayTickAppearance)
+                .frame(width: CompactTableMetrics.measureWidth(
+                    totalWidth: self.width,
+                    fixedColumns: CompactTableMetrics.providerMaxWidth
+                        + CompactTableMetrics.periodColumnWidth
+                        + CompactTableMetrics.usedColumnWidth
+                        + CompactTableMetrics.inColumnWidth,
+                    gaps: 4))
         }
     }
 }
@@ -171,16 +186,6 @@ struct OverviewCompactPeriodTableView: View {
                             .textCase(.uppercase)
                             .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
-                        Text(L("compact_header_model"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-                        Text(L("compact_header_period"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
                             .font(.caption.weight(.semibold))
@@ -196,7 +201,7 @@ struct OverviewCompactPeriodTableView: View {
                             .gridColumnAlignment(.trailing)
                     }
                     GridRow {
-                        Divider().gridCellColumns(6)
+                        Divider().gridCellColumns(4)
                     }
                 }
                 ForEach(self.sections) { section in
@@ -206,19 +211,16 @@ struct OverviewCompactPeriodTableView: View {
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .gridCellColumns(6)
+                            .gridCellColumns(4)
                             .padding(.top, 6)
                     }
                     ForEach(Array(section.groups.enumerated()), id: \.offset) { _, group in
                         ForEach(group) { row in
-                            if row.presentation == .value {
-                                GridRow(alignment: .firstTextBaseline) {
-                                    self.rowCells(for: row, showsProvider: row.id == group.first?.id)
-                                }
-                            } else {
-                                GridRow {
-                                    self.rowCells(for: row, showsProvider: row.id == group.first?.id)
-                                }
+                            // All rows share center alignment: the merged provider/model
+                            // cell is two lines tall in every row, so USED/IN stay
+                            // vertically aligned across bar and value rows.
+                            GridRow {
+                                self.rowCells(for: row, showsProvider: row.id == group.first?.id)
                             }
                         }
                     }
@@ -233,21 +235,22 @@ struct OverviewCompactPeriodTableView: View {
 
     @ViewBuilder
     private func rowCells(for row: CompactTableRow, showsProvider: Bool) -> some View {
-        Text(showsProvider ? row.providerDisplayName : "")
-            .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-            .gridColumnAlignment(.leading)
-        Text(row.model)
-            .font(.system(size: CompactTableMetrics.bodyFontSize))
-            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-        // The section header carries the period label; per-row period cells stay empty
-        // so the column does not repeat "Session" under its own header.
-        Color.clear
-            .frame(width: CompactTableMetrics.periodColumnWidth)
+        // Same provider→model nesting as the By-provider view: provider name once per
+        // group, model stacked directly beneath it. The section header carries the
+        // period, so no per-row period cell exists in this view.
+        VStack(alignment: .leading, spacing: 1) {
+            Text(showsProvider ? row.providerDisplayName : "")
+                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Text(row.model)
+                .font(.system(size: CompactTableMetrics.bodyFontSize))
+                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+        .gridColumnAlignment(.leading)
         switch row.presentation {
         case .bar:
             if let metric = row.metric {
@@ -260,14 +263,27 @@ struct OverviewCompactPeriodTableView: View {
                     warningMarkerPercents: metric.warningMarkerPercents,
                     workdayMarkerPercents: metric.workdayMarkerPercents,
                     workdayTickAppearance: metric.workdayTickAppearance)
+                    .frame(width: CompactTableMetrics.measureWidth(
+                        totalWidth: self.width,
+                        fixedColumns: CompactTableMetrics.providerMaxWidth
+                            + CompactTableMetrics.usedColumnWidth
+                            + CompactTableMetrics.inColumnWidth,
+                        gaps: 3))
             }
             Text(row.usedText)
                 .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
-            // Balance right-aligns in the USED column (mock placement).
+            // Balance right-aligns in the USED column (mock placement); the bar cell
+            // keeps the declared track width so USED/IN anchors never shift.
             Color.clear
+                .frame(width: CompactTableMetrics.measureWidth(
+                    totalWidth: self.width,
+                    fixedColumns: CompactTableMetrics.providerMaxWidth
+                        + CompactTableMetrics.usedColumnWidth
+                        + CompactTableMetrics.inColumnWidth,
+                    gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
                     .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
