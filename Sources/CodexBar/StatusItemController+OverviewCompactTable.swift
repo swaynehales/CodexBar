@@ -55,12 +55,14 @@ extension StatusItemController {
         control.selectedSegment = self.overviewTableGrouping == .period ? 1 : 0
         control.trackedMenu = menu
         let contentWidth = width - 2 * CompactTableMetrics.horizontalPadding
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 28))
+        // Standard iOS switch height (51×38 accessible variant, HIG); the old 22pt control
+        // sat claustrophobically tight under the menu bar.
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 44))
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
             y: 3,
             width: contentWidth,
-            height: 22)
+            height: 38)
         control.autoresizingMask = [.width]
         container.addSubview(control)
         let item = NSMenuItem()

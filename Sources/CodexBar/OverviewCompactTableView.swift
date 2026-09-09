@@ -12,6 +12,12 @@ enum CompactTableMetrics {
     static let periodColumnWidth: CGFloat = 44
     static let usedColumnWidth: CGFloat = 36
     static let inColumnWidth: CGFloat = 32
+    /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
+    /// control text so the table stays slightly smaller than toggles/footer.
+    static let bodyFontSize: CGFloat = 12.5
+    /// Provider and used-percentage cells render at control-text size; the semibold
+    /// weight carries the emphasis the operator asked for.
+    static let emphasisFontSize: CGFloat = 13
 }
 
 /// One provider's block of the compact Overview table (By provider grouping).
@@ -88,25 +94,25 @@ struct OverviewCompactTableBlockView: View {
     @ViewBuilder
     private func rowCells(for row: CompactTableRow) -> some View {
         Text(row.showProvider ? row.providerDisplayName : "")
-            .font(.footnote.weight(.semibold))
+            .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
             .lineLimit(1)
             .truncationMode(.tail)
             .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
             .gridColumnAlignment(.leading)
         Text(row.model)
-            .font(.caption)
+            .font(.system(size: CompactTableMetrics.bodyFontSize))
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
         Text(row.periodLabel)
-            .font(.caption)
+            .font(.system(size: CompactTableMetrics.bodyFontSize))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
         switch row.presentation {
         case .bar:
             self.measureCell(for: row)
             Text(row.usedText)
-                .font(.caption.monospacedDigit())
+                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
@@ -115,7 +121,7 @@ struct OverviewCompactTableBlockView: View {
             Color.clear.gridCellUnsizedAxes(.vertical)
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
-                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
@@ -125,7 +131,7 @@ struct OverviewCompactTableBlockView: View {
             }
         }
         Text(row.resetsInText)
-            .font(.caption.monospacedDigit())
+            .font(.system(size: CompactTableMetrics.bodyFontSize).monospacedDigit())
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
@@ -229,13 +235,13 @@ struct OverviewCompactPeriodTableView: View {
     @ViewBuilder
     private func rowCells(for row: CompactTableRow, showsProvider: Bool) -> some View {
         Text(showsProvider ? row.providerDisplayName : "")
-            .font(.footnote.weight(.semibold))
+            .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
             .lineLimit(1)
             .truncationMode(.tail)
             .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
             .gridColumnAlignment(.leading)
         Text(row.model)
-            .font(.caption)
+            .font(.system(size: CompactTableMetrics.bodyFontSize))
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
@@ -257,7 +263,7 @@ struct OverviewCompactPeriodTableView: View {
                     workdayTickAppearance: metric.workdayTickAppearance)
             }
             Text(row.usedText)
-                .font(.caption.monospacedDigit())
+                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
                 .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
         case .value:
@@ -265,7 +271,7 @@ struct OverviewCompactPeriodTableView: View {
             Color.clear
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
-                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
@@ -275,7 +281,7 @@ struct OverviewCompactPeriodTableView: View {
             }
         }
         Text(row.resetsInText)
-            .font(.caption.monospacedDigit())
+            .font(.system(size: CompactTableMetrics.bodyFontSize).monospacedDigit())
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
