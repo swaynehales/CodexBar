@@ -47,7 +47,7 @@ struct OverviewCompactTableBlockView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
-                            .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+                            .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         // The period column carries only narrow abbreviations (5h/Wk/Mo),
                         // too narrow for a "PERIOD" header, so its header cell stays empty.
@@ -184,7 +184,7 @@ struct OverviewCompactPeriodTableView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
-                            .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+                            .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
