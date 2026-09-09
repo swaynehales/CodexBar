@@ -1,3 +1,4 @@
+import AppKit
 import CodexBarCore
 import Foundation
 import SwiftUI
@@ -260,5 +261,21 @@ struct OverviewCompactTableModelTests {
             now: Self.now)
         #expect(rows[0].resetsInText == "26d")
         #expect(rows[1].resetsInText == "2d")
+    }
+
+    /// The By-provider table narrows the period column to an abbreviation (5h/Wk/Mo/Cr/Ot).
+    /// This guards the constant against layout regressions: if a rendered abbreviation is
+    /// ever wider than the column, the label truncates silently — fail the build instead.
+    @Test
+    func `abbreviated period labels fit the period column width`() {
+        let font = NSFont.systemFont(ofSize: CompactTableMetrics.bodyFontSize)
+        for period in [TablePeriod.session, .weekly, .monthly, .credits, .other] {
+            let label = OverviewCompactTableModel.abbreviatedPeriodLabel(period)
+            let width = NSAttributedString(string: label, attributes: [.font: font]).size().width
+            let limit = CompactTableMetrics.periodColumnWidth
+            #expect(
+                width <= limit,
+                "abbreviated label \"\(label)\" at \(width)pt does not fit \(limit)pt column")
+        }
     }
 }

@@ -1562,3 +1562,9 @@
 "overview_compact_table_subtitle" = "جدول استخدام مكثف في شاشة واحدة بدلاً من البطاقات المتراكبة.";
 "overview_grouping_provider" = "حسب الموفر";
 "overview_grouping_period" = "حسب الفترة";
+
+"compact_period_abbrev_session" = "5h";
+"compact_period_abbrev_weekly" = "Wk";
+"compact_period_abbrev_monthly" = "Mo";
+"compact_period_abbrev_credits" = "Cr";
+"compact_period_abbrev_other" = "Ot";

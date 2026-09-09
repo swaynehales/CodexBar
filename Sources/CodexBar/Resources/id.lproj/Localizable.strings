@@ -1561,3 +1561,9 @@
 "overview_compact_table_subtitle" = "Tabel penggunaan padat satu layar sebagai ganti kartu bertumpuk.";
 "overview_grouping_provider" = "Per penyedia";
 "overview_grouping_period" = "Per periode";
+
+"compact_period_abbrev_session" = "5h";
+"compact_period_abbrev_weekly" = "Wk";
+"compact_period_abbrev_monthly" = "Mo";
+"compact_period_abbrev_credits" = "Cr";
+"compact_period_abbrev_other" = "Ot";

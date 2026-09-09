@@ -1570,3 +1570,9 @@
 "overview_compact_table_subtitle" = "以单屏高密度用量表格取代堆叠卡片。";
 "overview_grouping_provider" = "按提供商";
 "overview_grouping_period" = "按周期";
+
+"compact_period_abbrev_session" = "5h";
+"compact_period_abbrev_weekly" = "Wk";
+"compact_period_abbrev_monthly" = "Mo";
+"compact_period_abbrev_credits" = "Cr";
+"compact_period_abbrev_other" = "Ot";

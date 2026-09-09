@@ -9,7 +9,7 @@ enum CompactTableMetrics {
     static let columnSpacing: CGFloat = 4
     static let providerMaxWidth: CGFloat = 112
     static let modelColumnWidth: CGFloat = 56
-    static let periodColumnWidth: CGFloat = 58
+    static let periodColumnWidth: CGFloat = 24
     static let usedColumnWidth: CGFloat = 46
     static let inColumnWidth: CGFloat = 46
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
@@ -42,16 +42,10 @@ struct OverviewCompactTableBlockView: View {
                             .textCase(.uppercase)
                             .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
-                        Text(L("compact_header_model"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-                        Text(L("compact_header_period"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
+                        // The period column carries only narrow abbreviations (5h/Wk/Mo),
+                        // too narrow for a "PERIOD" header, so its header cell stays empty.
+                        Color.clear
+                            .frame(width: CompactTableMetrics.periodColumnWidth)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
                             .font(.caption.weight(.semibold))
@@ -67,7 +61,7 @@ struct OverviewCompactTableBlockView: View {
                             .gridColumnAlignment(.trailing)
                     }
                     GridRow {
-                        Divider().gridCellColumns(6)
+                        Divider().gridCellColumns(5)
                     }
                 }
                 ForEach(self.rows) { row in
@@ -93,19 +87,24 @@ struct OverviewCompactTableBlockView: View {
 
     @ViewBuilder
     private func rowCells(for row: CompactTableRow) -> some View {
-        Text(row.showProvider ? row.providerDisplayName : "")
-            .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-            .gridColumnAlignment(.leading)
-        Text(row.model)
+        // Provider (emphasized) with the model stacked beneath it in the same column;
+        // merging the two frees the rest of the row for the flexible bar column.
+        VStack(alignment: .leading, spacing: 1) {
+            Text(row.showProvider ? row.providerDisplayName : "")
+                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Text(row.model)
+                .font(.system(size: CompactTableMetrics.bodyFontSize))
+                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+        .gridColumnAlignment(.leading)
+        Text(OverviewCompactTableModel.abbreviatedPeriodLabel(row.period))
             .font(.system(size: CompactTableMetrics.bodyFontSize))
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-        Text(row.periodLabel)
-            .font(.system(size: CompactTableMetrics.bodyFontSize))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
         switch row.presentation {

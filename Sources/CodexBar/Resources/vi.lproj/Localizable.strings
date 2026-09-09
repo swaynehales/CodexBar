@@ -1559,3 +1559,9 @@
 "overview_compact_table_subtitle" = "Bảng sử dụng dày đặc trên một màn hình thay vì các thẻ xếp chồng.";
 "overview_grouping_provider" = "Theo nhà cung cấp";
 "overview_grouping_period" = "Theo giai đoạn";
+
+"compact_period_abbrev_session" = "5h";
+"compact_period_abbrev_weekly" = "Wk";
+"compact_period_abbrev_monthly" = "Mo";
+"compact_period_abbrev_credits" = "Cr";
+"compact_period_abbrev_other" = "Ot";

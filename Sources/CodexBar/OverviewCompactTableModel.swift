@@ -251,4 +251,17 @@ enum OverviewCompactTableModel {
         case .other: L("compact_period_other")
         }
     }
+
+    /// Column-width abbreviations for the By-provider table's period column. Locale-neutral
+    /// symbols (5h/Wk/Mo/Cr/Ot); the full words stay in `periodLabel` for the By-period
+    /// section titles.
+    static func abbreviatedPeriodLabel(_ period: TablePeriod) -> String {
+        switch period {
+        case .session: L("compact_period_abbrev_session")
+        case .weekly: L("compact_period_abbrev_weekly")
+        case .monthly: L("compact_period_abbrev_monthly")
+        case .credits: L("compact_period_abbrev_credits")
+        case .other: L("compact_period_abbrev_other")
+        }
+    }
 }
