@@ -7,10 +7,15 @@ import SwiftUI
 enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
+    /// Provider cell width in the By-period view's data grid (provider over model).
     static let providerMaxWidth: CGFloat = 112
-    static let periodColumnWidth: CGFloat = 50
-    static let usedColumnWidth: CGFloat = 46
-    static let inColumnWidth: CGFloat = 46
+    // By-provider column budget (operator mock): PERIOD+MODEL = 1x, BAR = 2.5x,
+    // USED+IN = 1x of the declared remaining width. At the 480pt menu:
+    // 480 - 2*12 padding - 4*4 gaps = 440, so 1x = ~98pt and the bar ~244pt.
+    static let periodColumnWidth: CGFloat = 34
+    static let modelColumnWidth: CGFloat = 64
+    static let usedColumnWidth: CGFloat = 49
+    static let inColumnWidth: CGFloat = 49
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
     /// control text so the table stays slightly smaller than toggles/footer.
     static let metadataFontSize: CGFloat = 12
@@ -38,42 +43,44 @@ struct OverviewCompactTableBlockView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Provider heading lives OUTSIDE the data grid so the first data row is a
+            // normal single-line row aligned with its siblings; the deliberate gap below
+            // it separates heading from first data row. The menu item owns the
+            // chevron/submenu affordance, which stays attached to this heading.
+            if let heading = self.rows.first?.providerDisplayName {
+                Text(heading)
+                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .padding(.bottom, 5)
+            }
             // One shared Grid so the header's columns resolve to the same widths as the
             // body rows; separate Grids size columns independently and drift apart.
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
                 if self.showsHeader {
                     GridRow {
-                        // Two-line header labels the merged provider/model column: the
-                        // body stacks the model beneath the provider, so the header does
-                        // too (MODEL lighter than PROVIDER).
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(L("compact_header_provider"))
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                .textCase(.uppercase)
-                            Text(L("compact_header_model"))
-                                .font(.caption)
-                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                .textCase(.uppercase)
-                        }
-                        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-                        .gridColumnAlignment(.leading)
                         Text(L("compact_header_period"))
-                            .font(.caption.weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
                             .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
+                        Text(L("compact_header_model"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .lineLimit(1)
+                            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
-                            .font(.caption.weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
                             .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
                             .gridColumnAlignment(.trailing)
                         Text(L("compact_header_in"))
-                            .font(.caption.weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
                             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
@@ -84,10 +91,8 @@ struct OverviewCompactTableBlockView: View {
                     }
                 }
                 ForEach(self.rows) { row in
-                    // Bottom alignment puts the first row's period/bar/USED/IN cells on
-                    // the model subrow's line (the merged cell's bottom edge) instead of
-                    // centering them between provider heading and model; single-line rows
-                    // are unaffected since all their cells share one line.
+                    // Every data row is single-line in this schema, so bottom alignment
+                    // keeps period/model/bar/USED/IN on one shared baseline per row.
                     GridRow(alignment: .bottom) {
                         self.rowCells(for: row)
                     }
@@ -102,30 +107,20 @@ struct OverviewCompactTableBlockView: View {
 
     @ViewBuilder
     private func rowCells(for row: CompactTableRow) -> some View {
-        // Provider (emphasized) with the model stacked beneath it in the same column;
-        // merging the two frees the rest of the row for the flexible bar column. The
-        // provider line renders only on the group's first row: later rows are single-line
-        // model subrows with no reserved blank provider height.
-        VStack(alignment: .leading, spacing: 1) {
-            if row.showProvider {
-                Text(row.providerDisplayName)
-                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-            Text(row.model)
-                .font(.system(size: CompactTableMetrics.metadataFontSize))
-                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                .lineLimit(1)
-                .truncationMode(.tail)
-        }
-        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-        .gridColumnAlignment(.leading)
+        // PERIOD first, then MODEL; the literal "All" qualifier renders blank so every
+        // row keeps the same single-line rhythm while named qualifiers (Sonnet, Gemini,
+        // Claude/GPT, Core, …) stay visible. All rows are retained.
         Text(OverviewCompactTableModel.abbreviatedPeriodLabel(row.period))
             .font(.system(size: CompactTableMetrics.metadataFontSize))
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
+        Text(row.model == "All" ? "" : row.model)
+            .font(.system(size: CompactTableMetrics.metadataFontSize))
+            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
         switch row.presentation {
         case .bar:
             self.measureCell(for: row)
@@ -139,8 +134,8 @@ struct OverviewCompactTableBlockView: View {
             Color.clear
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
-                    fixedColumns: CompactTableMetrics.providerMaxWidth
-                        + CompactTableMetrics.periodColumnWidth
+                    fixedColumns: CompactTableMetrics.periodColumnWidth
+                        + CompactTableMetrics.modelColumnWidth
                         + CompactTableMetrics.usedColumnWidth
                         + CompactTableMetrics.inColumnWidth,
                     gaps: 4))
@@ -176,8 +171,8 @@ struct OverviewCompactTableBlockView: View {
                 workdayTickAppearance: metric.workdayTickAppearance)
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
-                    fixedColumns: CompactTableMetrics.providerMaxWidth
-                        + CompactTableMetrics.periodColumnWidth
+                    fixedColumns: CompactTableMetrics.periodColumnWidth
+                        + CompactTableMetrics.modelColumnWidth
                         + CompactTableMetrics.usedColumnWidth
                         + CompactTableMetrics.inColumnWidth,
                     gaps: 4))

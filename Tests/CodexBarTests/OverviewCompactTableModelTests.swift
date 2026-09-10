@@ -280,8 +280,9 @@ struct OverviewCompactTableModelTests {
                 "abbreviated label \"\(label)\" at \(width)pt does not fit \(limit)pt column")
         }
         // The header explains the column, so it must be legible at width too (the view
-        // applies a 0.75 minimum scale factor as the last-resort shrink).
-        let headerFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        // applies a 0.75 minimum scale factor as the last-resort shrink). The By-provider
+        // header renders at caption2 (11pt).
+        let headerFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
         let headerWidth = NSAttributedString(
             string: L("compact_header_period"),
             attributes: [.font: headerFont]).size().width
@@ -289,5 +290,28 @@ struct OverviewCompactTableModelTests {
         #expect(
             headerWidth <= headerLimit,
             "PERIOD header at \(headerWidth)pt cannot fit \(Int(headerLimit))pt (column at 0.75 scale)")
+    }
+
+    /// Operator column budget for the By-provider view: PERIOD+MODEL = 1x, BAR = 2.5x,
+    /// USED+IN = 1x, computed from the declared remaining menu width.
+    @Test
+    func `bar track meets the column budget ratio`() {
+        // Mirrors StatusItemController.compactOverviewMenuWidth (main-actor isolated,
+        // so the value is restated here); keep in sync when the menu width changes.
+        let menuWidth: CGFloat = 480
+        let metadataGroup = CompactTableMetrics.periodColumnWidth + CompactTableMetrics.modelColumnWidth
+        let trailingGroup = CompactTableMetrics.usedColumnWidth + CompactTableMetrics.inColumnWidth
+        let fixedColumns = metadataGroup + trailingGroup
+        let bar = CompactTableMetrics.measureWidth(
+            totalWidth: menuWidth,
+            fixedColumns: fixedColumns,
+            gaps: 4)
+        let ratio = bar / metadataGroup
+        #expect(
+            ratio >= 2.4 && ratio <= 2.6,
+            "bar track ratio \(ratio) is not the ~2.5x budget")
+        #expect(
+            abs(trailingGroup - metadataGroup) <= 2,
+            "USED+IN budget (\(trailingGroup)) drifts from PERIOD+MODEL (\(metadataGroup))")
     }
 }
