@@ -263,55 +263,75 @@ struct OverviewCompactTableModelTests {
         #expect(rows[1].resetsInText == "2d")
     }
 
-    /// The By-provider table narrows the period column to an abbreviation (5h/Wk/Mo/Cr/Ot).
-    /// This guards the constant against layout regressions: if a rendered abbreviation or
-    /// the PERIOD header is ever wider than the column, the label truncates silently —
-    /// fail the build instead.
+    /// The By-provider period cell renders the full localized period label plus an optional
+    /// qualifier symbol inside the leading track. If a label or the PERIOD header is ever
+    /// wider than the track, the cell truncates silently — fail the build instead.
     @Test
-    func `abbreviated period labels and period header fit the period column width`() {
+    func `full period labels and period header fit the leading track width`() {
         let metadataFont = NSFont.systemFont(ofSize: CompactTableMetrics.metadataFontSize)
+        // Symbol allowance: 4pt gap + a 10pt icon on qualifier-bearing rows.
+        let symbolAllowance = CompactTableMetrics.columnSpacing + CGFloat(11)
         for period in [TablePeriod.session, .weekly, .monthly, .credits, .other] {
-            let label = OverviewCompactTableModel.abbreviatedPeriodLabel(period)
+            let label = OverviewCompactTableModel.periodLabel(period)
             let width = NSAttributedString(string: label, attributes: [.font: metadataFont])
                 .size().width
-            let limit = CompactTableMetrics.periodColumnWidth
+            let limit = CompactTableMetrics.periodColumnWidth - symbolAllowance
             #expect(
                 width <= limit,
-                "abbreviated label \"\(label)\" at \(width)pt does not fit \(limit)pt column")
+                "full label \"\(label)\" at \(width)pt does not fit \(Int(limit))pt track")
         }
-        // The header explains the column, so it must be legible at width too (the view
-        // applies a 0.75 minimum scale factor as the last-resort shrink). The By-provider
-        // header renders at caption2 (11pt).
+        // The header explains the leading track; the By-provider header renders at
+        // caption2 (11pt) with a 0.75 minimum scale factor as the last-resort shrink.
         let headerFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
         let headerWidth = NSAttributedString(
             string: L("compact_header_period"),
             attributes: [.font: headerFont]).size().width
-        let headerLimit = CompactTableMetrics.periodColumnWidth / 0.75
         #expect(
-            headerWidth <= headerLimit,
-            "PERIOD header at \(headerWidth)pt cannot fit \(Int(headerLimit))pt (column at 0.75 scale)")
+            headerWidth <= CompactTableMetrics.periodColumnWidth,
+            "PERIOD header at \(headerWidth)pt does not fit \(Int(CompactTableMetrics.periodColumnWidth))pt")
     }
 
-    /// Operator column budget for the By-provider view: PERIOD+MODEL = 1x, BAR = 2.5x,
-    /// USED+IN = 1x, computed from the declared remaining menu width.
+    /// Operator column budget for the By-provider view: PERIOD = 1x, BAR = 3x, USED+IN = 1x,
+    /// computed from the declared remaining menu width (padding and Grid gaps included).
     @Test
-    func `bar track meets the column budget ratio`() {
+    func `bar track meets the 1:3:1 column budget`() {
         // Mirrors StatusItemController.compactOverviewMenuWidth (main-actor isolated,
         // so the value is restated here); keep in sync when the menu width changes.
-        let menuWidth: CGFloat = 480
-        let metadataGroup = CompactTableMetrics.periodColumnWidth + CompactTableMetrics.modelColumnWidth
+        let menuWidth: CGFloat = 456
+        let leadingTrack = CompactTableMetrics.periodColumnWidth
         let trailingGroup = CompactTableMetrics.usedColumnWidth + CompactTableMetrics.inColumnWidth
-        let fixedColumns = metadataGroup + trailingGroup
+        let gaps = 3
         let bar = CompactTableMetrics.measureWidth(
             totalWidth: menuWidth,
-            fixedColumns: fixedColumns,
-            gaps: 4)
-        let ratio = bar / metadataGroup
+            fixedColumns: leadingTrack + trailingGroup,
+            gaps: gaps)
+        let ratio = bar / leadingTrack
         #expect(
-            ratio >= 2.4 && ratio <= 2.6,
-            "bar track ratio \(ratio) is not the ~2.5x budget")
+            ratio >= 2.9 && ratio <= 3.1,
+            "bar track ratio \(ratio) is not the ~3x budget")
         #expect(
-            abs(trailingGroup - metadataGroup) <= 2,
-            "USED+IN budget (\(trailingGroup)) drifts from PERIOD+MODEL (\(metadataGroup))")
+            abs(trailingGroup - leadingTrack) <= 2,
+            "USED+IN anchors (\(trailingGroup)) drift from the period track (\(leadingTrack))")
+        // The bar is the declared remainder: padding and gaps must be charged to it, not
+        // forgotten, or the row overflows the menu.
+        let accounted = bar + leadingTrack + trailingGroup
+            + CGFloat(gaps) * CompactTableMetrics.columnSpacing
+            + 2 * CompactTableMetrics.horizontalPadding
+        #expect(
+            accounted == menuWidth,
+            "width accounting closes on \(accounted), not the \(menuWidth)pt menu")
+    }
+
+    /// The model qualifier rides after the period label as an SF Symbol; the named
+    /// qualifier drives the mapping and unassigned ones render none.
+    @Test
+    func `model qualifiers map to their assigned symbols`() {
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Fable") == "f.circle")
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Gemini") == "sparkle")
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Claude/GPT") == "asterisk.circle")
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Core") == "c.circle")
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("All") == nil)
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("") == nil)
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Sonnet") == nil)
     }
 }

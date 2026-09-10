@@ -242,7 +242,9 @@ enum OverviewCompactTableModel {
         return countdown
     }
 
-    private static func periodLabel(_ period: TablePeriod) -> String {
+    /// Full localized period label. Internal so tests can pin the By-provider period
+    /// track against the real strings; the By-period view's section titles use it too.
+    static func periodLabel(_ period: TablePeriod) -> String {
         switch period {
         case .session: L("compact_period_session")
         case .weekly: L("compact_period_weekly")
@@ -252,16 +254,16 @@ enum OverviewCompactTableModel {
         }
     }
 
-    /// Column-width abbreviations for the By-provider table's period column. Locale-neutral
-    /// symbols (5h/Wk/Mo/Cr/Ot); the full words stay in `periodLabel` for the By-period
-    /// section titles.
-    static func abbreviatedPeriodLabel(_ period: TablePeriod) -> String {
-        switch period {
-        case .session: L("compact_period_abbrev_session")
-        case .weekly: L("compact_period_abbrev_weekly")
-        case .monthly: L("compact_period_abbrev_monthly")
-        case .credits: L("compact_period_abbrev_credits")
-        case .other: L("compact_period_abbrev_other")
+    /// SF Symbol standing in for the model qualifier now that the By-provider table has no
+    /// model text column. The named qualifier drives the mapping — never the provider name.
+    /// Unassigned qualifiers and the literal "All"/empty qualifiers render no symbol.
+    static func modelQualifierSymbol(_ qualifier: String) -> String? {
+        switch qualifier {
+        case "Fable": "f.circle"
+        case "Gemini": "sparkle"
+        case "Claude/GPT": "asterisk.circle"
+        case "Core": "c.circle"
+        default: nil
         }
     }
 }

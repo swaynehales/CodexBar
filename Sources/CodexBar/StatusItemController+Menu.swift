@@ -635,10 +635,10 @@ extension StatusItemController {
                 provider: row.provider,
                 model: row.model,
                 width: tableMenuWidth)
+            self.ensureOverviewCompactHeaderInserted(row: row, into: menu, width: tableMenuWidth)
             let item: NSMenuItem = if row.tableRows != nil {
                 self.makeOverviewCompactItem(
                     row: row,
-                    showsHeader: index == 0,
                     submenu: submenu,
                     menuWidth: tableMenuWidth,
                     interactionMenu: interactionMenu)

@@ -9,13 +9,12 @@ enum CompactTableMetrics {
     static let columnSpacing: CGFloat = 4
     /// Provider cell width in the By-period view's data grid (provider over model).
     static let providerMaxWidth: CGFloat = 112
-    // By-provider column budget (operator mock): PERIOD+MODEL = 1x, BAR = 2.5x,
-    // USED+IN = 1x of the declared remaining width. At the 480pt menu:
-    // 480 - 2*12 padding - 4*4 gaps = 440, so 1x = ~98pt and the bar ~244pt.
-    static let periodColumnWidth: CGFloat = 34
-    static let modelColumnWidth: CGFloat = 64
-    static let usedColumnWidth: CGFloat = 49
-    static let inColumnWidth: CGFloat = 49
+    // By-provider column budget (operator mock): PERIOD = 1x, BAR = 3x, USED+IN = 1x of
+    // the declared remaining width. At the 456pt menu: 456 - 2*12 padding - 3*4 gaps =
+    // 420, so 1x = 84pt (period track and the USED+IN anchor group) and the bar 252pt.
+    static let periodColumnWidth: CGFloat = 84
+    static let usedColumnWidth: CGFloat = 42
+    static let inColumnWidth: CGFloat = 42
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
     /// control text so the table stays slightly smaller than toggles/footer.
     static let metadataFontSize: CGFloat = 12
@@ -32,12 +31,61 @@ enum CompactTableMetrics {
     }
 }
 
+/// Global By-provider table header (PERIOD | bar | USED | IN) plus its single divider.
+/// Hosted as its own non-interactive menu item above the first provider block so the
+/// header can never land inside a provider group. Column widths reuse the body's declared
+/// constants (the bar cell keeps its computed track width) so the two hosted views align.
+struct OverviewCompactTableHeaderView: View {
+    let width: CGFloat
+    @Environment(\.menuItemHighlighted) private var isHighlighted
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
+                GridRow {
+                    Text(L("compact_header_period"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .textCase(.uppercase)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
+                    Color.clear
+                        .gridCellUnsizedAxes(.vertical)
+                        .frame(width: CompactTableMetrics.measureWidth(
+                            totalWidth: self.width,
+                            fixedColumns: CompactTableMetrics.periodColumnWidth
+                                + CompactTableMetrics.usedColumnWidth
+                                + CompactTableMetrics.inColumnWidth,
+                            gaps: 3))
+                    Text(L("compact_header_used"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .textCase(.uppercase)
+                        .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                        .gridColumnAlignment(.trailing)
+                    Text(L("compact_header_in"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .textCase(.uppercase)
+                        .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
+                        .gridColumnAlignment(.trailing)
+                }
+            }
+            Divider()
+        }
+        .padding(.horizontal, CompactTableMetrics.horizontalPadding)
+        .padding(.top, 6)
+        .padding(.bottom, 2)
+        .frame(width: self.width, alignment: .leading)
+    }
+}
+
 /// One provider's block of the compact Overview table (By provider grouping).
 /// Hosted one-per-`NSMenuItem` so click routing, submenus, and height caching keep
 /// working exactly as they do for card rows; the menu item owns selection behavior.
 struct OverviewCompactTableBlockView: View {
     let rows: [CompactTableRow]
-    let showsHeader: Bool
     let width: CGFloat
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
@@ -54,42 +102,9 @@ struct OverviewCompactTableBlockView: View {
                     .truncationMode(.tail)
                     .padding(.bottom, 5)
             }
-            // One shared Grid so the header's columns resolve to the same widths as the
-            // body rows; separate Grids size columns independently and drift apart.
+            // One shared Grid for the provider's data rows; the global table header lives
+            // in OverviewCompactTableHeaderView, hosted above the first provider block.
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
-                if self.showsHeader {
-                    GridRow {
-                        Text(L("compact_header_period"))
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
-                        Text(L("compact_header_model"))
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .lineLimit(1)
-                            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
-                        Color.clear.gridCellUnsizedAxes(.vertical)
-                        Text(L("compact_header_used"))
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
-                            .gridColumnAlignment(.trailing)
-                        Text(L("compact_header_in"))
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
-                            .gridColumnAlignment(.trailing)
-                    }
-                    GridRow {
-                        Divider().gridCellColumns(5)
-                    }
-                }
                 ForEach(self.rows) { row in
                     // Every data row is single-line in this schema, so bottom alignment
                     // keeps period/model/bar/USED/IN on one shared baseline per row.
@@ -107,20 +122,22 @@ struct OverviewCompactTableBlockView: View {
 
     @ViewBuilder
     private func rowCells(for row: CompactTableRow) -> some View {
-        // PERIOD first, then MODEL; the literal "All" qualifier renders blank so every
-        // row keeps the same single-line rhythm while named qualifiers (Sonnet, Gemini,
-        // Claude/GPT, Core, …) stay visible. All rows are retained.
-        Text(OverviewCompactTableModel.abbreviatedPeriodLabel(row.period))
-            .font(.system(size: CompactTableMetrics.metadataFontSize))
-            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
-        Text(row.model == "All" ? "" : row.model)
-            .font(.system(size: CompactTableMetrics.metadataFontSize))
-            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .frame(width: CompactTableMetrics.modelColumnWidth, alignment: .leading)
+        // PERIOD first, then the usage bar and the trailing anchors. The model qualifier
+        // rides along as an SF Symbol after the period label ("All"/empty render none) —
+        // there is no model text column in this schema. All rows are retained.
+        HStack(alignment: .firstTextBaseline, spacing: CompactTableMetrics.columnSpacing) {
+            Text(row.periodLabel)
+                .font(.system(size: CompactTableMetrics.metadataFontSize))
+                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                .lineLimit(1)
+                .truncationMode(.tail)
+            if let symbol = OverviewCompactTableModel.modelQualifierSymbol(row.model) {
+                Image(systemName: symbol)
+                    .font(.system(size: 10))
+                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+            }
+        }
+        .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
         switch row.presentation {
         case .bar:
             self.measureCell(for: row)
@@ -135,10 +152,9 @@ struct OverviewCompactTableBlockView: View {
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
-                        + CompactTableMetrics.modelColumnWidth
                         + CompactTableMetrics.usedColumnWidth
                         + CompactTableMetrics.inColumnWidth,
-                    gaps: 4))
+                    gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
                     .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
@@ -172,10 +188,9 @@ struct OverviewCompactTableBlockView: View {
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
-                        + CompactTableMetrics.modelColumnWidth
                         + CompactTableMetrics.usedColumnWidth
                         + CompactTableMetrics.inColumnWidth,
-                    gaps: 4))
+                    gaps: 3))
         }
     }
 }

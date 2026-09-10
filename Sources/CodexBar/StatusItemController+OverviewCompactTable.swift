@@ -100,9 +100,10 @@ extension StatusItemController {
     }
 
     /// Fixed width for compact Overview table blocks. The descriptor-derived menu width is
-    /// sized for stacked cards (~310pt) and starves the six-column table; 480pt fits every
-    /// column at the enlarged body font without truncation.
-    static let compactOverviewMenuWidth: CGFloat = 480
+    /// sized for stacked cards (~310pt) and starves the table; 456pt fits the By-provider
+    /// 1:3:1 budget (84pt period track, 252pt bar, 84pt USED+IN anchors) without
+    /// truncating the full period labels.
+    static let compactOverviewMenuWidth: CGFloat = 456
 
     struct OverviewDisplayRow {
         let provider: UsageProvider
@@ -128,16 +129,47 @@ extension StatusItemController {
         }
     }
 
+    /// Identifier marking the global By-provider header item inside a menu, so repeated
+    /// block construction can never add it twice.
+    static let overviewCompactHeaderItemID = NSUserInterfaceItemIdentifier("overviewCompactHeader")
+
+    /// Adds the global By-provider table header exactly once, above the first provider
+    /// block of a compact menu — never inside one (the old first-block placement bug).
+    func ensureOverviewCompactHeaderInserted(
+        row: OverviewDisplayRow,
+        into menu: NSMenu,
+        width: CGFloat)
+    {
+        guard row.tableRows != nil,
+              !menu.items.contains(where: { $0.identifier == Self.overviewCompactHeaderItemID })
+        else { return }
+        menu.addItem(self.makeOverviewCompactHeaderItem(width: width))
+    }
+
+    /// Global By-provider header row, hosted as its own item above the first provider
+    /// block; adding it to the menu exactly once is the caller's job.
+    func makeOverviewCompactHeaderItem(width: CGFloat) -> NSMenuItem {
+        let item = self.makeMenuCardItem(
+            OverviewCompactTableHeaderView(width: width),
+            id: "overviewCompactHeader",
+            width: width,
+            heightCacheScope: "overview-compact-header",
+            heightCacheFingerprint: "v1",
+            submenu: nil,
+            usesGPUSelection: true)
+        item.identifier = Self.overviewCompactHeaderItemID
+        return item
+    }
+
     func makeOverviewCompactItem(
         row: OverviewDisplayRow,
-        showsHeader: Bool,
         submenu: NSMenu?,
         menuWidth: CGFloat,
         interactionMenu: NSMenu?) -> NSMenuItem
     {
         let tableRows = row.tableRows ?? []
         return self.makeMenuCardItem(
-            OverviewCompactTableBlockView(rows: tableRows, showsHeader: showsHeader, width: menuWidth),
+            OverviewCompactTableBlockView(rows: tableRows, width: menuWidth),
             id: "\(Self.overviewRowIdentifierPrefix)\(row.provider.rawValue)",
             width: menuWidth,
             heightCacheScope: "\(row.provider.rawValue)-compact",

@@ -1563,8 +1563,3 @@
 "overview_grouping_provider" = "ตามผู้ให้บริการ";
 "overview_grouping_period" = "ตามช่วงเวลา";
 
-"compact_period_abbrev_session" = "5h";
-"compact_period_abbrev_weekly" = "Wk";
-"compact_period_abbrev_monthly" = "Mo";
-"compact_period_abbrev_credits" = "Cr";
-"compact_period_abbrev_other" = "Ot";

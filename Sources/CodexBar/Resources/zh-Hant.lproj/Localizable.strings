@@ -1590,8 +1590,3 @@
 "overview_grouping_provider" = "按提供者";
 "overview_grouping_period" = "按期間";
 
-"compact_period_abbrev_session" = "5h";
-"compact_period_abbrev_weekly" = "Wk";
-"compact_period_abbrev_monthly" = "Mo";
-"compact_period_abbrev_credits" = "Cr";
-"compact_period_abbrev_other" = "Ot";
