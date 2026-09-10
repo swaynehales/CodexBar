@@ -272,7 +272,7 @@ struct OverviewCompactTableModelTests {
         // Symbol allowance: 4pt gap + a 10pt icon on qualifier-bearing rows.
         let symbolAllowance = CompactTableMetrics.columnSpacing + CGFloat(11)
         for period in [TablePeriod.session, .weekly, .monthly, .credits, .other] {
-            let label = OverviewCompactTableModel.periodLabel(period)
+            let label = OverviewCompactTableModel.byProviderPeriodLabel(period)
             let width = NSAttributedString(string: label, attributes: [.font: metadataFont])
                 .size().width
             let limit = CompactTableMetrics.periodColumnWidth - symbolAllowance

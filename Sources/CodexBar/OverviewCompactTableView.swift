@@ -126,7 +126,7 @@ struct OverviewCompactTableBlockView: View {
         // rides along as an SF Symbol after the period label ("All"/empty render none) —
         // there is no model text column in this schema. All rows are retained.
         HStack(alignment: .firstTextBaseline, spacing: CompactTableMetrics.columnSpacing) {
-            Text(row.periodLabel)
+            Text(OverviewCompactTableModel.byProviderPeriodLabel(row.period))
                 .font(.system(size: CompactTableMetrics.metadataFontSize))
                 .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                 .lineLimit(1)

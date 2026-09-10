@@ -254,6 +254,19 @@ enum OverviewCompactTableModel {
         }
     }
 
+    /// By-provider display words for the period track. The operator asked for the full
+    /// words Session/Week/Month here, distinct from the By-period section titles
+    /// ("Weekly"/"Monthly"); the standalone "Week"/"Month" keys ship in every locale.
+    static func byProviderPeriodLabel(_ period: TablePeriod) -> String {
+        switch period {
+        case .session: L("compact_period_session")
+        case .weekly: L("Week")
+        case .monthly: L("Month")
+        case .credits: L("compact_period_credits")
+        case .other: L("compact_period_other")
+        }
+    }
+
     /// SF Symbol standing in for the model qualifier now that the By-provider table has no
     /// model text column. The named qualifier drives the mapping — never the provider name.
     /// Unassigned qualifiers and the literal "All"/empty qualifiers render no symbol.
