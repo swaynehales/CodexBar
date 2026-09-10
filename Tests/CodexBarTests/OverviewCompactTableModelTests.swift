@@ -264,18 +264,30 @@ struct OverviewCompactTableModelTests {
     }
 
     /// The By-provider table narrows the period column to an abbreviation (5h/Wk/Mo/Cr/Ot).
-    /// This guards the constant against layout regressions: if a rendered abbreviation is
-    /// ever wider than the column, the label truncates silently — fail the build instead.
+    /// This guards the constant against layout regressions: if a rendered abbreviation or
+    /// the PERIOD header is ever wider than the column, the label truncates silently —
+    /// fail the build instead.
     @Test
-    func `abbreviated period labels fit the period column width`() {
-        let font = NSFont.systemFont(ofSize: CompactTableMetrics.bodyFontSize)
+    func `abbreviated period labels and period header fit the period column width`() {
+        let metadataFont = NSFont.systemFont(ofSize: CompactTableMetrics.metadataFontSize)
         for period in [TablePeriod.session, .weekly, .monthly, .credits, .other] {
             let label = OverviewCompactTableModel.abbreviatedPeriodLabel(period)
-            let width = NSAttributedString(string: label, attributes: [.font: font]).size().width
+            let width = NSAttributedString(string: label, attributes: [.font: metadataFont])
+                .size().width
             let limit = CompactTableMetrics.periodColumnWidth
             #expect(
                 width <= limit,
                 "abbreviated label \"\(label)\" at \(width)pt does not fit \(limit)pt column")
         }
+        // The header explains the column, so it must be legible at width too (the view
+        // applies a 0.75 minimum scale factor as the last-resort shrink).
+        let headerFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        let headerWidth = NSAttributedString(
+            string: L("compact_header_period"),
+            attributes: [.font: headerFont]).size().width
+        let headerLimit = CompactTableMetrics.periodColumnWidth / 0.75
+        #expect(
+            headerWidth <= headerLimit,
+            "PERIOD header at \(headerWidth)pt cannot fit \(Int(headerLimit))pt (column at 0.75 scale)")
     }
 }

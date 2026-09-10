@@ -8,12 +8,12 @@ enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
     static let providerMaxWidth: CGFloat = 112
-    static let periodColumnWidth: CGFloat = 24
+    static let periodColumnWidth: CGFloat = 50
     static let usedColumnWidth: CGFloat = 46
     static let inColumnWidth: CGFloat = 46
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
     /// control text so the table stays slightly smaller than toggles/footer.
-    static let bodyFontSize: CGFloat = 12.5
+    static let metadataFontSize: CGFloat = 12
     /// Provider and used-percentage cells render at control-text size; the semibold
     /// weight carries the emphasis the operator asked for.
     static let emphasisFontSize: CGFloat = 13
@@ -43,16 +43,28 @@ struct OverviewCompactTableBlockView: View {
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
                 if self.showsHeader {
                     GridRow {
-                        Text(L("compact_header_provider"))
+                        // Two-line header labels the merged provider/model column: the
+                        // body stacks the model beneath the provider, so the header does
+                        // too (MODEL lighter than PROVIDER).
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(L("compact_header_provider"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                .textCase(.uppercase)
+                            Text(L("compact_header_model"))
+                                .font(.caption)
+                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                .textCase(.uppercase)
+                        }
+                        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+                        .gridColumnAlignment(.leading)
+                        Text(L("compact_header_period"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-                            .gridColumnAlignment(.leading)
-                        // The period column carries only narrow abbreviations (5h/Wk/Mo),
-                        // too narrow for a "PERIOD" header, so its header cell stays empty.
-                        Color.clear
-                            .frame(width: CompactTableMetrics.periodColumnWidth)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                            .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
                             .font(.caption.weight(.semibold))
@@ -89,22 +101,26 @@ struct OverviewCompactTableBlockView: View {
     @ViewBuilder
     private func rowCells(for row: CompactTableRow) -> some View {
         // Provider (emphasized) with the model stacked beneath it in the same column;
-        // merging the two frees the rest of the row for the flexible bar column.
+        // merging the two frees the rest of the row for the flexible bar column. The
+        // provider line renders only on the group's first row: later rows are single-line
+        // model subrows with no reserved blank provider height.
         VStack(alignment: .leading, spacing: 1) {
-            Text(row.showProvider ? row.providerDisplayName : "")
-                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-                .lineLimit(1)
-                .truncationMode(.tail)
+            if row.showProvider {
+                Text(row.providerDisplayName)
+                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
             Text(row.model)
-                .font(.system(size: CompactTableMetrics.bodyFontSize))
+                .font(.system(size: CompactTableMetrics.metadataFontSize))
                 .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
-        .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
         .gridColumnAlignment(.leading)
         Text(OverviewCompactTableModel.abbreviatedPeriodLabel(row.period))
-            .font(.system(size: CompactTableMetrics.bodyFontSize))
+            .font(.system(size: CompactTableMetrics.metadataFontSize))
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.periodColumnWidth, alignment: .leading)
@@ -138,7 +154,7 @@ struct OverviewCompactTableBlockView: View {
             }
         }
         Text(row.resetsInText)
-            .font(.system(size: CompactTableMetrics.bodyFontSize).monospacedDigit())
+            .font(.system(size: CompactTableMetrics.metadataFontSize).monospacedDigit())
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
@@ -180,12 +196,20 @@ struct OverviewCompactPeriodTableView: View {
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
                 if self.showsHeader {
                     GridRow {
-                        Text(L("compact_header_provider"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-                            .gridColumnAlignment(.leading)
+                        // Same two-line PROVIDER/MODEL cue as the By-provider view; the
+                        // period concept is labeled by the section headers in this view.
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(L("compact_header_provider"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                .textCase(.uppercase)
+                            Text(L("compact_header_model"))
+                                .font(.caption)
+                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                .textCase(.uppercase)
+                        }
+                        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+                        .gridColumnAlignment(.leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
                         Text(L("compact_header_used"))
                             .font(.caption.weight(.semibold))
@@ -214,13 +238,19 @@ struct OverviewCompactPeriodTableView: View {
                             .gridCellColumns(4)
                             .padding(.top, 6)
                     }
-                    ForEach(Array(section.groups.enumerated()), id: \.offset) { _, group in
+                    ForEach(Array(section.groups.enumerated()), id: \.offset) { groupIndex, group in
                         ForEach(group) { row in
-                            // All rows share center alignment: the merged provider/model
-                            // cell is two lines tall in every row, so USED/IN stay
-                            // vertically aligned across bar and value rows.
+                            // All rows share center alignment so USED/IN stay vertically
+                            // aligned across bar and value rows.
                             GridRow {
                                 self.rowCells(for: row, showsProvider: row.id == group.first?.id)
+                            }
+                        }
+                        // Subtle separator after each provider block but never between
+                        // model subrows; the section header ends the last block.
+                        if groupIndex < section.groups.count - 1 {
+                            GridRow {
+                                Divider().gridCellColumns(4)
                             }
                         }
                     }
@@ -236,20 +266,23 @@ struct OverviewCompactPeriodTableView: View {
     @ViewBuilder
     private func rowCells(for row: CompactTableRow, showsProvider: Bool) -> some View {
         // Same provider→model nesting as the By-provider view: provider name once per
-        // group, model stacked directly beneath it. The section header carries the
-        // period, so no per-row period cell exists in this view.
+        // group on its own line, model subrows single-line beneath it with no reserved
+        // blank provider height. The section header carries the period, so no per-row
+        // period cell exists in this view.
         VStack(alignment: .leading, spacing: 1) {
-            Text(showsProvider ? row.providerDisplayName : "")
-                .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-                .lineLimit(1)
-                .truncationMode(.tail)
+            if showsProvider {
+                Text(row.providerDisplayName)
+                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
             Text(row.model)
-                .font(.system(size: CompactTableMetrics.bodyFontSize))
+                .font(.system(size: CompactTableMetrics.metadataFontSize))
                 .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
-        .frame(maxWidth: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
         .gridColumnAlignment(.leading)
         switch row.presentation {
         case .bar:
@@ -296,7 +329,7 @@ struct OverviewCompactPeriodTableView: View {
             }
         }
         Text(row.resetsInText)
-            .font(.system(size: CompactTableMetrics.bodyFontSize).monospacedDigit())
+            .font(.system(size: CompactTableMetrics.metadataFontSize).monospacedDigit())
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
             .lineLimit(1)
             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
