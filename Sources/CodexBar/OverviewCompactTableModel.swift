@@ -274,7 +274,7 @@ enum OverviewCompactTableModel {
         switch qualifier {
         case "Fable": "f.circle"
         case "Gemini": "sparkle"
-        case "Claude/GPT": "asterisk.circle"
+        case "Claude", "Claude/GPT": "asterisk.circle"
         case "Core": "c.circle"
         default: nil
         }

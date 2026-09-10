@@ -329,6 +329,7 @@ struct OverviewCompactTableModelTests {
         #expect(OverviewCompactTableModel.modelQualifierSymbol("Fable") == "f.circle")
         #expect(OverviewCompactTableModel.modelQualifierSymbol("Gemini") == "sparkle")
         #expect(OverviewCompactTableModel.modelQualifierSymbol("Claude/GPT") == "asterisk.circle")
+        #expect(OverviewCompactTableModel.modelQualifierSymbol("Claude") == "asterisk.circle")
         #expect(OverviewCompactTableModel.modelQualifierSymbol("Core") == "c.circle")
         #expect(OverviewCompactTableModel.modelQualifierSymbol("All") == nil)
         #expect(OverviewCompactTableModel.modelQualifierSymbol("") == nil)
