@@ -84,9 +84,11 @@ struct OverviewCompactTableBlockView: View {
                     }
                 }
                 ForEach(self.rows) { row in
-                    // All rows share center alignment: the merged provider/model cell is
-                    // two lines tall in every row, so USED/IN stay vertically aligned.
-                    GridRow {
+                    // Bottom alignment puts the first row's period/bar/USED/IN cells on
+                    // the model subrow's line (the merged cell's bottom edge) instead of
+                    // centering them between provider heading and model; single-line rows
+                    // are unaffected since all their cells share one line.
+                    GridRow(alignment: .bottom) {
                         self.rowCells(for: row)
                     }
                 }
@@ -240,9 +242,9 @@ struct OverviewCompactPeriodTableView: View {
                     }
                     ForEach(Array(section.groups.enumerated()), id: \.offset) { groupIndex, group in
                         ForEach(group) { row in
-                            // All rows share center alignment so USED/IN stay vertically
-                            // aligned across bar and value rows.
-                            GridRow {
+                            // Bottom alignment keeps every row's data cells on the model
+                            // subrow's line, first row included; see the By-provider view.
+                            GridRow(alignment: .bottom) {
                                 self.rowCells(for: row, showsProvider: row.id == group.first?.id)
                             }
                         }
