@@ -172,7 +172,7 @@ extension StatusItemController {
         let activeProviders = self.store.enabledFirstPartyProvidersForDisplay()
         return self.settings.resolvedMergedOverviewProviders(
             activeProviders: activeProviders,
-            maxVisibleProviders: SettingsStore.mergedOverviewProviderLimit).contains(.codex)
+            maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit).contains(.codex)
     }
 
     nonisolated static func menuBarPaceRefreshDelay(window: RateWindow, now: Date) -> TimeInterval? {

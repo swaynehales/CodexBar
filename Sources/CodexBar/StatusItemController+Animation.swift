@@ -1385,7 +1385,7 @@ extension StatusItemController {
             let activeProviders = self.store.enabledFirstPartyProvidersForDisplay()
             let overviewProviders = self.settings.resolvedMergedOverviewProviders(
                 activeProviders: activeProviders,
-                maxVisibleProviders: SettingsStore.mergedOverviewProviderLimit)
+                maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit)
             if let highest = self.store.providerWithHighestUsage(candidateProviders: overviewProviders) {
                 return highest.provider
             }
@@ -1399,7 +1399,7 @@ extension StatusItemController {
             let enabledProviders = self.store.enabledFirstPartyProvidersForDisplay()
             let overviewProviders = self.settings.resolvedMergedOverviewProviders(
                 activeProviders: enabledProviders,
-                maxVisibleProviders: SettingsStore.mergedOverviewProviderLimit)
+                maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit)
             if let provider = overviewProviders.first(where: { self.store.isEnabled($0) }) {
                 return provider
             }

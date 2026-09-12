@@ -240,6 +240,7 @@ struct SettingsStoreKeychainAccessPolicy {
 final class SettingsStore {
     static let sharedDefaults = SettingsStore.resolveSharedDefaults()
     static let mergedOverviewProviderLimit = 6
+    static let compactOverviewProviderLimit = UsageProvider.allCases.count
     static let productionCodexAccountReconciliationSnapshotCacheInterval: TimeInterval = 2
     static let isRunningTests = SettingsStore.resolveIsRunningTests(
         processName: ProcessInfo.processInfo.processName,

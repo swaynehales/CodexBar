@@ -3,13 +3,11 @@ import SwiftUI
 
 @MainActor
 struct MenuBarPane: View {
-    private static let maxOverviewProviders = SettingsStore.mergedOverviewProviderLimit
-
     @State private var isOverviewProviderPopoverPresented = false
     @Bindable var settings: SettingsStore
     @Bindable var store: UsageStore
 
-    static func overviewProviderLimitText(limit: Int = Self.maxOverviewProviders) -> String {
+    static func overviewProviderLimitText(limit: Int = SettingsStore.mergedOverviewProviderLimit) -> String {
         L("overview_choose_providers", String(limit))
     }
 
@@ -142,7 +140,7 @@ struct MenuBarPane: View {
 
     private var overviewProviderPopover: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(Self.overviewProviderLimitText())
+            Text(Self.overviewProviderLimitText(limit: self.overviewProviderLimitForDisplay))
                 .font(.headline)
             Text(L("overview_rows_follow_order"))
                 .font(.footnote)
@@ -163,7 +161,8 @@ struct MenuBarPane: View {
                         .toggleStyle(.checkbox)
                         .disabled(
                             !self.overviewSelectedProviders.contains(provider) &&
-                                self.overviewSelectedProviders.count >= Self.maxOverviewProviders)
+                                self.overviewSelectedProviders.count >= self.settings
+                                .mergedOverviewEffectiveProviderLimit)
                     }
                 }
             }
@@ -173,6 +172,13 @@ struct MenuBarPane: View {
         .frame(width: 280)
     }
 
+    /// The compact table admits every provider, so name the real ceiling: the active count.
+    private var overviewProviderLimitForDisplay: Int {
+        self.settings.overviewCompactTableEnabled
+            ? self.activeProvidersInOrder.count
+            : SettingsStore.mergedOverviewProviderLimit
+    }
+
     private var activeProvidersInOrder: [UsageProvider] {
         self.store.enabledFirstPartyProviders()
     }
@@ -180,7 +186,7 @@ struct MenuBarPane: View {
     private var overviewSelectedProviders: [UsageProvider] {
         self.settings.resolvedMergedOverviewProviders(
             activeProviders: self.activeProvidersInOrder,
-            maxVisibleProviders: Self.maxOverviewProviders)
+            maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit)
     }
 
     private var showsOverviewConfigureButton: Bool {
@@ -202,12 +208,12 @@ struct MenuBarPane: View {
             provider: provider,
             isSelected: isSelected,
             activeProviders: self.activeProvidersInOrder,
-            maxVisibleProviders: Self.maxOverviewProviders)
+            maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit)
     }
 
     private func reconcileOverviewSelection() {
         _ = self.settings.reconcileMergedOverviewSelectedProviders(
             activeProviders: self.activeProvidersInOrder,
-            maxVisibleProviders: Self.maxOverviewProviders)
+            maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit)
     }
 }
