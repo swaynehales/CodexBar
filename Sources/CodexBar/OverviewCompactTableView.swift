@@ -9,9 +9,9 @@ enum CompactTableMetrics {
     static let columnSpacing: CGFloat = 4
     /// Provider cell width in the By-period view's data grid (provider over model).
     static let providerMaxWidth: CGFloat = 112
-    // By-provider column budget (operator mock): PERIOD = 1x, BAR = 3x, USED+IN = 1x of
-    // the declared remaining width. At the 456pt menu: 456 - 2*12 padding - 3*4 gaps =
-    // 420, so 1x = 84pt (period track and the USED+IN anchor group) and the bar 252pt.
+    // By-provider column budget: an 84pt period track and 84pt USED+IN anchor group around
+    // the bar, which takes the declared remaining width. At the 380pt menu: 380 - 2*12
+    // padding - 3*4 gaps - 168 fixed = 176pt bar (narrowed ~30% from the original 252pt).
     static let periodColumnWidth: CGFloat = 84
     static let usedColumnWidth: CGFloat = 42
     static let inColumnWidth: CGFloat = 42
