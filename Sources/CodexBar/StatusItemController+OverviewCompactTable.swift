@@ -17,19 +17,6 @@ final class OverviewGroupingSegmentedControl: NSSegmentedControl {
 }
 
 extension StatusItemController {
-    /// Compact mode ignores the Overview provider cap: table rows are dense enough to
-    /// show every enabled provider in one pass, which is the mode's whole point.
-    func overviewProviderScopes(
-        enabledProviders: [UsageProvider],
-        compactEnabled: Bool) -> (visible: [UsageProvider], spend: [UsageProvider])
-    {
-        if compactEnabled {
-            let scopes = self.overviewProviderScopes(enabledProviders: enabledProviders)
-            return (visible: enabledProviders, spend: scopes.spend)
-        }
-        return self.overviewProviderScopes(enabledProviders: enabledProviders)
-    }
-
     var overviewTableGrouping: OverviewTableGrouping {
         get { self.overviewTableGroupingState }
         set { self.overviewTableGroupingState = newValue }

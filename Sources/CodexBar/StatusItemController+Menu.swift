@@ -571,12 +571,8 @@ extension StatusItemController {
         // Rows may be built into a detached scratch menu for in-place reconciliation;
         // interaction closures must always reference the live menu they end up serving.
         let interactionMenu = captureMenu ?? menu
-        // Compact mode ignores the Overview provider cap: table rows are dense enough to
-        // show every enabled provider in one pass, which is the mode's whole point.
         let compactEnabled = self.settings.overviewCompactTableEnabled
-        let providerScopes = self.overviewProviderScopes(
-            enabledProviders: enabledProviders,
-            compactEnabled: compactEnabled)
+        let providerScopes = self.overviewProviderScopes(enabledProviders: enabledProviders)
         // Fixed wide frame: the descriptor-derived width is sized for stacked cards and
         // starves the six-column layout.
         let tableMenuWidth = compactEnabled ? Self.compactOverviewMenuWidth : menuWidth
