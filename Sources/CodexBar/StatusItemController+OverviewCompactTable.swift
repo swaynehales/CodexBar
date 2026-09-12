@@ -87,10 +87,10 @@ extension StatusItemController {
     }
 
     /// Fixed width for compact Overview table blocks. The descriptor-derived menu width is
-    /// sized for stacked cards (~310pt) and starves the table; 456pt fits the By-provider
-    /// 1:3:1 budget (84pt period track, 252pt bar, 84pt USED+IN anchors) without
-    /// truncating the full period labels.
-    static let compactOverviewMenuWidth: CGFloat = 456
+    /// sized for stacked cards (~310pt) and starves the table; 380pt fits the By-provider
+    /// budget (84pt period track, 176pt bar, 84pt USED+IN anchors) without truncating the
+    /// full period labels.
+    static let compactOverviewMenuWidth: CGFloat = 380
 
     struct OverviewDisplayRow {
         let provider: UsageProvider

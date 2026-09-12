@@ -291,13 +291,13 @@ struct OverviewCompactTableModelTests {
             "PERIOD header at \(headerWidth)pt does not fit \(Int(CompactTableMetrics.periodColumnWidth))pt")
     }
 
-    /// Operator column budget for the By-provider view: PERIOD = 1x, BAR = 3x, USED+IN = 1x,
-    /// computed from the declared remaining menu width (padding and Grid gaps included).
+    /// Operator column budget for the By-provider view: 84pt PERIOD and USED+IN tracks around
+    /// a 176pt bar, computed from the declared remaining menu width (padding and gaps included).
     @Test
-    func `bar track meets the 1:3:1 column budget`() {
+    func `bar track meets the 84 176 84 column budget`() {
         // Mirrors StatusItemController.compactOverviewMenuWidth (main-actor isolated,
         // so the value is restated here); keep in sync when the menu width changes.
-        let menuWidth: CGFloat = 456
+        let menuWidth: CGFloat = 380
         let leadingTrack = CompactTableMetrics.periodColumnWidth
         let trailingGroup = CompactTableMetrics.usedColumnWidth + CompactTableMetrics.inColumnWidth
         let gaps = 3
@@ -305,10 +305,7 @@ struct OverviewCompactTableModelTests {
             totalWidth: menuWidth,
             fixedColumns: leadingTrack + trailingGroup,
             gaps: gaps)
-        let ratio = bar / leadingTrack
-        #expect(
-            ratio >= 2.9 && ratio <= 3.1,
-            "bar track ratio \(ratio) is not the ~3x budget")
+        #expect(bar == 176, "bar track \(bar) is not the 176pt budget")
         #expect(
             abs(trailingGroup - leadingTrack) <= 2,
             "USED+IN anchors (\(trailingGroup)) drift from the period track (\(leadingTrack))")
