@@ -301,6 +301,12 @@ extension SettingsStore {
         }
     }
 
+    /// Overview provider cap in effect: stacked cards keep the six-provider limit, while the
+    /// denser compact table admits every provider the user selects.
+    var mergedOverviewEffectiveProviderLimit: Int {
+        self.overviewCompactTableEnabled ? Self.compactOverviewProviderLimit : Self.mergedOverviewProviderLimit
+    }
+
     var resetTimesShowAbsolute: Bool {
         get { self.defaultsState.resetTimesShowAbsolute }
         set {
@@ -977,10 +983,10 @@ extension SettingsStore {
         get {
             Self.decodeProviders(
                 self.mergedOverviewSelectedProvidersRaw,
-                maxCount: Self.mergedOverviewProviderLimit)
+                maxCount: Self.compactOverviewProviderLimit)
         }
         set {
-            let normalized = Self.normalizeProviders(newValue, maxCount: Self.mergedOverviewProviderLimit)
+            let normalized = Self.normalizeProviders(newValue, maxCount: Self.compactOverviewProviderLimit)
             self.mergedOverviewSelectedProvidersRaw = normalized.map(\.rawValue)
         }
     }
@@ -1022,14 +1028,18 @@ extension SettingsStore {
 
     func resolvedMergedOverviewProviders(
         activeProviders: [UsageProvider],
-        maxVisibleProviders: Int = SettingsStore.mergedOverviewProviderLimit) -> [UsageProvider]
+        maxVisibleProviders: Int? = nil) -> [UsageProvider]
     {
+        let maxVisibleProviders = maxVisibleProviders ?? self.mergedOverviewEffectiveProviderLimit
         guard maxVisibleProviders > 0 else { return [] }
         let normalizedActive = Self.normalizeProviders(activeProviders)
         guard self.hasMergedOverviewSelectionPreference else {
             return Array(normalizedActive.prefix(maxVisibleProviders))
         }
+        // Under a real cap, a stale selection falls back to every active provider when they all
+        // fit. The uncapped compact table has no such fallback: the stored selection governs.
         if normalizedActive.count <= maxVisibleProviders,
+           maxVisibleProviders < Self.compactOverviewProviderLimit,
            !self.mergedOverviewSelectionApplies(to: normalizedActive)
         {
             return normalizedActive
@@ -1042,8 +1052,9 @@ extension SettingsStore {
     @discardableResult
     func reconcileMergedOverviewSelectedProviders(
         activeProviders: [UsageProvider],
-        maxVisibleProviders: Int = SettingsStore.mergedOverviewProviderLimit) -> [UsageProvider]
+        maxVisibleProviders: Int? = nil) -> [UsageProvider]
     {
+        let maxVisibleProviders = maxVisibleProviders ?? self.mergedOverviewEffectiveProviderLimit
         guard maxVisibleProviders > 0 else {
             self.clearMergedOverviewSelectionPreference()
             return []
@@ -1056,14 +1067,14 @@ extension SettingsStore {
         }
 
         let shouldPersistResolvedSelection = normalizedActive.count > maxVisibleProviders ||
+            maxVisibleProviders >= Self.compactOverviewProviderLimit ||
             self.mergedOverviewSelectionApplies(to: normalizedActive)
 
         if self.hasMergedOverviewSelectionPreference, shouldPersistResolvedSelection {
             let selectedSet = Set(self.mergedOverviewSelectedProviders)
-            let sanitizedSelection = Array(
-                normalizedActive
-                    .filter { selectedSet.contains($0) }
-                    .prefix(maxVisibleProviders))
+            // Keep selections beyond the cap in storage so switching the compact table off and
+            // back on restores them; resolution applies the cap when rendering.
+            let sanitizedSelection = normalizedActive.filter { selectedSet.contains($0) }
             if sanitizedSelection != self.mergedOverviewSelectedProviders {
                 self.mergedOverviewSelectedProviders = sanitizedSelection
             }
@@ -1079,8 +1090,9 @@ extension SettingsStore {
         provider: UsageProvider,
         isSelected: Bool,
         activeProviders: [UsageProvider],
-        maxVisibleProviders: Int = SettingsStore.mergedOverviewProviderLimit) -> [UsageProvider]
+        maxVisibleProviders: Int? = nil) -> [UsageProvider]
     {
+        let maxVisibleProviders = maxVisibleProviders ?? self.mergedOverviewEffectiveProviderLimit
         guard maxVisibleProviders > 0 else {
             self.clearMergedOverviewSelectionPreference()
             return []

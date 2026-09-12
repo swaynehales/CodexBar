@@ -45,7 +45,7 @@ extension StatusItemController {
 
         let includesOverview = !self.settings.resolvedMergedOverviewProviders(
             activeProviders: enabledProviders,
-            maxVisibleProviders: SettingsStore.mergedOverviewProviderLimit).isEmpty
+            maxVisibleProviders: self.settings.mergedOverviewEffectiveProviderLimit).isEmpty
         var selections = enabledProviders.map { ProviderSwitcherSelection.provider($0.instanceID) }
         if includesOverview {
             selections.insert(.overview, at: 0)
