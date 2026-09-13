@@ -1553,6 +1553,7 @@
 "compact_header_period" = "الفترة";
 "compact_header_used" = "المستخدم";
 "compact_header_in" = "بعد";
+"compact_header_at" = "عند";
 "compact_period_session" = "جلسة";
 "compact_period_weekly" = "أسبوعي";
 "compact_period_monthly" = "شهري";

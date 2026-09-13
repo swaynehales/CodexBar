@@ -1549,6 +1549,7 @@
 "compact_header_period" = "期間";
 "compact_header_used" = "使用量";
 "compact_header_in" = "あと";
+"compact_header_at" = "時刻";
 "compact_period_session" = "セッション";
 "compact_period_weekly" = "週次";
 "compact_period_monthly" = "月次";

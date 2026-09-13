@@ -1547,6 +1547,7 @@
 "compact_header_period" = "Período";
 "compact_header_used" = "Usado";
 "compact_header_in" = "En";
+"compact_header_at" = "A las";
 "compact_period_session" = "Sesión";
 "compact_period_weekly" = "Semanal";
 "compact_period_monthly" = "Mensual";

@@ -636,6 +636,7 @@
 "compact_header_period" = "Period";
 "compact_header_used" = "Used";
 "compact_header_in" = "In";
+"compact_header_at" = "At";
 "configure" = "Configure…";
 "overview_enable_merge_icons_hint" = "Turn on Merge icons to configure Overview providers.";
 "overview_no_providers_hint" = "No enabled providers available for Overview.";

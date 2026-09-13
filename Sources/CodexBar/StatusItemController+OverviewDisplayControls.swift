@@ -22,6 +22,11 @@ final class OverviewDisplaySegmentedControl: NSSegmentedControl {
     weak var trackedMenu: NSMenu?
 }
 
+struct OverviewDisplayState {
+    var layouts: [ObjectIdentifier: OverviewCompactTableLayout] = [:]
+    var viewportRequests: [ObjectIdentifier: OverviewDisplayViewportRequest] = [:]
+}
+
 struct OverviewDisplayViewportRequest {
     let id = UUID()
     let generation: Int
@@ -62,11 +67,11 @@ extension StatusItemController {
         if menu !== self.mergedMenu {
             self.advanceMenuInteraction(for: menu)
         }
-        self.overviewDisplayViewportRequests.removeValue(forKey: key)
+        self.overviewDisplayState.viewportRequests.removeValue(forKey: key)
         if let generation = self.menuSession.menuInteractionGeneration(for: key),
            let scroll = Self.attachedMenuScrollView(in: menu), let document = scroll.documentView
         {
-            self.overviewDisplayViewportRequests[key] = OverviewDisplayViewportRequest(
+            self.overviewDisplayState.viewportRequests[key] = OverviewDisplayViewportRequest(
                 generation: generation,
                 distanceFromTop: OverviewDisplayViewportRequest.distance(
                     offset: scroll.contentView.bounds.origin.y,
@@ -77,39 +82,41 @@ extension StatusItemController {
         self.requestProviderSwitcherMenuRebuild(menu, provider: nil)
     }
 
+    func makeOverviewDisplayGroup(axis: OverviewDisplayAxis, menu: NSMenu) -> NSStackView {
+        let control = OverviewDisplaySegmentedControl(
+            labels: axis.choices,
+            trackingMode: .selectOne,
+            target: self,
+            action: #selector(self.overviewDisplayChoiceChanged(_:)))
+        control.axis = axis
+        control.trackedMenu = menu
+        control.controlSize = .small
+        control.font = .systemFont(ofSize: 11)
+        control.segmentDistribution = .fillEqually
+        control.selectedSegment = axis == .usage
+            ? (self.settings.usageBarsShowUsed ? 0 : 1)
+            : (self.settings.resetTimesShowAbsolute ? 1 : 0)
+        control.setAccessibilityLabel(axis.label)
+        control.sizeToFit()
+        let label = NSTextField(labelWithString: axis.label)
+        label.font = .systemFont(ofSize: 10)
+        label.textColor = .secondaryLabelColor
+        let group = NSStackView(views: [label, control])
+        group.orientation = .vertical
+        group.alignment = .leading
+        group.spacing = 4
+        return group
+    }
+
     func makeOverviewDisplayControls(menu: NSMenu, width: CGFloat) -> NSView {
-        let axes: [OverviewDisplayAxis] = [.usage]
-        let groups = axes.map { axis -> NSStackView in
-            let control = OverviewDisplaySegmentedControl(
-                labels: axis.choices,
-                trackingMode: .selectOne,
-                target: self,
-                action: #selector(self.overviewDisplayChoiceChanged(_:)))
-            control.axis = axis
-            control.trackedMenu = menu
-            control.controlSize = .small
-            control.font = .systemFont(ofSize: 11)
-            control.segmentDistribution = .fillEqually
-            control.selectedSegment = axis == .usage
-                ? (self.settings.usageBarsShowUsed ? 0 : 1)
-                : (self.settings.resetTimesShowAbsolute ? 1 : 0)
-            control.setAccessibilityLabel(axis.label)
-            control.sizeToFit()
-            let label = NSTextField(labelWithString: axis.label)
-            label.font = .systemFont(ofSize: 10)
-            label.textColor = .secondaryLabelColor
-            let group = NSStackView(views: [label, control])
-            group.orientation = .vertical
-            group.alignment = .leading
-            group.spacing = 4
-            return group
-        }
+        let groups = OverviewDisplayAxis.allCases.map { self.makeOverviewDisplayGroup(axis: $0, menu: menu) }
         let content = NSStackView(views: groups)
-        content.orientation = .vertical
-        content.alignment = .leading
-        content.spacing = 8
+        let stacks = self.overviewCompactLayout(for: menu).stacksControls
+        content.orientation = stacks ? .vertical : .horizontal
+        content.alignment = stacks ? .leading : .top
+        content.spacing = stacks ? 8 : 12
         let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: content.fittingSize.height + 12))
-        content.frame = NSRect(x: 12, y: 6, width: width - 24, height: content.fittingSize.height)
+        content.frame = NSRect(x: 12, y: 6, width: max(0, width - 24), height: content.fittingSize.height)
         container.autoresizingMask = [.width]
         content.autoresizingMask = [.width]
         container.addSubview(content)
@@ -118,13 +125,13 @@ extension StatusItemController {
 
     func restoreOverviewDisplayViewportAfterLayout(in menu: NSMenu) {
         let key = ObjectIdentifier(menu)
-        guard let request = self.overviewDisplayViewportRequests[key] else { return }
+        guard let request = self.overviewDisplayState.viewportRequests[key] else { return }
         ProviderSwitcherTrackingRunLoopScheduler.schedule { [weak self, weak menu] in
             guard let self, let menu,
                   self.openMenus[key] === menu,
-                  self.overviewDisplayViewportRequests[key]?.id == request.id
+                  self.overviewDisplayState.viewportRequests[key]?.id == request.id
             else { return }
-            self.overviewDisplayViewportRequests.removeValue(forKey: key)
+            self.overviewDisplayState.viewportRequests.removeValue(forKey: key)
             guard self.menuSession.isCurrentMenuInteraction(request.generation, for: key),
                   let scroll = Self.attachedMenuScrollView(in: menu), let document = scroll.documentView
             else { return }

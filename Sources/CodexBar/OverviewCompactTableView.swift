@@ -7,14 +7,11 @@ import SwiftUI
 enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
-    /// Provider cell width in the By-period view's data grid (provider over model).
+    /// Provider cell width in the By-period view's data grid (provider plus model symbol).
     static let providerMaxWidth: CGFloat = 112
-    // By-provider column budget: an 84pt period track and 84pt USED+IN anchor group around
-    // the bar, which takes the declared remaining width. At the 380pt menu: 380 - 2*12
-    // padding - 3*4 gaps - 168 fixed = 176pt bar (narrowed ~30% from the original 252pt).
+    /// Fixed leading/percentage tracks; reset width comes from the shared measured layout.
     static let periodColumnWidth: CGFloat = 84
     static let usedColumnWidth: CGFloat = 42
-    static let inColumnWidth: CGFloat = 42
     /// Regular cell text sits ~3/4 of the way from the old caption (12) to the 13pt
     /// control text so the table stays slightly smaller than toggles/footer.
     static let metadataFontSize: CGFloat = 12
@@ -27,7 +24,7 @@ enum CompactTableMetrics {
     /// width. `fixedColumns` is the sum of the leading/trailing fixed column widths and
     /// `gaps` the Grid's horizontal gaps for that view's column count.
     static func measureWidth(totalWidth: CGFloat, fixedColumns: CGFloat, gaps: Int) -> CGFloat {
-        totalWidth - 2 * self.horizontalPadding - fixedColumns - CGFloat(gaps) * self.columnSpacing
+        max(0, totalWidth - 2 * self.horizontalPadding - fixedColumns - CGFloat(gaps) * self.columnSpacing)
     }
 }
 
@@ -38,6 +35,9 @@ enum CompactTableMetrics {
 struct OverviewCompactTableHeaderView: View {
     let showUsed: Bool
     let width: CGFloat
+    var showAbsolute = false
+    var resetWidth: CGFloat = 130
+    var wrapClock = false
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -57,7 +57,7 @@ struct OverviewCompactTableHeaderView: View {
                             totalWidth: self.width,
                             fixedColumns: CompactTableMetrics.periodColumnWidth
                                 + CompactTableMetrics.usedColumnWidth
-                                + CompactTableMetrics.inColumnWidth,
+                                + self.resetWidth,
                             gaps: 3))
                     Color.clear
                         .frame(width: CompactTableMetrics.usedColumnWidth, height: 14)
@@ -69,11 +69,11 @@ struct OverviewCompactTableHeaderView: View {
                                 .fixedSize()
                         }
                         .gridColumnAlignment(.trailing)
-                    Text(L("compact_header_in"))
+                    Text(L(self.showAbsolute ? "compact_header_at" : "compact_header_in"))
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                         .textCase(.uppercase)
-                        .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
+                        .frame(width: self.resetWidth, alignment: .trailing)
                         .gridColumnAlignment(.trailing)
                 }
             }
@@ -92,6 +92,9 @@ struct OverviewCompactTableHeaderView: View {
 struct OverviewCompactTableBlockView: View {
     let rows: [CompactTableRow]
     let width: CGFloat
+    var showAbsolute = false
+    var resetWidth: CGFloat = 130
+    var wrapClock = false
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -111,9 +114,8 @@ struct OverviewCompactTableBlockView: View {
             // in OverviewCompactTableHeaderView, hosted above the first provider block.
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
                 ForEach(self.rows) { row in
-                    // Every data row is single-line in this schema, so bottom alignment
-                    // keeps period/model/bar/USED/IN on one shared baseline per row.
-                    GridRow(alignment: .bottom) {
+                    // Keep bars centered when an absolute reset wraps to date and time.
+                    GridRow(alignment: .center) {
                         self.rowCells(for: row)
                     }
                 }
@@ -158,7 +160,7 @@ struct OverviewCompactTableBlockView: View {
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
                         + CompactTableMetrics.usedColumnWidth
-                        + CompactTableMetrics.inColumnWidth,
+                        + self.resetWidth,
                     gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
@@ -171,11 +173,12 @@ struct OverviewCompactTableBlockView: View {
                     .frame(width: CompactTableMetrics.usedColumnWidth)
             }
         }
-        Text(row.resetsInText)
-            .font(.system(size: CompactTableMetrics.metadataFontSize).monospacedDigit())
+        OverviewCompactResetCell(
+            text: row.resetText,
+            showAbsolute: self.showAbsolute,
+            width: self.resetWidth,
+            wrapClock: self.wrapClock)
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
     }
 
     @ViewBuilder
@@ -194,7 +197,7 @@ struct OverviewCompactTableBlockView: View {
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
                         + CompactTableMetrics.usedColumnWidth
-                        + CompactTableMetrics.inColumnWidth,
+                        + self.resetWidth,
                     gaps: 3))
         }
     }
@@ -207,6 +210,9 @@ struct OverviewCompactPeriodTableView: View {
     let showsHeader: Bool
     let showUsed: Bool
     let width: CGFloat
+    var showAbsolute = false
+    var resetWidth: CGFloat = 130
+    var wrapClock = false
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -231,11 +237,11 @@ struct OverviewCompactPeriodTableView: View {
                                     .fixedSize()
                             }
                             .gridColumnAlignment(.trailing)
-                        Text(L("compact_header_in"))
+                        Text(L(self.showAbsolute ? "compact_header_at" : "compact_header_in"))
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
+                            .frame(width: self.resetWidth, alignment: .trailing)
                             .gridColumnAlignment(.trailing)
                     }
                     GridRow {
@@ -303,7 +309,7 @@ struct OverviewCompactPeriodTableView: View {
                         totalWidth: self.width,
                         fixedColumns: CompactTableMetrics.providerMaxWidth
                             + CompactTableMetrics.usedColumnWidth
-                            + CompactTableMetrics.inColumnWidth,
+                            + self.resetWidth,
                         gaps: 3))
             }
             Text(row.usedText)
@@ -318,7 +324,7 @@ struct OverviewCompactPeriodTableView: View {
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.providerMaxWidth
                         + CompactTableMetrics.usedColumnWidth
-                        + CompactTableMetrics.inColumnWidth,
+                        + self.resetWidth,
                     gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
                 Text(valueText)
@@ -331,10 +337,30 @@ struct OverviewCompactPeriodTableView: View {
                     .frame(width: CompactTableMetrics.usedColumnWidth)
             }
         }
-        Text(row.resetsInText)
-            .font(.system(size: CompactTableMetrics.metadataFontSize).monospacedDigit())
+        OverviewCompactResetCell(
+            text: row.resetText,
+            showAbsolute: self.showAbsolute,
+            width: self.resetWidth,
+            wrapClock: self.wrapClock)
             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .lineLimit(1)
-            .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
+    }
+}
+
+/// Derive date/time lines from the Date, never by splitting a localized clock string.
+private struct OverviewCompactResetCell: View {
+    let text: OverviewCompactResetText
+    let showAbsolute: Bool
+    let width: CGFloat
+    let wrapClock: Bool
+
+    var body: some View {
+        let font = NSFont.monospacedDigitSystemFont(ofSize: CompactTableMetrics.metadataFontSize, weight: .regular)
+        let exceedsWidth = (self.text.clock as NSString).size(withAttributes: [.font: font]).width > self.width
+        Text(self.text.lines(showAbsolute: self.showAbsolute, wrapClock: self.wrapClock || exceedsWidth)
+            .joined(separator: "\n"))
+            .font(.system(size: CompactTableMetrics.metadataFontSize).monospacedDigit())
+            .multilineTextAlignment(.trailing)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(width: self.width, alignment: .trailing)
     }
 }

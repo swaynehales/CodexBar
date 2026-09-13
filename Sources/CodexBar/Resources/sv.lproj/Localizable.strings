@@ -1548,6 +1548,7 @@
 "compact_header_period" = "Period";
 "compact_header_used" = "Använt";
 "compact_header_in" = "Om";
+"compact_header_at" = "Kl.";
 "compact_period_session" = "Session";
 "compact_period_weekly" = "Veckovis";
 "compact_period_monthly" = "Månadsvis";

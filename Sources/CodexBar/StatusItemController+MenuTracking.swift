@@ -8,6 +8,7 @@ extension StatusItemController {
         }
         let menuID = ObjectIdentifier(menu)
         let generation = self.menuSession.beginTrackingSession(menuID)
+        self.adoptRenderedOverviewLayout(in: menu)
         (menu as? StatusItemMenu)?.menuInteractionGeneration = generation
     }
 

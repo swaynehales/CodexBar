@@ -1553,6 +1553,7 @@
 "compact_header_period" = "دوره";
 "compact_header_used" = "استفاده‌شده";
 "compact_header_in" = "تا";
+"compact_header_at" = "در ساعت";
 "compact_period_session" = "جلسه";
 "compact_period_weekly" = "هفتگی";
 "compact_period_monthly" = "ماهانه";

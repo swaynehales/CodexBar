@@ -1552,6 +1552,7 @@
 "compact_header_period" = "Periodo";
 "compact_header_used" = "Usato";
 "compact_header_in" = "Tra";
+"compact_header_at" = "Alle";
 "compact_period_session" = "Sessione";
 "compact_period_weekly" = "Settimanale";
 "compact_period_monthly" = "Mensile";

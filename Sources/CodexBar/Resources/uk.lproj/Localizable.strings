@@ -1549,6 +1549,7 @@
 "compact_header_period" = "Період";
 "compact_header_used" = "Використано";
 "compact_header_in" = "Через";
+"compact_header_at" = "О";
 "compact_period_session" = "Сесія";
 "compact_period_weekly" = "Тижневий";
 "compact_period_monthly" = "Місячний";
