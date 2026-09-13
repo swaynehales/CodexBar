@@ -1562,3 +1562,9 @@
 "overview_compact_table_subtitle" = "جدول استفاده فشرده در یک صفحه به‌جای کارت‌های انباشته.";
 "overview_grouping_provider" = "بر اساس ارائه‌دهنده";
 "overview_grouping_period" = "بر اساس دوره";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "باقی‌مانده";
+"compact_refresh_updated" = "به‌روزرسانی در %@";
+"compact_refresh_completed" = "به‌روزرسانی تکمیل شد %@";
+"compact_refresh_partial" = "برخی ارائه‌دهندگان ناموفق بودند";

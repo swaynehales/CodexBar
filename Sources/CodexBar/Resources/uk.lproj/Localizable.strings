@@ -1558,3 +1558,9 @@
 "overview_compact_table_subtitle" = "Щільна таблиця використання на одному екрані замість карток.";
 "overview_grouping_provider" = "За постачальником";
 "overview_grouping_period" = "За періодом";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Залишилося";
+"compact_refresh_updated" = "Оновлено %@";
+"compact_refresh_completed" = "Оновлення завершено %@";
+"compact_refresh_partial" = "Збій деяких провайдерів";

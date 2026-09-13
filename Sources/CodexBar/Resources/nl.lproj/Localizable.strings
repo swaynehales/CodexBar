@@ -1557,3 +1557,9 @@
 "overview_compact_table_subtitle" = "Dichte gebruikstabel op één scherm in plaats van gestapelde kaarten.";
 "overview_grouping_provider" = "Per aanbieder";
 "overview_grouping_period" = "Per periode";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Resterend";
+"compact_refresh_updated" = "Bijgewerkt om %@";
+"compact_refresh_completed" = "Vernieuwen voltooid %@";
+"compact_refresh_partial" = "Sommige providers mislukt";

@@ -1558,3 +1558,9 @@
 "overview_compact_table_subtitle" = "Dichte Nutzungstabelle auf einem Bildschirm statt gestapelter Karten.";
 "overview_grouping_provider" = "Nach Anbieter";
 "overview_grouping_period" = "Nach Zeitraum";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Verbleibend";
+"compact_refresh_updated" = "Aktualisiert um %@";
+"compact_refresh_completed" = "Aktualisierung abgeschlossen %@";
+"compact_refresh_partial" = "Einige Anbieter fehlgeschlagen";
