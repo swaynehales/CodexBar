@@ -174,6 +174,7 @@ extension StatusItemController {
 
     func forgetClosedMenu(_ menu: NSMenu) {
         let key = ObjectIdentifier(menu)
+        self.overviewDisplayViewportRequests.removeValue(forKey: key)
         let wasMergedMenu = menu === self.mergedMenu
 
         self.endMenuTrackingSession(for: menu)
@@ -421,7 +422,10 @@ extension StatusItemController {
         context: MenuRebuildContext)
     {
         self.performMenuMutationWithoutAnimation {
-            defer { self.flushHostedMenuRowRendering(in: menu) }
+            defer {
+                self.flushHostedMenuRowRendering(in: menu)
+                self.restoreOverviewDisplayViewportAfterLayout(in: menu)
+            }
             let displacedSelection = self.lastMergedMenuContentSelection
             self.lastMergedMenuContentSelection = nil
             self.harvestRecyclableMenuCardViews(in: menu, fromIndex: 0, displacedSelection: displacedSelection)

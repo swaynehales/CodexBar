@@ -98,20 +98,23 @@ extension StatusItemController {
             ceil($0.cell?.cellSize(forBounds: NSRect(
                 x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
         } ?? 0
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight))
+        let displayControls = self.makeOverviewDisplayControls(menu: menu, width: width)
+        let controlsHeight = displayControls.frame.height
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight + controlsHeight))
         control.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
-            y: 3 + statusHeight,
+            y: 3 + statusHeight + controlsHeight,
             width: contentWidth,
             height: 42)
         control.autoresizingMask = [.width]
         container.addSubview(control)
         if let label = statusLabel {
-            label.frame = NSRect(x: 12, y: 2, width: contentWidth, height: statusHeight)
+            label.frame = NSRect(x: 12, y: 2 + controlsHeight, width: contentWidth, height: statusHeight)
             label.autoresizingMask = [.width]
             container.addSubview(label)
         }
+        container.addSubview(displayControls)
         let item = NSMenuItem()
         item.view = container
         item.isEnabled = false
