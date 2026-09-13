@@ -31,7 +31,23 @@ extension StatusItemController {
         at date: Date = Date())
     {
         guard scope == .global, completed else { return }
-        let failed = providers.contains { self.store.errors[$0] != nil || self.store.snapshots[$0] == nil }
+        let failed = providers.contains { provider in
+            if self.store.errors[provider] != nil {
+                return true
+            }
+            let unavailable = self.store.knownLimitsAvailabilityByProvider[provider]?.isUnavailable == true
+            let attempts = self.store.lastFetchAttempts[provider] ?? []
+            // Presentation state can preserve cached data and suppress a failed probe's error.
+            if !attempts.isEmpty {
+                guard let lastAvailable = attempts.last(where: \.wasAvailable) else { return true }
+                if let error = lastAvailable.errorDescription {
+                    // Provider-specific by design: Claude reports unavailable quotas through its error channel.
+                    return !(provider.firstPartyProvider == .claude && unavailable &&
+                        ClaudeStatusProbe.isSubscriptionQuotaUnavailableDescription(error))
+                }
+            }
+            return self.store.snapshots[provider] == nil && !unavailable
+        }
         let previous = self.compactGlobalRefreshStatus
             ?? OverviewCompactRefreshStatus(completedAt: date, hadFailures: failed)
         let record = previous.recordingCompletion(isGlobal: true, completed: true, at: date, hadFailures: failed)

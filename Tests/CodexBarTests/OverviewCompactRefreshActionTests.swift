@@ -58,6 +58,52 @@ struct OverviewCompactRefreshActionTests {
         #expect(controller.compactGlobalRefreshStatus == record)
     }
 
+    @Test
+    func `refresh status distinguishes retained data from a successful unavailable quota response`() throws {
+        let controller = self.makeController(settings: self.makeSettings())
+        defer { controller.prepareForAppShutdown() }
+        let store = controller.store
+        let provider = UsageProvider.claude.instanceID
+        store.snapshots[provider] = UsageSnapshot(
+            primary: RateWindow(usedPercent: 12, windowMinutes: 300, resetsAt: nil, resetDescription: nil),
+            secondary: nil,
+            updatedAt: Date(timeIntervalSince1970: 1_800_000_000))
+        let cached = store.snapshots[provider]
+        store.errors[provider] = nil
+        store.lastFetchAttempts[provider] = [ProviderFetchAttempt(
+            strategyID: "test.oauth", kind: .oauth, wasAvailable: true, errorDescription: "Rate limited")]
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [provider])
+        #expect(try #require(controller.compactGlobalRefreshStatus).hadFailures)
+
+        store.snapshots[provider] = nil
+        store.knownLimitsAvailabilityByProvider[provider] = .unavailable
+        store.lastFetchAttempts[provider] = [ProviderFetchAttempt(
+            strategyID: "test.cli",
+            kind: .cli,
+            wasAvailable: true,
+            errorDescription: ClaudeStatusProbe.subscriptionQuotaUnavailableDescription)]
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [provider])
+        #expect(try !#require(controller.compactGlobalRefreshStatus).hadFailures)
+
+        // A later timeout can retain the unavailable state; it is still a failed refresh.
+        store.lastFetchAttempts[provider] = [ProviderFetchAttempt(
+            strategyID: "test.cli", kind: .cli, wasAvailable: true, errorDescription: "Timed out")]
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [provider])
+        #expect(try #require(controller.compactGlobalRefreshStatus).hadFailures)
+
+        store.knownLimitsAvailabilityByProvider[provider] = nil
+        store.snapshots[provider] = cached
+        store.lastFetchAttempts[provider]?.append(ProviderFetchAttempt(
+            strategyID: "test.fallback", kind: .web, wasAvailable: true, errorDescription: nil))
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [provider])
+        #expect(try !#require(controller.compactGlobalRefreshStatus).hadFailures)
+
+        store.lastFetchAttempts[provider] = [ProviderFetchAttempt(
+            strategyID: "test.unavailable", kind: .cli, wasAvailable: false, errorDescription: nil)]
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [provider])
+        #expect(try #require(controller.compactGlobalRefreshStatus).hadFailures)
+    }
+
     private func makeSettings() -> SettingsStore {
         testSettingsStore(suiteName: "OverviewCompactRefreshActionTests")
     }
