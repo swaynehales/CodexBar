@@ -1562,3 +1562,9 @@
 "overview_compact_table_subtitle" = "جدول استخدام مكثف في شاشة واحدة بدلاً من البطاقات المتراكبة.";
 "overview_grouping_provider" = "حسب الموفر";
 "overview_grouping_period" = "حسب الفترة";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "المتبقي";
+"compact_refresh_updated" = "تم التحديث في %@";
+"compact_refresh_completed" = "اكتمل التحديث %@";
+"compact_refresh_partial" = "فشل بعض المزوّدين";

@@ -36,6 +36,7 @@ enum CompactTableMetrics {
 /// header can never land inside a provider group. Column widths reuse the body's declared
 /// constants (the bar cell keeps its computed track width) so the two hosted views align.
 struct OverviewCompactTableHeaderView: View {
+    let showUsed: Bool
     let width: CGFloat
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
@@ -58,11 +59,15 @@ struct OverviewCompactTableHeaderView: View {
                                 + CompactTableMetrics.usedColumnWidth
                                 + CompactTableMetrics.inColumnWidth,
                             gaps: 3))
-                    Text(L("compact_header_used"))
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                        .textCase(.uppercase)
-                        .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                    Color.clear
+                        .frame(width: CompactTableMetrics.usedColumnWidth, height: 14)
+                        .overlay(alignment: .trailing) {
+                            Text(OverviewCompactTableModel.percentageHeader(showUsed: self.showUsed))
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                .textCase(.uppercase)
+                                .fixedSize()
+                        }
                         .gridColumnAlignment(.trailing)
                     Text(L("compact_header_in"))
                         .font(.caption2.weight(.semibold))
@@ -195,11 +200,12 @@ struct OverviewCompactTableBlockView: View {
     }
 }
 
-/// By-period transposed table: one Grid, one section per period, provider shown once per
-/// contiguous provider group inside each section. Read-only (no per-row click routing yet).
+/// By-period table: single-line provider/model rows grouped under period headings.
+/// Read-only (no per-row click routing yet).
 struct OverviewCompactPeriodTableView: View {
     let sections: [OverviewCompactTableModel.PeriodSection]
     let showsHeader: Bool
+    let showUsed: Bool
     let width: CGFloat
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
@@ -208,29 +214,25 @@ struct OverviewCompactPeriodTableView: View {
             Grid(horizontalSpacing: CompactTableMetrics.columnSpacing, verticalSpacing: 5) {
                 if self.showsHeader {
                     GridRow {
-                        // Same two-line PROVIDER/MODEL cue as the By-provider view; the
-                        // period concept is labeled by the section headers in this view.
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(L("compact_header_provider"))
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                .textCase(.uppercase)
-                            Text(L("compact_header_model"))
-                                .font(.caption)
-                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                .textCase(.uppercase)
-                        }
-                        .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
-                        .gridColumnAlignment(.leading)
-                        Color.clear.gridCellUnsizedAxes(.vertical)
-                        Text(L("compact_header_used"))
-                            .font(.caption.weight(.semibold))
+                        Text(L("compact_header_provider"))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
-                            .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                            .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
+                            .gridColumnAlignment(.leading)
+                        Color.clear.gridCellUnsizedAxes(.vertical)
+                        Color.clear
+                            .frame(width: CompactTableMetrics.usedColumnWidth, height: 14)
+                            .overlay(alignment: .trailing) {
+                                Text(OverviewCompactTableModel.percentageHeader(showUsed: self.showUsed))
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                    .textCase(.uppercase)
+                                    .fixedSize()
+                            }
                             .gridColumnAlignment(.trailing)
                         Text(L("compact_header_in"))
-                            .font(.caption.weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
                             .textCase(.uppercase)
                             .frame(width: CompactTableMetrics.inColumnWidth, alignment: .trailing)
@@ -250,20 +252,14 @@ struct OverviewCompactPeriodTableView: View {
                             .gridCellColumns(4)
                             .padding(.top, 6)
                     }
-                    ForEach(Array(section.groups.enumerated()), id: \.offset) { groupIndex, group in
-                        ForEach(group) { row in
-                            // Bottom alignment keeps every row's data cells on the model
-                            // subrow's line, first row included; see the By-provider view.
-                            GridRow(alignment: .bottom) {
-                                self.rowCells(for: row, showsProvider: row.id == group.first?.id)
-                            }
+                    ForEach(section.groups.flatMap(\.self)) { row in
+                        GridRow(alignment: .center) {
+                            self.rowCells(for: row)
                         }
-                        // Subtle separator after each provider block but never between
-                        // model subrows; the section header ends the last block.
-                        if groupIndex < section.groups.count - 1 {
-                            GridRow {
-                                Divider().gridCellColumns(4)
-                            }
+                    }
+                    if section.id != self.sections.last?.id {
+                        GridRow {
+                            Divider().gridCellColumns(4).padding(.top, 6)
                         }
                     }
                 }
@@ -276,23 +272,18 @@ struct OverviewCompactPeriodTableView: View {
     }
 
     @ViewBuilder
-    private func rowCells(for row: CompactTableRow, showsProvider: Bool) -> some View {
-        // Same provider→model nesting as the By-provider view: provider name once per
-        // group on its own line, model subrows single-line beneath it with no reserved
-        // blank provider height. The section header carries the period, so no per-row
-        // period cell exists in this view.
-        VStack(alignment: .leading, spacing: 1) {
-            if showsProvider {
-                Text(row.providerDisplayName)
-                    .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-            Text(row.model)
-                .font(.system(size: CompactTableMetrics.metadataFontSize))
-                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+    private func rowCells(for row: CompactTableRow) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: CompactTableMetrics.columnSpacing) {
+            Text(row.providerDisplayName)
+                .font(.system(size: CompactTableMetrics.metadataFontSize, weight: .semibold))
                 .lineLimit(1)
                 .truncationMode(.tail)
+            if let symbol = OverviewCompactTableModel.modelQualifierSymbol(row.model) {
+                Image(systemName: symbol)
+                    .font(.system(size: 10))
+                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                    .accessibilityLabel(row.model)
+            }
         }
         .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
         .gridColumnAlignment(.leading)

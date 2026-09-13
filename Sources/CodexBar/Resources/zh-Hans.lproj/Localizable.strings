@@ -1570,3 +1570,9 @@
 "overview_compact_table_subtitle" = "以单屏高密度用量表格取代堆叠卡片。";
 "overview_grouping_provider" = "按提供商";
 "overview_grouping_period" = "按周期";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "剩余";
+"compact_refresh_updated" = "更新于 %@";
+"compact_refresh_completed" = "刷新完成 %@";
+"compact_refresh_partial" = "部分提供商失败";

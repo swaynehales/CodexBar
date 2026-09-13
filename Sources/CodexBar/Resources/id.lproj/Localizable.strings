@@ -1561,3 +1561,9 @@
 "overview_compact_table_subtitle" = "Tabel penggunaan padat satu layar sebagai ganti kartu bertumpuk.";
 "overview_grouping_provider" = "Per penyedia";
 "overview_grouping_period" = "Per periode";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Tersisa";
+"compact_refresh_updated" = "Diperbarui pada %@";
+"compact_refresh_completed" = "Pembaruan selesai %@";
+"compact_refresh_partial" = "Beberapa penyedia gagal";

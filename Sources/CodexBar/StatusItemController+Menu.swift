@@ -430,7 +430,6 @@ extension StatusItemController {
             let contentSelection = context.switcherSelection ?? .provider(context.currentProvider.instanceID)
             if contentSelection == .overview, self.settings.overviewCompactTableEnabled {
                 menu.addItem(self.makeOverviewGroupingToggleItem(menu: menu, width: Self.compactOverviewMenuWidth))
-                menu.addItem(.separator())
             } else {
                 self.addProviderSwitcherIfNeeded(
                     to: menu,

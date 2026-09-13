@@ -1560,3 +1560,9 @@
 "overview_compact_table_subtitle" = "Yığılmış kartlar yerine tek ekranda yoğun kullanım tablosu.";
 "overview_grouping_provider" = "Sağlayıcıya göre";
 "overview_grouping_period" = "Döneme göre";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Kalan";
+"compact_refresh_updated" = "Güncellendi %@";
+"compact_refresh_completed" = "Yenileme tamamlandı %@";
+"compact_refresh_partial" = "Bazı sağlayıcılar başarısız oldu";

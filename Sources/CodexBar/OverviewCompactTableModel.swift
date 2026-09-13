@@ -28,6 +28,10 @@ struct CompactTableRow: Identifiable {
 }
 
 enum OverviewCompactTableModel {
+    static func percentageHeader(showUsed: Bool) -> String {
+        L(showUsed ? "compact_header_used" : "compact_header_remaining")
+    }
+
     /// Builds one provider's table rows. Bar rows come from card metrics; value rows from
     /// status text, the balance parser, and reset-only renewal windows. Diagnostic windows
     /// (offline counts, synthetic placeholders) are dropped, never rendered as quota.

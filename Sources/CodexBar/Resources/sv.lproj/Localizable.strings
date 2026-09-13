@@ -1557,3 +1557,9 @@
 "overview_compact_table_subtitle" = "Tät användningstabell på en skärm istället för staplade kort.";
 "overview_grouping_provider" = "Per leverantör";
 "overview_grouping_period" = "Per period";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Återstående";
+"compact_refresh_updated" = "Uppdaterat %@";
+"compact_refresh_completed" = "Uppdatering slutförd %@";
+"compact_refresh_partial" = "Vissa leverantörer misslyckades";

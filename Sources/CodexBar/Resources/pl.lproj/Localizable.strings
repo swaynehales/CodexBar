@@ -1561,3 +1561,9 @@
 "overview_compact_table_subtitle" = "Gęsta tabela użycia na jednym ekranie zamiast stosu kart.";
 "overview_grouping_provider" = "Według dostawcy";
 "overview_grouping_period" = "Według okresu";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Pozostało";
+"compact_refresh_updated" = "Zaktualizowano %@";
+"compact_refresh_completed" = "Odświeżanie zakończone %@";
+"compact_refresh_partial" = "Błąd niektórych dostawców";

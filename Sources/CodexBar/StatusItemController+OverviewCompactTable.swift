@@ -17,6 +17,45 @@ final class OverviewGroupingSegmentedControl: NSSegmentedControl {
 }
 
 extension StatusItemController {
+    var compactGlobalRefreshStatus: OverviewCompactRefreshStatus? {
+        guard let data = self.settings.userDefaults.data(forKey: OverviewCompactRefreshStatus.defaultsKey) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(OverviewCompactRefreshStatus.self, from: data)
+    }
+
+    func recordCompactGlobalRefreshCompletion(
+        scope: ManualRefreshScope,
+        completed: Bool,
+        providers: [ProviderInstanceID],
+        at date: Date = Date())
+    {
+        guard scope == .global, completed else { return }
+        let failed = providers.contains { provider in
+            if self.store.errors[provider] != nil {
+                return true
+            }
+            let unavailable = self.store.knownLimitsAvailabilityByProvider[provider]?.isUnavailable == true
+            let attempts = self.store.lastFetchAttempts[provider] ?? []
+            // Presentation state can preserve cached data and suppress a failed probe's error.
+            if !attempts.isEmpty {
+                guard let lastAvailable = attempts.last(where: \.wasAvailable) else { return true }
+                if let error = lastAvailable.errorDescription {
+                    // Provider-specific by design: Claude reports unavailable quotas through its error channel.
+                    return !(provider.firstPartyProvider == .claude && unavailable &&
+                        ClaudeStatusProbe.isSubscriptionQuotaUnavailableDescription(error))
+                }
+            }
+            return self.store.snapshots[provider] == nil && !unavailable
+        }
+        let previous = self.compactGlobalRefreshStatus
+            ?? OverviewCompactRefreshStatus(completedAt: date, hadFailures: failed)
+        let record = previous.recordingCompletion(isGlobal: true, completed: true, at: date, hadFailures: failed)
+        if let data = try? JSONEncoder().encode(record) {
+            self.settings.userDefaults.set(data, forKey: OverviewCompactRefreshStatus.defaultsKey)
+        }
+    }
+
     var overviewTableGrouping: OverviewTableGrouping {
         get { self.overviewTableGroupingState }
         set { self.overviewTableGroupingState = newValue }
@@ -39,21 +78,40 @@ extension StatusItemController {
             trackingMode: .selectOne,
             target: self,
             action: #selector(self.overviewTableGroupingChanged(_:)))
+        control.controlSize = .large
+        control.segmentDistribution = .fillEqually
         control.selectedSegment = self.overviewTableGrouping == .period ? 1 : 0
         control.trackedMenu = menu
         let contentWidth = width - 2 * CompactTableMetrics.horizontalPadding
         // Grow the control itself, not just its padding: 42pt segment (roughly 2x the
         // original 22pt) with a 13pt label, inside a 48pt container for breathing room
         // under the menu bar.
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 48))
+        let refreshStatus = self.compactGlobalRefreshStatus
+        let statusLabel = refreshStatus.map { status -> NSTextField in
+            let label = NSTextField(wrappingLabelWithString: status.label())
+            label.font = NSFont.systemFont(ofSize: 10)
+            label.textColor = .secondaryLabelColor
+            label.alignment = .center
+            return label
+        }
+        let statusHeight: CGFloat = statusLabel.map {
+            ceil($0.cell?.cellSize(forBounds: NSRect(
+                x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
+        } ?? 0
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight))
         control.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
-            y: 3,
+            y: 3 + statusHeight,
             width: contentWidth,
             height: 42)
         control.autoresizingMask = [.width]
         container.addSubview(control)
+        if let label = statusLabel {
+            label.frame = NSRect(x: 12, y: 2, width: contentWidth, height: statusHeight)
+            label.autoresizingMask = [.width]
+            container.addSubview(label)
+        }
         let item = NSMenuItem()
         item.view = container
         item.isEnabled = false
@@ -75,11 +133,12 @@ extension StatusItemController {
     func makeOverviewPeriodTableItem(rows: [CompactTableRow], width: CGFloat) -> NSMenuItem {
         let sections = OverviewCompactTableModel.periodSections(rows: rows)
         return self.makeMenuCardItem(
-            OverviewCompactPeriodTableView(sections: sections, showsHeader: true, width: width),
+            OverviewCompactPeriodTableView(
+                sections: sections, showsHeader: true, showUsed: self.settings.usageBarsShowUsed, width: width),
             id: "overviewCompactPeriod",
             width: width,
             heightCacheScope: "overview-compact-period",
-            heightCacheFingerprint: rows
+            heightCacheFingerprint: String(self.settings.usageBarsShowUsed) + rows
                 .map { [$0.id, $0.usedText, $0.resetsInText, $0.valueText ?? ""].joined(separator: ",") }
                 .joined(separator: "|"),
             submenu: nil,
@@ -137,11 +196,11 @@ extension StatusItemController {
     /// block; adding it to the menu exactly once is the caller's job.
     func makeOverviewCompactHeaderItem(width: CGFloat) -> NSMenuItem {
         let item = self.makeMenuCardItem(
-            OverviewCompactTableHeaderView(width: width),
+            OverviewCompactTableHeaderView(showUsed: self.settings.usageBarsShowUsed, width: width),
             id: "overviewCompactHeader",
             width: width,
             heightCacheScope: "overview-compact-header",
-            heightCacheFingerprint: "v1",
+            heightCacheFingerprint: String(self.settings.usageBarsShowUsed),
             submenu: nil,
             usesGPUSelection: true)
         item.identifier = Self.overviewCompactHeaderItemID

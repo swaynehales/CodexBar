@@ -206,6 +206,7 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
               !scopedRefreshInFlight
         else { return }
 
+        let refreshProviders = self.store.enabledProvidersForDisplay()
         let frozenModels = self.frozenManualRefreshMenuCardModels()
         let viewportRestoreRequests = self.armManualRefreshViewportRestoreRequests(
             originatingMenuID: originatingMenuID,
@@ -216,6 +217,11 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
             defer {
                 self.manualRefreshTasks[scope] = nil
                 self.menuCardRefreshMonitor.endManualRefresh(for: firstPartyProvider)
+                if completed, firstPartyProvider == nil {
+                    self.recordCompactGlobalRefreshCompletion(
+                        scope: scope, completed: completed, providers: refreshProviders)
+                    self.refreshOpenMenusAfterExplicitStoreAction()
+                }
                 self.updatePersistentRefreshItemsEnabled()
                 if completed {
                     self.scheduleCompletedManualRefreshViewportRestore(viewportRestoreRequests)
@@ -240,10 +246,13 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
                     refreshOpenMenusWhenComplete: true,
                     interaction: .userInitiated)
             } else {
-                await self.performStoreRefresh(
-                    enrichmentMode: .forcedBackground,
-                    refreshOpenMenusWhenComplete: true,
-                    interaction: .userInitiated)
+                var didRefresh = false
+                await self.withProviderInteraction(.userInitiated) {
+                    didRefresh = await self.store.runRefresh(
+                        enrichmentMode: .forcedBackground, startupConnectivityRetryAttempt: nil)
+                }
+                guard didRefresh else { return }
+                self.store.scheduleStorageFootprintRefreshForOverview(force: true)
             }
             guard !Task.isCancelled, !self.hasPreparedForAppShutdown else { return }
             completed = true

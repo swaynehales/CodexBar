@@ -1556,3 +1556,9 @@
 "overview_compact_table_subtitle" = "Tabla de uso densa en una pantalla en lugar de tarjetas apiladas.";
 "overview_grouping_provider" = "Por proveedor";
 "overview_grouping_period" = "Por período";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Restante";
+"compact_refresh_updated" = "Actualizado a las %@";
+"compact_refresh_completed" = "Actualización completada %@";
+"compact_refresh_partial" = "Algunos proveedores fallaron";

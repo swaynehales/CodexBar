@@ -1589,3 +1589,9 @@
 "overview_compact_table_subtitle" = "以單一畫面的高密度用量表格取代堆疊卡片。";
 "overview_grouping_provider" = "按提供者";
 "overview_grouping_period" = "按期間";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "剩餘";
+"compact_refresh_updated" = "更新於 %@";
+"compact_refresh_completed" = "重新整理完成 %@";
+"compact_refresh_partial" = "部分供應商失敗";

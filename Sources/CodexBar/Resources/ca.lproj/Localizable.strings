@@ -1560,3 +1560,9 @@
 "overview_compact_table_subtitle" = "Taula d'ús densa en una pantalla en lloc de targetes apilades.";
 "overview_grouping_provider" = "Per proveïdor";
 "overview_grouping_period" = "Per període";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Restant";
+"compact_refresh_updated" = "Actualitzat a les %@";
+"compact_refresh_completed" = "Actualització completada %@";
+"compact_refresh_partial" = "Alguns proveïdors han fallat";

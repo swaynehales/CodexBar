@@ -1559,3 +1559,9 @@
 "overview_compact_table_subtitle" = "Плотная таблица использования на одном экране вместо стопки карточек.";
 "overview_grouping_provider" = "По провайдеру";
 "overview_grouping_period" = "По периоду";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Осталось";
+"compact_refresh_updated" = "Обновлено %@";
+"compact_refresh_completed" = "Обновление завершено %@";
+"compact_refresh_partial" = "Сбой некоторых провайдеров";

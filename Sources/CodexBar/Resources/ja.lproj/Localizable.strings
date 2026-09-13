@@ -1558,3 +1558,9 @@
 "overview_compact_table_subtitle" = "カードの積み重ねの代わりに、1画面に収まる密度の高い使用量テーブルを表示します。";
 "overview_grouping_provider" = "プロバイダ別";
 "overview_grouping_period" = "期間別";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "残り";
+"compact_refresh_updated" = "更新日時 %@";
+"compact_refresh_completed" = "更新完了 %@";
+"compact_refresh_partial" = "一部のプロバイダーで失敗";

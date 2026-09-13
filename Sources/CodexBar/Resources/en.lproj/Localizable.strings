@@ -1560,3 +1560,9 @@
 "Spending cap, not balance" = "Spending cap, not balance";
 "overview_grouping_provider" = "By provider";
 "overview_grouping_period" = "By period";
+
+/* Compact table refresh status */
+"compact_header_remaining" = "Remaining";
+"compact_refresh_updated" = "Updated at %@";
+"compact_refresh_completed" = "Refresh completed %@";
+"compact_refresh_partial" = "Some providers failed";
