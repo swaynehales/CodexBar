@@ -118,7 +118,7 @@ struct OverviewCompactResetTextTests {
     }
 
     @Test
-    func `delta boundaries 86400s and 86401s produce abbreviated weekday and time`() throws {
+    func `delta boundaries 86400s and 86401s produce abbreviated weekday only`() {
         let now = Date(timeIntervalSince1970: 1_789_387_200) // Monday 12:00:00 UTC
 
         // delta = 86,400 seconds (exactly 24 hours -> Tuesday 12:00:00 UTC)
@@ -129,14 +129,11 @@ struct OverviewCompactResetTextTests {
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(text86400s.clockDate != nil)
-        #expect(text86400s.clockTime != nil)
-        #expect(text86400s.clock.contains("Tue"))
-        #expect(text86400s.lines(showAbsolute: true, wrapClock: false) == [text86400s.clock])
-        #expect(try text86400s.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text86400s.clockDate),
-            #require(text86400s.clockTime),
-        ])
+        #expect(text86400s.clock == "Tue")
+        #expect(text86400s.clockDate == text86400s.clock)
+        #expect(text86400s.clockTime == nil)
+        #expect(text86400s.lines(showAbsolute: true, wrapClock: false) == ["Tue"])
+        #expect(text86400s.lines(showAbsolute: true, wrapClock: true) == ["Tue"])
 
         // delta = 86,401 seconds
         let plus86401s = now.addingTimeInterval(86401)
@@ -146,18 +143,15 @@ struct OverviewCompactResetTextTests {
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(text86401s.clockDate != nil)
-        #expect(text86401s.clockTime != nil)
-        #expect(text86401s.clock.contains("Tue"))
-        #expect(text86401s.lines(showAbsolute: true, wrapClock: false) == [text86401s.clock])
-        #expect(try text86401s.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text86401s.clockDate),
-            #require(text86401s.clockTime),
-        ])
+        #expect(text86401s.clock == "Tue")
+        #expect(text86401s.clockDate == text86401s.clock)
+        #expect(text86401s.clockTime == nil)
+        #expect(text86401s.lines(showAbsolute: true, wrapClock: false) == ["Tue"])
+        #expect(text86401s.lines(showAbsolute: true, wrapClock: true) == ["Tue"])
     }
 
     @Test
-    func `delta boundaries 604799s and 604800s produce abbreviated weekday and time`() throws {
+    func `delta boundaries 604799s and 604800s produce abbreviated weekday only`() {
         let now = Date(timeIntervalSince1970: 1_789_387_200) // Monday 12:00:00 UTC
 
         // delta = 604,799 seconds (6 days 23 hours 59 mins 59 secs)
@@ -168,13 +162,10 @@ struct OverviewCompactResetTextTests {
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(text604799s.clockDate != nil)
-        #expect(text604799s.clockTime != nil)
+        #expect(text604799s.clockTime == nil)
+        #expect(text604799s.clockDate == text604799s.clock)
         #expect(text604799s.lines(showAbsolute: true, wrapClock: false) == [text604799s.clock])
-        #expect(try text604799s.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text604799s.clockDate),
-            #require(text604799s.clockTime),
-        ])
+        #expect(text604799s.lines(showAbsolute: true, wrapClock: true) == [text604799s.clock])
 
         // delta = 604,800 seconds (exactly 7 days -> Monday 12:00:00 UTC next week)
         let plus604800s = now.addingTimeInterval(604_800)
@@ -184,14 +175,11 @@ struct OverviewCompactResetTextTests {
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(text604800s.clockDate != nil)
-        #expect(text604800s.clockTime != nil)
-        #expect(text604800s.clock.contains("Mon"))
-        #expect(text604800s.lines(showAbsolute: true, wrapClock: false) == [text604800s.clock])
-        #expect(try text604800s.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text604800s.clockDate),
-            #require(text604800s.clockTime),
-        ])
+        #expect(text604800s.clock == "Mon")
+        #expect(text604800s.clockDate == text604800s.clock)
+        #expect(text604800s.clockTime == nil)
+        #expect(text604800s.lines(showAbsolute: true, wrapClock: false) == ["Mon"])
+        #expect(text604800s.lines(showAbsolute: true, wrapClock: true) == ["Mon"])
     }
 
     @Test
@@ -264,10 +252,10 @@ struct OverviewCompactResetTextTests {
             calendar: pacificCal,
             locale: locale)
 
-        #expect(text24h.clockDate != nil)
-        #expect(text24h.clockTime != nil)
-        #expect(text24h.clock.contains("Mon"))
-        #expect(text24h.lines(showAbsolute: true, wrapClock: true).count == 2)
+        #expect(text24h.clock == "Mon")
+        #expect(text24h.clockDate == text24h.clock)
+        #expect(text24h.clockTime == nil)
+        #expect(text24h.lines(showAbsolute: true, wrapClock: true) == ["Mon"])
     }
 
     @Test

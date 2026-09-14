@@ -69,23 +69,19 @@ struct OverviewCompactResetText: Equatable, Sendable {
         }
 
         if delta <= 604_800 {
-            var weekdayTimeStyle = Date.FormatStyle.dateTime.weekday(.abbreviated).hour().minute().locale(locale)
-            weekdayTimeStyle.calendar = calendar
-            weekdayTimeStyle.timeZone = calendar.timeZone
-
+            // Rev-2 compact tier: abbreviated weekday only. The time component is
+            // intentionally absent; single-line tiers never need the wrapping path.
             var weekdayStyle = Date.FormatStyle.dateTime.weekday(.abbreviated).locale(locale)
             weekdayStyle.calendar = calendar
             weekdayStyle.timeZone = calendar.timeZone
 
-            let clock = resetsAt.formatted(weekdayTimeStyle)
-            let clockDate = resetsAt.formatted(weekdayStyle)
-            let clockTime = resetsAt.formatted(timeStyle)
+            let clock = resetsAt.formatted(weekdayStyle)
 
             return OverviewCompactResetText(
                 countdown: countdown,
                 clock: clock,
-                clockDate: clockDate,
-                clockTime: clockTime)
+                clockDate: clock,
+                clockTime: nil)
         }
 
         var monthDayStyle = Date.FormatStyle.dateTime.month(.abbreviated).day().locale(locale)
