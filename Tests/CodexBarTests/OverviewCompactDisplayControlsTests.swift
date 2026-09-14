@@ -478,30 +478,32 @@ struct OverviewCompactDisplayControlsTests {
     }
 
     @Test
-    func `narrow widths stagger groups and contain every frame`() throws {
+    func `header toolbar pairs fill equal halves with equal segments`() throws {
         let (controller, _, menu) = Self
-            .makeController(suiteName: "OverviewCompactDisplayControlsTests-stagger")
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-halves")
         defer { controller.prepareForAppShutdown() }
 
-        let wide = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400)
-        let wideContainer = try #require(wide.view)
-        let narrow = controller.makeOverviewHeaderControlsItem(menu: menu, width: 100)
-        let container = try #require(narrow.view)
-        // Forced stagger: stacked rows are taller than the single row.
-        #expect(container.frame.height > wideContainer.frame.height)
+        let item = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400)
+        let container = try #require(item.view)
+        let segments = Self.headerSegments(in: item)
+        let usage = try #require(segments[.usage])
+        let reset = try #require(segments[.resetTime])
+
+        // Same outer edges and midpoint: usage fills 12..200, reset fills 200..388.
+        #expect(usage.frame.minX == 12)
+        #expect(abs(usage.frame.width - 188) < 0.5)
+        #expect(abs(reset.frame.minX - 200) < 0.5)
+        #expect(abs(reset.frame.width - 188) < 0.5)
+        #expect(abs(reset.frame.maxX - 388) < 0.5)
+        // Consistent native heights and equal segments within each pair.
+        #expect(usage.frame.height == reset.frame.height)
+        #expect(usage.width(forSegment: 0) == usage.width(forSegment: 1))
+        #expect(reset.width(forSegment: 0) == reset.width(forSegment: 1))
+        #expect(usage.width(forSegment: 0) == reset.width(forSegment: 0))
         // Every placed frame stays inside the container horizontally.
-        var frames: [CGRect] = []
-        func collect(_ view: NSView) {
-            for subview in view.subviews {
-                frames.append(subview.frame)
-                collect(subview)
-            }
-        }
-        collect(container)
-        #expect(!frames.isEmpty)
-        for frame in frames {
-            #expect(frame.minX >= 0)
-            #expect(frame.maxX <= container.frame.width)
+        for subview in container.subviews {
+            #expect(subview.frame.minX >= 0)
+            #expect(subview.frame.maxX <= container.frame.width)
         }
     }
 

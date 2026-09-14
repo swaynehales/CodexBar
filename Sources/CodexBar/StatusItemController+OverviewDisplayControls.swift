@@ -45,18 +45,6 @@ final class OverviewDisplaySegmentedControl: NSSegmentedControl {
     weak var trackedMenu: NSMenu?
 }
 
-/// Measured extent of one labeled segment group. Placement, stagger detection, and
-/// rendering all use these extents, so narrow or localized content stays contained
-/// instead of overflowing the row.
-private struct HeaderSegmentPlacement {
-    static let labelHeight: CGFloat = 13
-    static let rowGap: CGFloat = 4
-    let groupX: CGFloat
-    let groupWidth: CGFloat
-    let controlWidth: CGFloat
-    let top: CGFloat
-}
-
 struct OverviewDisplayViewportRequest {
     let id = UUID()
     let generation: Int
@@ -80,31 +68,24 @@ extension StatusItemController {
         self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.selectedSegment, menu: menu)
     }
 
-    /// Header control row: an independent top toolbar with the usage pair leading and
-    /// the reset pair after a clear gap, then the global refresh status below both rows.
-    /// A plain disabled item (the proven host). Control widths never feed data budgets;
-    /// groups stagger vertically only when they cannot sit side by side.
+    /// Header control row: an independent top toolbar. The usage pair fills the entire
+    /// left half and the reset pair fills the entire right half (same outer edges and
+    /// midpoint, equal segments within each pair, no captions). A plain disabled item
+    /// (the proven host). Control widths never feed data budgets.
     func makeOverviewHeaderControlsItem(menu: NSMenu, width: CGFloat) -> NSMenuItem {
-        let usageGroup = self.makeHeaderSegmentGroup(axis: .usage, menu: menu)
-        let resetGroup = self.makeHeaderSegmentGroup(axis: .resetTime, menu: menu)
+        let usage = self.makeHeaderSegmentControl(axis: .usage, menu: menu)
+        let reset = self.makeHeaderSegmentControl(axis: .resetTime, menu: menu)
+        let controlHeight = max(usage.frame.height, reset.frame.height)
+        let frames = OverviewHeaderToolbarLayout.frames(width: width, controlHeight: controlHeight)
+        usage.frame = frames.usage
+        reset.frame = frames.reset
+        for segment in 0..<2 {
+            usage.setWidth(frames.segmentWidth, forSegment: segment)
+            reset.setWidth(frames.segmentWidth, forSegment: segment)
+        }
         let horizontalPadding = CompactTableMetrics.horizontalPadding
-        let pairGap: CGFloat = 20
         let contentWidth = max(0, width - 2 * horizontalPadding)
-        // One measured extent per group drives positioning, stagger, and rendering, so
-        // a clamped group can never render at its unclamped size.
-        let usageWidth = min(max(usageGroup.labelWidth, usageGroup.segWidth), contentWidth)
-        let resetWidthGroup = min(max(resetGroup.labelWidth, resetGroup.segWidth), contentWidth)
-        let usageX = horizontalPadding
-        let resetX = min(
-            usageX + usageWidth + pairGap,
-            max(horizontalPadding, width - horizontalPadding - resetWidthGroup))
-        // Stack the groups (usage above reset) when their extents — labels included —
-        // would collide side by side.
-        let staggered = usageX + usageWidth > resetX
-        let labelHeight = HeaderSegmentPlacement.labelHeight
-        let singleRowHeight: CGFloat = 6 + labelHeight + HeaderSegmentPlacement.rowGap +
-            usageGroup.control.frame.height + 6
-        var containerHeight = staggered ? 2 * singleRowHeight - 6 : singleRowHeight
+        var containerHeight = frames.rowHeight
         let statusLabel = self.compactGlobalRefreshStatus.map { status -> NSTextField in
             let label = NSTextField(wrappingLabelWithString: status.label())
             label.font = NSFont.systemFont(ofSize: 10)
@@ -119,24 +100,15 @@ extension StatusItemController {
         if statusLabel != nil {
             containerHeight += statusHeight + 2
         }
+        // Controls stay top-anchored: when the status block is present the row floats
+        // above it instead of overlapping it.
+        let rowLift: CGFloat = statusLabel != nil ? statusHeight + 2 : 0
+        usage.frame = usage.frame.offsetBy(dx: 0, dy: rowLift)
+        reset.frame = reset.frame.offsetBy(dx: 0, dy: rowLift)
         let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: containerHeight))
         container.autoresizingMask = [.width]
-        self.placeHeaderSegmentGroup(
-            usageGroup,
-            in: container,
-            placement: HeaderSegmentPlacement(
-                groupX: usageX,
-                groupWidth: usageWidth,
-                controlWidth: min(usageGroup.segWidth, usageWidth),
-                top: containerHeight - 6))
-        self.placeHeaderSegmentGroup(
-            resetGroup,
-            in: container,
-            placement: HeaderSegmentPlacement(
-                groupX: resetX,
-                groupWidth: resetWidthGroup,
-                controlWidth: min(resetGroup.segWidth, resetWidthGroup),
-                top: staggered ? containerHeight - 6 - singleRowHeight : containerHeight - 6))
+        container.addSubview(usage)
+        container.addSubview(reset)
         if let statusLabel {
             statusLabel.frame = NSRect(x: horizontalPadding, y: 2, width: contentWidth, height: statusHeight)
             statusLabel.autoresizingMask = [.width]
@@ -149,19 +121,10 @@ extension StatusItemController {
         return item
     }
 
-    private func makeHeaderSegmentGroup(
+    private func makeHeaderSegmentControl(
         axis: OverviewDisplayAxis,
-        menu: NSMenu) -> (
-        label: NSTextField,
-        control: OverviewDisplaySegmentedControl,
-        labelWidth: CGFloat,
-        segWidth: CGFloat)
+        menu: NSMenu) -> OverviewDisplaySegmentedControl
     {
-        let label = NSTextField(labelWithString: axis.label)
-        label.font = NSFont.systemFont(ofSize: 10)
-        label.textColor = .secondaryLabelColor
-        label.lineBreakMode = .byTruncatingTail
-        label.sizeToFit()
         let control = OverviewDisplaySegmentedControl(
             labels: axis.segmentTitles,
             trackingMode: .selectOne,
@@ -179,35 +142,7 @@ extension StatusItemController {
         }
         control.setAccessibilityLabel(axis.label)
         control.sizeToFit()
-        return (label, control, label.frame.width, control.frame.width)
-    }
-
-    private func placeHeaderSegmentGroup(
-        _ group: (
-            label: NSTextField,
-            control: OverviewDisplaySegmentedControl,
-            labelWidth: CGFloat,
-            segWidth: CGFloat),
-        in container: NSView,
-        placement: HeaderSegmentPlacement)
-    {
-        let labelHeight = HeaderSegmentPlacement.labelHeight
-        let rowGap = HeaderSegmentPlacement.rowGap
-        let segH = group.control.frame.height
-        group.control.frame = NSRect(
-            x: placement.groupX + placement.groupWidth - placement.controlWidth,
-            y: placement.top - labelHeight - rowGap - segH,
-            width: placement.controlWidth,
-            height: segH)
-        group.control.autoresizingMask = [.minXMargin]
-        group.label.frame = NSRect(
-            x: placement.groupX,
-            y: placement.top - labelHeight,
-            width: placement.groupWidth,
-            height: labelHeight)
-        group.label.autoresizingMask = [.minXMargin]
-        container.addSubview(group.control)
-        container.addSubview(group.label)
+        return control
     }
 
     func applyOverviewDisplayChoice(axis: OverviewDisplayAxis, selectedSegment: Int, menu: NSMenu) {
