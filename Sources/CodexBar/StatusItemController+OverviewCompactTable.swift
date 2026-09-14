@@ -147,20 +147,11 @@ extension StatusItemController {
         return OverviewCompactPeriodTableView(
             sections: sections,
             showsHeader: true,
-            showUsed: self.settings.usageBarsShowUsed,
             width: width,
             showAbsolute: self.settings.resetTimesShowAbsolute,
             percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
             resetWidth: layout?.resetWidth ?? 130,
-            wrapClock: layout?.wrapClock ?? false,
-            onUsageChange: { [weak self, weak menu] segment in
-                guard let self, let menu else { return }
-                self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
-            },
-            onResetChange: { [weak self, weak menu] segment in
-                guard let self, let menu else { return }
-                self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
-            })
+            wrapClock: layout?.wrapClock ?? false)
     }
 
     func makeOverviewPeriodTableItem(
@@ -187,7 +178,7 @@ extension StatusItemController {
                 ].joined(separator: ",") }
                 .joined(separator: "|"),
             submenu: nil,
-            containsInteractiveControls: true,
+            containsInteractiveControls: false,
             usesGPUSelection: true)
     }
 
@@ -219,6 +210,21 @@ extension StatusItemController {
     /// block construction can never add it twice.
     static let overviewCompactHeaderItemID = NSUserInterfaceItemIdentifier("overviewCompactHeader")
 
+    /// Identifier marking the header control row (segmented Usage/Reset groups) inside a
+    /// menu, so it is added exactly once above the table in both grouping tabs.
+    static let overviewHeaderControlsItemID = NSUserInterfaceItemIdentifier("overviewHeaderControls")
+
+    /// Adds the header control row exactly once, above the table header of a compact
+    /// menu — the same plain disabled host as the grouping switcher.
+    func ensureOverviewHeaderControlsInserted(
+        into menu: NSMenu,
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil)
+    {
+        guard !menu.items.contains(where: { $0.identifier == Self.overviewHeaderControlsItemID }) else { return }
+        menu.addItem(self.makeOverviewHeaderControlsItem(menu: menu, width: width, layout: layout))
+    }
+
     /// Adds the global By-provider table header exactly once, above the first provider
     /// block of a compact menu — never inside one (the old first-block placement bug).
     func ensureOverviewCompactHeaderInserted(
@@ -241,20 +247,9 @@ extension StatusItemController {
         layout: OverviewCompactTableLayout? = nil) -> OverviewCompactTableHeaderView
     {
         OverviewCompactTableHeaderView(
-            showUsed: self.settings.usageBarsShowUsed,
             width: width,
-            showAbsolute: self.settings.resetTimesShowAbsolute,
             percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
-            resetWidth: layout?.resetWidth ?? 130,
-            wrapClock: layout?.wrapClock ?? false,
-            onUsageChange: { [weak self, weak menu] segment in
-                guard let self, let menu else { return }
-                self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
-            },
-            onResetChange: { [weak self, weak menu] segment in
-                guard let self, let menu else { return }
-                self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
-            })
+            resetWidth: layout?.resetWidth ?? 130)
     }
 
     func makeOverviewCompactHeaderItem(
@@ -269,7 +264,7 @@ extension StatusItemController {
             heightCacheScope: "overview-compact-header",
             heightCacheFingerprint: self.overviewDisplayFingerprint(layout: layout),
             submenu: nil,
-            containsInteractiveControls: true,
+            containsInteractiveControls: false,
             usesGPUSelection: true)
         item.identifier = Self.overviewCompactHeaderItemID
         return item

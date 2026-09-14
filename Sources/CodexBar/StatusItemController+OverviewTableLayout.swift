@@ -20,7 +20,6 @@ extension StatusItemController {
         }
         let tableRows = self.overviewDisplayRows(rows: rows, compactEnabled: true)
             .compactMap(\.tableRows).flatMap(\.self)
-        let texts = tableRows.map(\.resetText)
         let font = NSFont.monospacedDigitSystemFont(ofSize: CompactTableMetrics.metadataFontSize, weight: .regular)
         let bodyFont = NSFont.monospacedDigitSystemFont(ofSize: CompactTableMetrics.emphasisFontSize, weight: .semibold)
 
@@ -28,30 +27,26 @@ extension StatusItemController {
             (text as NSString).size(withAttributes: [.font: font]).width
         }
 
-        let usageHeaderWidth = Self.dropdownHeaderWidth(for: .usage)
-        let bodyPercentageWidth = (tableRows.map { measure($0.usedText, font: bodyFont) } +
-            tableRows.compactMap { $0.valueText.map { measure($0, font: bodyFont) } }).max() ?? 42
-        let desiredPercentage = max(42, ceil(max(usageHeaderWidth, bodyPercentageWidth)))
+        // Percentage budget: the widest used value or a full-scale 100%, plus modest
+        // padding. Balance strings keep their existing truncation and never inflate
+        // this budget; header titles never participate.
+        let bodyPercentageWidth = tableRows.map { measure($0.usedText, font: bodyFont) }.max() ?? 0
+        let fullScaleWidth = measure("100%", font: bodyFont)
+        let desiredPercentage = ceil(max(bodyPercentageWidth, fullScaleWidth)) + 8
 
-        let resetHeaderWidth = Self.dropdownHeaderWidth(for: .resetTime)
+        // Reset budget: row countdown/clock strings plus tier exemplars rendered through
+        // the real formatter, so every compact tier is covered in the current locale.
+        // One budget across countdown/clock modes; no header-derived floors.
         let calendar = Calendar.current
         let locale = codexBarLocalizedLocale()
-
-        let sampleDates = Self.candidateResetSampleDates(now: now, calendar: calendar)
-        let sampleWidths = sampleDates.map { sampleDate in
-            let sample = OverviewCompactResetText.make(
-                resetsAt: sampleDate,
-                now: now,
-                calendar: calendar,
-                locale: locale).clock
-            return measure(sample, font: font)
-        }
-        let maxWeekdayWidth = sampleWidths.max() ?? 0
-        let clockWidths = texts.map { measure($0.clock, font: font) } + [maxWeekdayWidth, resetHeaderWidth]
-        let maxClockWidth = clockWidths.max() ?? maxWeekdayWidth
-        let clockLineWidth = (texts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self).map { measure(
-            $0,
-            font: font) } } + [resetHeaderWidth]).max() ?? resetHeaderWidth
+        let allTexts = tableRows.map(\.resetText) + Self.compactResetTierExemplars(
+            now: now,
+            calendar: calendar,
+            locale: locale)
+        let maxResetWidth = allTexts.flatMap { [$0.countdown, $0.clock] }.map { measure($0, font: font) }
+            .max() ?? 0
+        let clockLineWidth = allTexts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self) }
+            .map { measure($0, font: font) }.max() ?? 0
 
         let screen = self.statusItems.values.first(where: { $0.menu === menu })?.button?.window?.screen
             ?? self.statusItem.button?.window?.screen
@@ -59,12 +54,49 @@ extension StatusItemController {
         let layout = OverviewCompactTableLayout.resolve(
             availableWidth: availableWidth,
             percentageWidth: desiredPercentage,
-            clockWidth: maxClockWidth,
-            clockLineWidth: clockLineWidth,
-            headerWidth: resetHeaderWidth)
+            clockWidth: maxResetWidth,
+            clockLineWidth: clockLineWidth)
         // NSMenu builds before menuWillOpen registers it in openMenus. Preserve that first budget too.
         self.overviewDisplayState.layouts[key] = layout
         return layout
+    }
+
+    /// Tier exemplar dates rendered through the real reset formatter so the reset budget
+    /// covers every compact tier in the current locale: time-only extremes, all seven
+    /// weekdays, all twelve month/day forms, Now, and the missing date.
+    static func compactResetTierExemplars(now: Date, calendar: Calendar, locale: Locale) -> [OverviewCompactResetText] {
+        var dates: [Date] = []
+        let startOfDay = calendar.startOfDay(for: now)
+        for (hour, minute) in [(12, 59), (23, 59)] {
+            // Past times fall into the Now tier; still valid samples of a live tier.
+            if let candidate = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: startOfDay) {
+                dates.append(candidate)
+            }
+        }
+        dates += Self.candidateResetSampleDates(now: now, calendar: calendar)
+        let year = calendar.component(.year, from: now)
+        for month in 1...12 {
+            var components = DateComponents()
+            components.year = year
+            components.month = month
+            components.day = 15
+            components.hour = 12
+            if let date = calendar.date(from: components) {
+                // Mid-month dates in the past still sample a valid tier; push them a year
+                // out so every month/day form is represented past the 7-day tier.
+                if date.timeIntervalSince(now) > 604_800 {
+                    dates.append(date)
+                } else if let nextYear = calendar.date(byAdding: .year, value: 1, to: date) {
+                    dates.append(nextYear)
+                }
+            }
+        }
+        dates.append(now.addingTimeInterval(-1))
+        var texts = dates.map {
+            OverviewCompactResetText.make(resetsAt: $0, now: now, calendar: calendar, locale: locale)
+        }
+        texts.append(OverviewCompactResetText.make(resetsAt: nil, now: now, calendar: calendar, locale: locale))
+        return texts
     }
 
     static func candidateResetSampleDates(now: Date, calendar: Calendar) -> [Date] {

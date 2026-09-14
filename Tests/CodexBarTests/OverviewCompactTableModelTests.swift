@@ -297,8 +297,8 @@ struct OverviewCompactTableModelTests {
             "PERIOD header at \(headerWidth)pt does not fit \(Int(CompactTableMetrics.periodColumnWidth))pt")
     }
 
-    /// Operator column budget for compact tables: preserves 176pt By-provider and 148pt
-    /// By-period bars computed from the resolved layout width and reset column width.
+    /// Shared 84pt leading column: both groupings resolve identical 170pt bar tracks
+    /// computed from the resolved layout width and reset column width.
     @Test
     func `bar track meets resolved layout column budgets`() {
         let layout = OverviewCompactTableLayout.resolve(
@@ -314,8 +314,8 @@ struct OverviewCompactTableModelTests {
         let providerBar = layout.barWidth(leading: providerLeading)
         let periodBar = layout.barWidth(leading: periodLeading)
 
-        #expect(providerBar == 176, "By-provider bar track \(providerBar) is not the 176pt budget")
-        #expect(periodBar == 148, "By-period bar track \(periodBar) is not the 148pt budget")
+        #expect(providerBar == 170, "By-provider bar track \(providerBar) is not the 170pt budget")
+        #expect(periodBar == providerBar, "By-period bar track \(periodBar) does not match By-provider")
 
         let gaps: CGFloat = 3 * CompactTableMetrics.columnSpacing
         let padding: CGFloat = 2 * CompactTableMetrics.horizontalPadding

@@ -7,8 +7,9 @@ import SwiftUI
 enum CompactTableMetrics {
     static let horizontalPadding: CGFloat = 12
     static let columnSpacing: CGFloat = 4
-    /// Provider cell width in the By-period view's data grid (provider plus model symbol).
-    static let providerMaxWidth: CGFloat = 112
+    /// Provider cell width in the By-period view's data grid, shared with the
+    /// By-provider period column so bar anchors match across tabs.
+    static let providerMaxWidth: CGFloat = 84
     /// Fixed leading/percentage tracks; reset width comes from the shared measured layout.
     static let periodColumnWidth: CGFloat = 84
     static let usedColumnWidth: CGFloat = 42
@@ -28,59 +29,14 @@ enum CompactTableMetrics {
     }
 }
 
-/// Compact native dropdown header cell for table percentage and reset columns.
-struct OverviewCompactDropdownHeader: View {
-    let axis: OverviewDisplayAxis
-    let selectedIndex: Int
-    let width: CGFloat
-    let isHighlighted: Bool
-    var onChange: ((Int) -> Void)?
-
-    var body: some View {
-        let choices = self.axis.choices
-        let currentTitle = (0..<choices.count).contains(self.selectedIndex) ? choices[self.selectedIndex] : ""
-        Menu {
-            ForEach(0..<choices.count, id: \.self) { index in
-                Button {
-                    self.onChange?(index)
-                } label: {
-                    HStack {
-                        Text(choices[index])
-                        if index == self.selectedIndex {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-        } label: {
-            Text(currentTitle)
-                .font(.caption2.weight(.semibold))
-                .textCase(.uppercase)
-                .lineLimit(1)
-                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-        .frame(width: self.width > 0 ? self.width : nil, alignment: .trailing)
-        .menuCardInteractiveControl()
-        .accessibilityLabel(self.axis.label)
-        .accessibilityValue(currentTitle)
-    }
-}
-
-/// Global By-provider table header (PERIOD | bar | percentage dropdown | reset dropdown) plus its single divider.
-/// Hosted as its own non-interactive menu item above the first provider block so the
-/// header can never land inside a provider group. Column widths reuse the body's declared
-/// constants (the bar cell keeps its computed track width) so the two hosted views align.
+/// Global By-provider table header (PERIOD label plus its single divider). Display
+/// controls live in the separate header control row above, so this header carries no
+/// controls — only the shared column spacing (the bar cell keeps its computed track
+/// width) so the hosted header view aligns with the body rows.
 struct OverviewCompactTableHeaderView: View {
-    let showUsed: Bool
     let width: CGFloat
-    var showAbsolute = false
     var percentageWidth: CGFloat = CompactTableMetrics.usedColumnWidth
     var resetWidth: CGFloat = 130
-    var wrapClock = false
-    var onUsageChange: ((Int) -> Void)?
-    var onResetChange: ((Int) -> Void)?
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -102,20 +58,12 @@ struct OverviewCompactTableHeaderView: View {
                                 + self.percentageWidth
                                 + self.resetWidth,
                             gaps: 3))
-                    // Interaction experiment (recovery slice): the usage cell is a live AppKit
-                    // popup on the NSControl target/action path. Reset and By-period cells
-                    // keep the SwiftUI Menu views until this path proves out in the menu.
-                    OverviewUsagePopUpHeader(
-                        showUsed: self.showUsed,
-                        width: self.percentageWidth,
-                        onSelect: self.onUsageChange)
-                        .frame(width: self.percentageWidth, height: 28, alignment: .trailing)
-                    OverviewCompactDropdownHeader(
-                        axis: .resetTime,
-                        selectedIndex: self.showAbsolute ? 1 : 0,
-                        width: self.resetWidth,
-                        isHighlighted: self.isHighlighted,
-                        onChange: self.onResetChange)
+                    Color.clear
+                        .gridCellUnsizedAxes(.vertical)
+                        .frame(width: self.percentageWidth)
+                    Color.clear
+                        .gridCellUnsizedAxes(.vertical)
+                        .frame(width: self.resetWidth)
                 }
             }
             Divider()
@@ -250,14 +198,11 @@ struct OverviewCompactTableBlockView: View {
 struct OverviewCompactPeriodTableView: View {
     let sections: [OverviewCompactTableModel.PeriodSection]
     let showsHeader: Bool
-    let showUsed: Bool
     let width: CGFloat
     var showAbsolute = false
     var percentageWidth: CGFloat = CompactTableMetrics.usedColumnWidth
     var resetWidth: CGFloat = 130
     var wrapClock = false
-    var onUsageChange: ((Int) -> Void)?
-    var onResetChange: ((Int) -> Void)?
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -272,18 +217,12 @@ struct OverviewCompactPeriodTableView: View {
                             .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
-                        OverviewCompactDropdownHeader(
-                            axis: .usage,
-                            selectedIndex: self.showUsed ? 0 : 1,
-                            width: self.percentageWidth,
-                            isHighlighted: self.isHighlighted,
-                            onChange: self.onUsageChange)
-                        OverviewCompactDropdownHeader(
-                            axis: .resetTime,
-                            selectedIndex: self.showAbsolute ? 1 : 0,
-                            width: self.resetWidth,
-                            isHighlighted: self.isHighlighted,
-                            onChange: self.onResetChange)
+                        Color.clear
+                            .gridCellUnsizedAxes(.vertical)
+                            .frame(width: self.percentageWidth)
+                        Color.clear
+                            .gridCellUnsizedAxes(.vertical)
+                            .frame(width: self.resetWidth)
                     }
                     GridRow {
                         Divider().gridCellColumns(4)

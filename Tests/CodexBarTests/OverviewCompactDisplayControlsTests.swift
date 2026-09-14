@@ -119,37 +119,28 @@ struct OverviewCompactDisplayControlsTests {
     }
 
     @Test
-    func `settings adapters reflect on dropdown headers and trigger callback seam`() {
-        let (controller, settings, menu) = Self
+    func `static table headers fit exact popover width without callbacks`() {
+        let (controller, _, menu) = Self
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-adapters")
         defer { controller.prepareForAppShutdown() }
 
-        settings.usageBarsFillOption = .remaining
-        settings.resetTimesOption = .clock
-
         let layout = controller.overviewCompactLayout(for: menu)
 
-        // Production By-provider header view wiring
+        // Production By-provider header view wiring (no control callbacks)
         let tableHeader = controller.makeOverviewCompactTableHeaderView(menu: menu, width: layout.width, layout: layout)
-        tableHeader.onUsageChange?(0)
-        #expect(settings.usageBarsShowUsed)
-        tableHeader.onUsageChange?(1)
-        #expect(!settings.usageBarsShowUsed)
-        tableHeader.onResetChange?(1)
-        #expect(settings.resetTimesShowAbsolute)
-        tableHeader.onResetChange?(0)
-        #expect(!settings.resetTimesShowAbsolute)
+        let tableHost = NSHostingView(rootView: tableHeader)
+        tableHost.layoutSubtreeIfNeeded()
+        #expect(tableHost.fittingSize.width == layout.width)
 
-        // Production By-period table view wiring
+        // Production By-period table view wiring (no control callbacks)
         let periodTable = controller.makeOverviewPeriodTableView(
             menu: menu,
             rows: [],
             width: layout.width,
             layout: layout)
-        periodTable.onUsageChange?(0)
-        #expect(settings.usageBarsShowUsed)
-        periodTable.onResetChange?(1)
-        #expect(settings.resetTimesShowAbsolute)
+        let periodHost = NSHostingView(rootView: periodTable)
+        periodHost.layoutSubtreeIfNeeded()
+        #expect(periodHost.fittingSize.width == layout.width)
     }
 
     @Test
@@ -158,18 +149,21 @@ struct OverviewCompactDisplayControlsTests {
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-budgets")
         defer { controller.prepareForAppShutdown() }
 
-        let usageWidth = StatusItemController.dropdownHeaderWidth(for: .usage)
-        let resetWidth = StatusItemController.dropdownHeaderWidth(for: .resetTime)
-
-        #expect(usageWidth >= 78)
-        #expect(resetWidth >= 90)
-
+        // Content-based budgets: measured 100% plus padding, concise reset tiers plus
+        // padding, shared 84pt leading in both groupings. No header-derived floors.
         let layout = controller.overviewCompactLayout(for: menu)
-        #expect(layout.percentageWidth >= usageWidth)
-        #expect(layout.resetWidth >= resetWidth)
-        #expect(layout.width == 472)
-        #expect(layout.barWidth(leading: 84) == 176)
-        #expect(layout.barWidth(leading: 112) == 148)
+        let fullScale = NSAttributedString(
+            string: "100%",
+            attributes: [.font: NSFont.monospacedDigitSystemFont(
+                ofSize: CompactTableMetrics.emphasisFontSize,
+                weight: .semibold)]).size().width
+        #expect(layout.percentageWidth == ceil(fullScale) + 8)
+        #expect(layout.resetWidth < 98)
+        #expect(layout.width == 290 + layout.percentageWidth + layout.resetWidth)
+        #expect(layout.width < 472)
+        #expect(CompactTableMetrics.providerMaxWidth == CompactTableMetrics.periodColumnWidth)
+        #expect(layout.barWidth(leading: CompactTableMetrics.periodColumnWidth) ==
+            layout.barWidth(leading: CompactTableMetrics.providerMaxWidth))
 
         // Full production table header fits exact popover width
         let headerView = controller.makeOverviewCompactTableHeaderView(menu: menu, width: layout.width, layout: layout)
@@ -177,24 +171,10 @@ struct OverviewCompactDisplayControlsTests {
         headerHost.layoutSubtreeIfNeeded()
         #expect(headerHost.fittingSize.width == layout.width)
 
-        // Dropdown headers with resolved column widths fit within column bounds
-        let usageDropdown = OverviewCompactDropdownHeader(
-            axis: .usage,
-            selectedIndex: 1,
-            width: layout.percentageWidth,
-            isHighlighted: false)
-        let usageHost = NSHostingView(rootView: usageDropdown)
-        usageHost.layoutSubtreeIfNeeded()
-        #expect(usageHost.fittingSize.width <= layout.percentageWidth)
-
-        let resetDropdown = OverviewCompactDropdownHeader(
-            axis: .resetTime,
-            selectedIndex: 0,
-            width: layout.resetWidth,
-            isHighlighted: false)
-        let resetHost = NSHostingView(rootView: resetDropdown)
-        resetHost.layoutSubtreeIfNeeded()
-        #expect(resetHost.fittingSize.width <= layout.resetWidth)
+        // Header control row is a plain disabled item independent of data budgets.
+        let controlsItem = controller.makeOverviewHeaderControlsItem(menu: menu, width: layout.width, layout: layout)
+        #expect(controlsItem.isEnabled == false)
+        #expect(Self.headerSegments(in: controlsItem).count == 2)
     }
 
     @Test
@@ -389,95 +369,70 @@ struct OverviewCompactDisplayControlsTests {
         }
     }
 
-    @Test
-    func `usage popup factory builds titled pullsDown control with checked selection`() {
-        for showUsed in [true, false] {
-            let button = StatusItemController.makeUsagePopUpButton(showUsed: showUsed)
-            #expect(button.pullsDown)
-            #expect(!button.isBordered)
-            #expect(button.numberOfItems == 3)
-            #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[showUsed ? 0 : 1])
-            #expect(button.itemTitle(at: 1) == OverviewDisplayAxis.usage.choices[0])
-            #expect(button.itemTitle(at: 2) == OverviewDisplayAxis.usage.choices[1])
-            #expect(button.indexOfSelectedItem == (showUsed ? 1 : 2))
-            #expect(button.item(at: 0)?.state == .off)
-            #expect(button.item(at: 1)?.state == (showUsed ? .on : .off))
-            #expect(button.item(at: 2)?.state == (showUsed ? .off : .on))
-            #expect(button.target == nil)
-            #expect(button.accessibilityLabel() == OverviewDisplayAxis.usage.label)
+    private static func headerSegments(in item: NSMenuItem) -> [OverviewDisplayAxis: OverviewDisplaySegmentedControl] {
+        var found: [OverviewDisplayAxis: OverviewDisplaySegmentedControl] = [:]
+        func walk(_ view: NSView) {
+            if let control = view as? OverviewDisplaySegmentedControl {
+                found[control.axis] = control
+            }
+            for subview in view.subviews {
+                walk(subview)
+            }
         }
+        if let view = item.view {
+            walk(view)
+        }
+        return found
     }
 
     @Test
-    func `usage popup retitle flips title slot selection and states`() {
-        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
-        StatusItemController.retitleUsagePopUpButton(button, showUsed: false)
-        #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[1])
-        #expect(button.indexOfSelectedItem == 2)
-        #expect(button.item(at: 0)?.state == .off)
-        #expect(button.item(at: 1)?.state == .off)
-        #expect(button.item(at: 2)?.state == .on)
-        StatusItemController.retitleUsagePopUpButton(button, showUsed: true)
-        #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[0])
-        #expect(button.indexOfSelectedItem == 1)
-        #expect(button.item(at: 1)?.state == .on)
-        #expect(button.item(at: 2)?.state == .off)
-    }
-
-    @Test
-    func `usage popup coordinator maps title slot to current segment`() {
-        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
-        let coordinator = OverviewUsagePopUpCoordinator()
-        coordinator.selectedSegment = 0
-        var received: [Int] = []
-        coordinator.onSelect = { received.append($0) }
-        button.selectItem(at: 0)
-        coordinator.chose(button)
-        button.selectItem(at: 1)
-        coordinator.chose(button)
-        button.selectItem(at: 2)
-        coordinator.chose(button)
-        #expect(received == [0, 0, 1])
-        coordinator.selectedSegment = 1
-        button.selectItem(at: 0)
-        coordinator.chose(button)
-        #expect(received == [0, 0, 1, 1])
-    }
-
-    @Test
-    func `usage popup dispatch through production header closure flips the setting`() throws {
+    func `production segmented controls carry approved copy and flip settings through the action seam`() throws {
         let (controller, settings, menu) = Self
-            .makeController(suiteName: "OverviewCompactDisplayControlsTests-popupwire")
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-segments")
         defer { controller.prepareForAppShutdown() }
-        settings.usageBarsFillOption = .used
-        let header = controller.makeOverviewCompactTableHeaderView(menu: menu, width: 400, layout: nil)
-        let onSelect = try #require(header.onUsageChange)
+        settings.usageBarsFillOption = .remaining
+        settings.resetTimesOption = .clock
 
-        // Bind exactly as the SwiftUI host does, then dispatch through the real
-        // AppKit action machinery instead of calling the closure directly.
-        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
-        let coordinator = OverviewUsagePopUpCoordinator()
-        coordinator.selectedSegment = 0
-        coordinator.onSelect = onSelect
-        button.target = coordinator
-        button.action = #selector(OverviewUsagePopUpCoordinator.chose(_:))
-        let action = try #require(button.action)
-        let target = try #require(button.target)
+        let item = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400, layout: nil)
+        #expect(item.isEnabled == false)
+        #expect(item.identifier == StatusItemController.overviewHeaderControlsItemID)
+        let segments = Self.headerSegments(in: item)
+        let usage = try #require(segments[.usage])
+        let reset = try #require(segments[.resetTime])
 
-        button.selectItem(at: 2)
-        NSApp.sendAction(action, to: target, from: button)
-        #expect(!settings.usageBarsShowUsed)
+        // Short approved labels with full descriptive tooltips and accessible names.
+        for axis in OverviewDisplayAxis.allCases {
+            let control = try #require(segments[axis])
+            #expect((0..<control.segmentCount).map { control.label(forSegment: $0) } == axis.segmentTitles)
+            #expect((0..<control.segmentCount).map { control.toolTip(forSegment: $0) } == axis.segmentToolTips)
+            #expect(control.accessibilityLabel() == axis.label)
+            #expect(control.target === controller)
+        }
+        // Selection reflects current settings (remaining/clock).
+        #expect(usage.selectedSegment == 1)
+        #expect(reset.selectedSegment == 1)
 
-        // Title slot re-affirms the now-current segment: no-op through the guard.
-        coordinator.selectedSegment = 1
-        button.selectItem(at: 0)
-        NSApp.sendAction(action, to: target, from: button)
-        #expect(!settings.usageBarsShowUsed)
+        // Drive the alternate choice through the real action entry.
+        usage.selectedSegment = 0
+        controller.overviewDisplayChoiceChanged(usage)
+        #expect(settings.usageBarsShowUsed)
+        reset.selectedSegment = 0
+        controller.overviewDisplayChoiceChanged(reset)
+        #expect(!settings.resetTimesShowAbsolute)
 
-        // Closed menu: the production closure refuses the stale dispatch.
-        controller.openMenus.removeAll()
-        button.selectItem(at: 1)
-        NSApp.sendAction(action, to: target, from: button)
-        #expect(!settings.usageBarsShowUsed)
+        // Re-selecting the current segment is a no-op: no viewport request, same generation.
+        let key = ObjectIdentifier(menu)
+        controller.overviewDisplayState.viewportRequests.removeValue(forKey: key)
+        let generation = controller.menuSession.menuInteractionGeneration(for: key)
+        controller.overviewDisplayChoiceChanged(usage)
+        #expect(settings.usageBarsShowUsed)
+        #expect(controller.overviewDisplayState.viewportRequests[key] == nil)
+        #expect(controller.menuSession.menuInteractionGeneration(for: key) == generation)
+
+        // A control tracked to a closed menu refuses the dispatch.
+        usage.trackedMenu = NSMenu()
+        usage.selectedSegment = 1
+        controller.overviewDisplayChoiceChanged(usage)
+        #expect(settings.usageBarsShowUsed)
     }
 }

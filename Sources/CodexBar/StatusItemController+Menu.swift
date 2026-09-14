@@ -576,6 +576,9 @@ extension StatusItemController {
         guard !rows.isEmpty else { return false }
         let displayRows = self.overviewDisplayRows(rows: rows, compactEnabled: compactEnabled)
         guard !displayRows.isEmpty else { return false }
+        if compactEnabled {
+            self.ensureOverviewHeaderControlsInserted(into: menu, width: tableMenuWidth, layout: tableLayout)
+        }
         if compactEnabled, self.overviewTableGrouping == .period {
             return self.addOverviewPeriodTableItem(
                 displayRows: displayRows,

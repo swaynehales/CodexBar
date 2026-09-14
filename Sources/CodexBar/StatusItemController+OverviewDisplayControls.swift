@@ -16,6 +16,19 @@ enum OverviewDisplayAxis: CaseIterable {
         case .resetTime: [L("reset_times_countdown"), L("reset_times_clock")]
         }
     }
+
+    /// Short segment labels for the restored header controls (approved copy).
+    var segmentTitles: [String] {
+        switch self {
+        case .usage: [L("compact_header_used"), L("compact_header_left")]
+        case .resetTime: [L("compact_header_in"), L("compact_header_at")]
+        }
+    }
+
+    /// Full descriptive names shown as per-segment tooltips.
+    var segmentToolTips: [String] {
+        self.choices
+    }
 }
 
 struct OverviewDisplayState {
@@ -23,54 +36,21 @@ struct OverviewDisplayState {
     var viewportRequests: [ObjectIdentifier: OverviewDisplayViewportRequest] = [:]
 }
 
-/// Live AppKit usage control for the By-provider header interaction experiment.
-/// A borderless pullsDown NSPopUpButton on the NSControl target/action path — sharing
-/// NSControl ancestry with the proven grouping switcher. The operator reported the
-/// SwiftUI Menu equivalent as inert to clicks; the delivery cause is unverified and
-/// callback tests pass behind it.
-/// Scope is one header cell only; reset and By-period controls keep their current views.
-final class OverviewUsagePopUpButton: NSPopUpButton {}
-
-/// Maps popup indexes to usage segments. Index 0 is the pullsDown title slot and
-/// re-affirms the current segment (a no-op through the existing settings guard);
-/// indexes 1... map to segments 0....
-@MainActor
-final class OverviewUsagePopUpCoordinator: NSObject {
-    var selectedSegment = 0
-    var onSelect: ((Int) -> Void)?
-
-    @objc func chose(_ sender: OverviewUsagePopUpButton) {
-        let index = sender.indexOfSelectedItem
-        self.onSelect?(index <= 0 ? self.selectedSegment : index - 1)
-    }
+/// Restored segmented control for the header control row: a real NSControl with
+/// target/action inside a plain disabled menu item (the host the operator verified
+/// working). Segment labels are the short approved copy; tooltips and accessibility
+/// labels carry the full descriptive names.
+final class OverviewDisplaySegmentedControl: NSSegmentedControl {
+    var axis: OverviewDisplayAxis = .usage
+    weak var trackedMenu: NSMenu?
 }
 
-/// SwiftUI host for the experiment control. Menu identity and preference behavior stay
-/// in the existing onSelect closure (which captures the tracked menu weakly); this view
-/// only owns the AppKit control and the index mapping.
-struct OverviewUsagePopUpHeader: NSViewRepresentable {
-    let showUsed: Bool
-    let width: CGFloat
-    var onSelect: ((Int) -> Void)?
-
-    func makeCoordinator() -> OverviewUsagePopUpCoordinator {
-        OverviewUsagePopUpCoordinator()
-    }
-
-    func makeNSView(context: Context) -> OverviewUsagePopUpButton {
-        let button = StatusItemController.makeUsagePopUpButton(showUsed: self.showUsed)
-        button.target = context.coordinator
-        button.action = #selector(OverviewUsagePopUpCoordinator.chose(_:))
-        context.coordinator.selectedSegment = self.showUsed ? 0 : 1
-        context.coordinator.onSelect = self.onSelect
-        return button
-    }
-
-    func updateNSView(_ button: OverviewUsagePopUpButton, context: Context) {
-        StatusItemController.retitleUsagePopUpButton(button, showUsed: self.showUsed)
-        context.coordinator.selectedSegment = self.showUsed ? 0 : 1
-        context.coordinator.onSelect = self.onSelect
-    }
+/// Placement of one labeled segment group inside the header control row.
+private struct HeaderSegmentPlacement {
+    static let labelHeight: CGFloat = 13
+    static let rowGap: CGFloat = 4
+    let segmentX: CGFloat
+    let top: CGFloat
 }
 
 struct OverviewDisplayViewportRequest {
@@ -91,44 +71,105 @@ struct OverviewDisplayViewportRequest {
 }
 
 extension StatusItemController {
-    static func dropdownHeaderWidth(for axis: OverviewDisplayAxis) -> CGFloat {
-        axis.choices.indices.map { idx in
-            let view = OverviewCompactDropdownHeader(
-                axis: axis,
-                selectedIndex: idx,
-                width: 0,
-                isHighlighted: false)
-            return ceil(NSHostingView(rootView: view).fittingSize.width)
-        }.max() ?? 0
+    @objc func overviewDisplayChoiceChanged(_ sender: OverviewDisplaySegmentedControl) {
+        guard let menu = sender.trackedMenu else { return }
+        self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.selectedSegment, menu: menu)
     }
 
-    /// Builds the experiment popup without a target so both the SwiftUI host and the
-    /// focused tests can bind dispatch themselves. Item 0 is the pullsDown title slot;
-    /// items 1... carry the full descriptive names with the current selection checked.
-    static func makeUsagePopUpButton(showUsed: Bool) -> OverviewUsagePopUpButton {
-        let button = OverviewUsagePopUpButton(frame: .zero, pullsDown: true)
-        button.isBordered = false
-        button.font = NSFont.systemFont(ofSize: 10, weight: .medium)
-        button.alignment = .right
-        button.removeAllItems()
-        button.addItem(withTitle: "")
-        button.addItems(withTitles: OverviewDisplayAxis.usage.choices)
-        Self.retitleUsagePopUpButton(button, showUsed: showUsed)
-        button.setAccessibilityLabel(OverviewDisplayAxis.usage.label)
-        return button
+    /// Header control row: labeled usage/reset segments over the right-side columns in
+    /// a plain disabled item (the proven host). Control widths never feed data budgets;
+    /// groups stagger vertically only when they cannot sit side by side.
+    func makeOverviewHeaderControlsItem(
+        menu: NSMenu,
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
+    {
+        let resetWidth = layout?.resetWidth ?? 68
+        let usageGroup = self.makeHeaderSegmentGroup(axis: .usage, menu: menu)
+        let resetGroup = self.makeHeaderSegmentGroup(axis: .resetTime, menu: menu)
+        let horizontalPadding = CompactTableMetrics.horizontalPadding
+        let contentWidth = max(0, width - 2 * horizontalPadding)
+        let usageSegW = min(usageGroup.control.frame.width, contentWidth)
+        let resetSegW = min(resetGroup.control.frame.width, contentWidth)
+        let resetSegX = max(horizontalPadding, width - horizontalPadding - resetSegW)
+        let percentageRight = width - horizontalPadding - resetWidth - CompactTableMetrics.columnSpacing
+        let usageSegX = max(horizontalPadding, percentageRight - usageSegW)
+        // Segments overlap when the usage cell cannot clear the reset group; stack the
+        // groups (usage above reset, same column alignment) instead of compressing them.
+        let staggered = percentageRight > resetSegX
+        let labelHeight = HeaderSegmentPlacement.labelHeight
+        let singleRowHeight: CGFloat = 6 + labelHeight + HeaderSegmentPlacement.rowGap +
+            usageGroup.control.frame.height + 6
+        let containerHeight = staggered ? 2 * singleRowHeight - 6 : singleRowHeight
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: containerHeight))
+        container.autoresizingMask = [.width]
+        self.placeHeaderSegmentGroup(
+            usageGroup,
+            in: container,
+            placement: HeaderSegmentPlacement(segmentX: usageSegX, top: containerHeight - 6))
+        self.placeHeaderSegmentGroup(
+            resetGroup,
+            in: container,
+            placement: HeaderSegmentPlacement(
+                segmentX: resetSegX,
+                top: staggered ? containerHeight - 6 - singleRowHeight : containerHeight - 6))
+        let item = NSMenuItem()
+        item.view = container
+        item.isEnabled = false
+        item.identifier = Self.overviewHeaderControlsItemID
+        return item
     }
 
-    static func retitleUsagePopUpButton(_ button: OverviewUsagePopUpButton, showUsed: Bool) {
-        // Interaction experiment only: the title slot mirrors the selected full name while
-        // short-copy visuals stay deferred to the layout slice (spec rev3/4 selects Left,
-        // which still needs a key in every complete locale). Set item states explicitly
-        // rather than relying on pullsDown checkmark behavior.
-        let choices = OverviewDisplayAxis.usage.choices
-        button.item(at: 0)?.title = showUsed ? choices[0] : choices[1]
-        button.selectItem(at: showUsed ? 1 : 2)
-        button.item(at: 0)?.state = .off
-        button.item(at: 1)?.state = showUsed ? .on : .off
-        button.item(at: 2)?.state = showUsed ? .off : .on
+    private func makeHeaderSegmentGroup(
+        axis: OverviewDisplayAxis,
+        menu: NSMenu) -> (label: NSTextField, control: OverviewDisplaySegmentedControl)
+    {
+        let label = NSTextField(labelWithString: axis.label)
+        label.font = NSFont.systemFont(ofSize: 10)
+        label.textColor = .secondaryLabelColor
+        label.sizeToFit()
+        let control = OverviewDisplaySegmentedControl(
+            labels: axis.segmentTitles,
+            trackingMode: .selectOne,
+            target: self,
+            action: #selector(self.overviewDisplayChoiceChanged(_:)))
+        control.axis = axis
+        control.trackedMenu = menu
+        control.controlSize = .small
+        control.font = NSFont.systemFont(ofSize: 11)
+        control.selectedSegment = axis == .usage
+            ? (self.settings.usageBarsShowUsed ? 0 : 1)
+            : (self.settings.resetTimesShowAbsolute ? 1 : 0)
+        for index in axis.segmentTitles.indices {
+            control.setToolTip(axis.segmentToolTips[index], forSegment: index)
+        }
+        control.setAccessibilityLabel(axis.label)
+        control.sizeToFit()
+        return (label, control)
+    }
+
+    private func placeHeaderSegmentGroup(
+        _ group: (label: NSTextField, control: OverviewDisplaySegmentedControl),
+        in container: NSView,
+        placement: HeaderSegmentPlacement)
+    {
+        let labelHeight = HeaderSegmentPlacement.labelHeight
+        let rowGap = HeaderSegmentPlacement.rowGap
+        let segH = group.control.frame.height
+        group.control.frame = NSRect(
+            x: placement.segmentX,
+            y: placement.top - labelHeight - rowGap - segH,
+            width: group.control.frame.width,
+            height: segH)
+        group.control.autoresizingMask = [.minXMargin]
+        group.label.frame = NSRect(
+            x: placement.segmentX,
+            y: placement.top - labelHeight,
+            width: max(group.label.frame.width, group.control.frame.width),
+            height: labelHeight)
+        group.label.autoresizingMask = [.minXMargin]
+        container.addSubview(group.control)
+        container.addSubview(group.label)
     }
 
     func applyOverviewDisplayChoice(axis: OverviewDisplayAxis, selectedSegment: Int, menu: NSMenu) {
