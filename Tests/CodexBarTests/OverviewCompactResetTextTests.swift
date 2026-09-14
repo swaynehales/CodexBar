@@ -35,111 +35,41 @@ struct OverviewCompactResetTextTests {
     }
 
     @Test
-    func `today reset renders single line in both unwrapped and wrapped modes`() throws {
+    func `delta negative and zero produces localized now`() {
         let now = Date(timeIntervalSince1970: 1_789_387_200)
-        let resetsAt = now.addingTimeInterval(3.5 * 3600)
 
-        let text = OverviewCompactResetText.make(
-            resetsAt: resetsAt,
+        // Zero delta (resetsAt == now)
+        let textZero = OverviewCompactResetText.make(
+            resetsAt: now,
             now: now,
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(text.countdown == "3h")
-        #expect(text.clock == UsageFormatter.resetDescription(
-            from: resetsAt,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale))
-        #expect(text.clockDate == nil)
-        #expect(text.clockTime != nil)
+        #expect(textZero.countdown == "now")
+        #expect(textZero.clock == "Now")
+        #expect(textZero.clockDate == nil)
+        #expect(textZero.clockTime == "Now")
+        #expect(textZero.lines(showAbsolute: true, wrapClock: false) == ["Now"])
+        #expect(textZero.lines(showAbsolute: true, wrapClock: true) == ["Now"])
+        #expect(textZero.lines(showAbsolute: false, wrapClock: false) == ["now"])
 
-        #expect(text.lines(showAbsolute: false, wrapClock: false) == ["3h"])
-        #expect(text.lines(showAbsolute: false, wrapClock: true) == ["3h"])
-        #expect(text.lines(showAbsolute: true, wrapClock: false) == [text.clock])
-        #expect(try text.lines(showAbsolute: true, wrapClock: true) == [#require(text.clockTime)])
-    }
-
-    @Test
-    func `tomorrow reset wraps to two lines when wrapClock is enabled`() throws {
-        let now = Date(timeIntervalSince1970: 1_789_387_200)
-        let resetsAt = Date(timeIntervalSince1970: 1_789_486_200)
-
-        let text = OverviewCompactResetText.make(
-            resetsAt: resetsAt,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale)
-
-        #expect(text.clock == UsageFormatter.resetDescription(
-            from: resetsAt,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale))
-        #expect(text.clockDate != nil)
-        #expect(text.clockTime != nil)
-
-        #expect(text.lines(showAbsolute: false, wrapClock: false) == [text.countdown])
-        #expect(text.lines(showAbsolute: true, wrapClock: false) == [text.clock])
-        #expect(try text.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text.clockDate),
-            #require(text.clockTime),
-        ])
-    }
-
-    @Test
-    func `future day reset wraps to two lines when wrapClock is enabled`() throws {
-        let now = Date(timeIntervalSince1970: 1_789_387_200)
-        let resetsAt = Date(timeIntervalSince1970: 1_789_992_000)
-
-        let text = OverviewCompactResetText.make(
-            resetsAt: resetsAt,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale)
-
-        #expect(text.countdown == "7d")
-        #expect(text.clock == UsageFormatter.resetDescription(
-            from: resetsAt,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale))
-        #expect(text.clockDate != nil)
-        #expect(text.clockTime != nil)
-
-        #expect(text.lines(showAbsolute: true, wrapClock: false) == [text.clock])
-        #expect(try text.lines(showAbsolute: true, wrapClock: true) == [
-            #require(text.clockDate),
-            #require(text.clockTime),
-        ])
-    }
-
-    @Test
-    func `expired reset date preserves existing formatter semantics`() throws {
-        let now = Date(timeIntervalSince1970: 1_789_387_200)
-
-        // Expired earlier today (10:00:00 UTC)
-        let earlierToday = Date(timeIntervalSince1970: 1_789_380_000)
-        let textToday = OverviewCompactResetText.make(
+        // Negative delta (resetsAt earlier today)
+        let earlierToday = now.addingTimeInterval(-3600)
+        let textEarlier = OverviewCompactResetText.make(
             resetsAt: earlierToday,
             now: now,
             calendar: self.calendar,
             locale: self.locale)
 
-        #expect(textToday.countdown == "now")
-        #expect(textToday.clock == UsageFormatter.resetDescription(
-            from: earlierToday,
-            now: now,
-            calendar: self.calendar,
-            locale: self.locale))
-        #expect(textToday.clockDate == nil)
-        #expect(textToday.clockTime != nil)
-        #expect(textToday.lines(showAbsolute: false, wrapClock: false) == ["now"])
-        #expect(textToday.lines(showAbsolute: true, wrapClock: false) == [textToday.clock])
-        #expect(try textToday.lines(showAbsolute: true, wrapClock: true) == [#require(textToday.clockTime)])
+        #expect(textEarlier.countdown == "now")
+        #expect(textEarlier.clock == "Now")
+        #expect(textEarlier.clockDate == nil)
+        #expect(textEarlier.clockTime == "Now")
+        #expect(textEarlier.lines(showAbsolute: true, wrapClock: false) == ["Now"])
+        #expect(textEarlier.lines(showAbsolute: true, wrapClock: true) == ["Now"])
 
-        // Expired on a previous day (2026-09-10 12:00:00 UTC)
-        let pastDay = Date(timeIntervalSince1970: 1_789_128_000)
+        // Negative delta (resetsAt on a previous day)
+        let pastDay = now.addingTimeInterval(-100_000)
         let textPast = OverviewCompactResetText.make(
             resetsAt: pastDay,
             now: now,
@@ -147,19 +77,219 @@ struct OverviewCompactResetTextTests {
             locale: self.locale)
 
         #expect(textPast.countdown == "now")
-        #expect(textPast.clock == UsageFormatter.resetDescription(
-            from: pastDay,
+        #expect(textPast.clock == "Now")
+        #expect(textPast.clockDate == nil)
+        #expect(textPast.clockTime == "Now")
+        #expect(textPast.lines(showAbsolute: true, wrapClock: false) == ["Now"])
+        #expect(textPast.lines(showAbsolute: true, wrapClock: true) == ["Now"])
+    }
+
+    @Test
+    func `delta boundaries 1s and 86399s produce time only`() {
+        let now = Date(timeIntervalSince1970: 1_789_387_200) // Monday 12:00:00 UTC
+
+        // delta = 1 second
+        let plus1s = now.addingTimeInterval(1)
+        let text1s = OverviewCompactResetText.make(
+            resetsAt: plus1s,
             now: now,
             calendar: self.calendar,
-            locale: self.locale))
-        #expect(textPast.clockDate != nil)
-        #expect(textPast.clockTime != nil)
-        #expect(textPast.lines(showAbsolute: false, wrapClock: false) == ["now"])
-        #expect(textPast.lines(showAbsolute: true, wrapClock: false) == [textPast.clock])
-        #expect(try textPast.lines(showAbsolute: true, wrapClock: true) == [
-            #require(textPast.clockDate),
-            #require(textPast.clockTime),
+            locale: self.locale)
+
+        #expect(text1s.clockDate == nil)
+        #expect(text1s.clockTime != nil)
+        #expect(text1s.clock == text1s.clockTime)
+        #expect(text1s.lines(showAbsolute: true, wrapClock: false) == [text1s.clock])
+        #expect(text1s.lines(showAbsolute: true, wrapClock: true) == [text1s.clock])
+
+        // delta = 86,399 seconds (23h 59m 59s)
+        let plus86399s = now.addingTimeInterval(86399)
+        let text86399s = OverviewCompactResetText.make(
+            resetsAt: plus86399s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text86399s.clockDate == nil)
+        #expect(text86399s.clockTime != nil)
+        #expect(text86399s.clock == text86399s.clockTime)
+        #expect(text86399s.lines(showAbsolute: true, wrapClock: false) == [text86399s.clock])
+        #expect(text86399s.lines(showAbsolute: true, wrapClock: true) == [text86399s.clock])
+    }
+
+    @Test
+    func `delta boundaries 86400s and 86401s produce abbreviated weekday and time`() throws {
+        let now = Date(timeIntervalSince1970: 1_789_387_200) // Monday 12:00:00 UTC
+
+        // delta = 86,400 seconds (exactly 24 hours -> Tuesday 12:00:00 UTC)
+        let plus86400s = now.addingTimeInterval(86400)
+        let text86400s = OverviewCompactResetText.make(
+            resetsAt: plus86400s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text86400s.clockDate != nil)
+        #expect(text86400s.clockTime != nil)
+        #expect(text86400s.clock.contains("Tue"))
+        #expect(text86400s.lines(showAbsolute: true, wrapClock: false) == [text86400s.clock])
+        #expect(try text86400s.lines(showAbsolute: true, wrapClock: true) == [
+            #require(text86400s.clockDate),
+            #require(text86400s.clockTime),
         ])
+
+        // delta = 86,401 seconds
+        let plus86401s = now.addingTimeInterval(86401)
+        let text86401s = OverviewCompactResetText.make(
+            resetsAt: plus86401s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text86401s.clockDate != nil)
+        #expect(text86401s.clockTime != nil)
+        #expect(text86401s.clock.contains("Tue"))
+        #expect(text86401s.lines(showAbsolute: true, wrapClock: false) == [text86401s.clock])
+        #expect(try text86401s.lines(showAbsolute: true, wrapClock: true) == [
+            #require(text86401s.clockDate),
+            #require(text86401s.clockTime),
+        ])
+    }
+
+    @Test
+    func `delta boundaries 604799s and 604800s produce abbreviated weekday and time`() throws {
+        let now = Date(timeIntervalSince1970: 1_789_387_200) // Monday 12:00:00 UTC
+
+        // delta = 604,799 seconds (6 days 23 hours 59 mins 59 secs)
+        let plus604799s = now.addingTimeInterval(604_799)
+        let text604799s = OverviewCompactResetText.make(
+            resetsAt: plus604799s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text604799s.clockDate != nil)
+        #expect(text604799s.clockTime != nil)
+        #expect(text604799s.lines(showAbsolute: true, wrapClock: false) == [text604799s.clock])
+        #expect(try text604799s.lines(showAbsolute: true, wrapClock: true) == [
+            #require(text604799s.clockDate),
+            #require(text604799s.clockTime),
+        ])
+
+        // delta = 604,800 seconds (exactly 7 days -> Monday 12:00:00 UTC next week)
+        let plus604800s = now.addingTimeInterval(604_800)
+        let text604800s = OverviewCompactResetText.make(
+            resetsAt: plus604800s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text604800s.clockDate != nil)
+        #expect(text604800s.clockTime != nil)
+        #expect(text604800s.clock.contains("Mon"))
+        #expect(text604800s.lines(showAbsolute: true, wrapClock: false) == [text604800s.clock])
+        #expect(try text604800s.lines(showAbsolute: true, wrapClock: true) == [
+            #require(text604800s.clockDate),
+            #require(text604800s.clockTime),
+        ])
+    }
+
+    @Test
+    func `delta boundary 604801s produces abbreviated month and day only`() {
+        let now = Date(timeIntervalSince1970: 1_789_387_200) // 2026-09-14 12:00:00 UTC
+
+        // delta = 604,801 seconds (7 days + 1 second -> 2026-09-21)
+        let plus604801s = now.addingTimeInterval(604_801)
+        let text604801s = OverviewCompactResetText.make(
+            resetsAt: plus604801s,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text604801s.clockTime == nil)
+        #expect(text604801s.clock.contains("Sep"))
+        #expect(text604801s.clock.contains("21"))
+        #expect(text604801s.clockDate == text604801s.clock)
+        #expect(text604801s.lines(showAbsolute: true, wrapClock: false) == [text604801s.clock])
+        #expect(text604801s.lines(showAbsolute: true, wrapClock: true) == [text604801s.clock])
+    }
+
+    @Test
+    func `future reset after midnight but under 24 hours produces time only`() {
+        // 2026-09-14 23:30:00 UTC
+        let now = Date(timeIntervalSince1970: 1_789_428_600)
+        // 2026-09-15 01:30:00 UTC (crossing midnight, delta = 7,200s < 86,400s)
+        let resetsAt = Date(timeIntervalSince1970: 1_789_435_800)
+
+        let text = OverviewCompactResetText.make(
+            resetsAt: resetsAt,
+            now: now,
+            calendar: self.calendar,
+            locale: self.locale)
+
+        #expect(text.clockDate == nil)
+        #expect(text.clockTime != nil)
+        #expect(text.clock == text.clockTime)
+        #expect(text.lines(showAbsolute: true, wrapClock: false) == [text.clock])
+        #expect(text.lines(showAbsolute: true, wrapClock: true) == [text.clock])
+    }
+
+    @Test
+    func `daylight saving time crossing respects elapsed delta thresholds`() throws {
+        var pacificCal = Calendar(identifier: .gregorian)
+        pacificCal.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let locale = Locale(identifier: "en_US")
+
+        // 2026-03-08 01:00 PST (spring forward occurs at 02:00 -> 03:00)
+        // 2026-03-08 01:00 PST = 2026-03-08 09:00:00 UTC (1772960400)
+        let now = Date(timeIntervalSince1970: 1_772_960_400)
+
+        // Reset at 03:30 PDT (delta = 5,400 elapsed seconds < 86,400)
+        let resetsAtShort = now.addingTimeInterval(5400)
+        let textShort = OverviewCompactResetText.make(
+            resetsAt: resetsAtShort,
+            now: now,
+            calendar: pacificCal,
+            locale: locale)
+
+        #expect(textShort.clockDate == nil)
+        #expect(textShort.clockTime?.contains("3:30") == true)
+        #expect(textShort.lines(showAbsolute: true, wrapClock: true).count == 1)
+
+        // Reset at 86,400 elapsed seconds (exactly 24h later) -> Monday 02:00 PDT
+        let resetsAt24h = now.addingTimeInterval(86400)
+        let text24h = OverviewCompactResetText.make(
+            resetsAt: resetsAt24h,
+            now: now,
+            calendar: pacificCal,
+            locale: locale)
+
+        #expect(text24h.clockDate != nil)
+        #expect(text24h.clockTime != nil)
+        #expect(text24h.clock.contains("Mon"))
+        #expect(text24h.lines(showAbsolute: true, wrapClock: true).count == 2)
+    }
+
+    @Test
+    func `year crossing with delta beyond seven days produces month and day only without year`() {
+        // 2026-12-30 12:00:00 UTC
+        let now = Date(timeIntervalSince1970: 1_798_632_000)
+        // 2027-01-15 12:00:00 UTC (delta = 16 days > 604,800s)
+        let resetsAt = Date(timeIntervalSince1970: 1_800_014_400)
+
+        let text = OverviewCompactResetText.make(
+            resetsAt: resetsAt,
+            now: now,
+            calendar: self.calendar,
+            locale: Locale(identifier: "en_US"))
+
+        #expect(text.clockTime == nil)
+        #expect(text.clock.contains("Jan"))
+        #expect(text.clock.contains("15"))
+        #expect(text.clock.contains("2026") == false)
+        #expect(text.clock.contains("2027") == false)
+        #expect(text.lines(showAbsolute: true, wrapClock: false) == [text.clock])
+        #expect(text.lines(showAbsolute: true, wrapClock: true) == [text.clock])
     }
 
     @Test
@@ -217,34 +347,5 @@ struct OverviewCompactResetTextTests {
             locale: locale24)
         #expect(text24.clockTime?.contains("15:30") == true)
         #expect(text24.clockTime?.contains("PM") == false)
-    }
-
-    @Test
-    func `date context and timezone boundaries drive today versus another day determination`() throws {
-        let now = Date(timeIntervalSince1970: 1_789_428_600)
-        let resetsAt = Date(timeIntervalSince1970: 1_789_435_800)
-
-        // The reset crosses midnight in UTC.
-        var utcCalendar = Calendar(identifier: .gregorian)
-        utcCalendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
-        let textUTC = OverviewCompactResetText.make(
-            resetsAt: resetsAt,
-            now: now,
-            calendar: utcCalendar,
-            locale: self.locale)
-        #expect(textUTC.clockDate != nil)
-        #expect(textUTC.lines(showAbsolute: true, wrapClock: true).count == 2)
-
-        // In Asia/Tokyo (+9h):
-        // Both instants are on the same day in Tokyo.
-        var tokyoCalendar = Calendar(identifier: .gregorian)
-        tokyoCalendar.timeZone = TimeZone(secondsFromGMT: 9 * 3600)!
-        let textTokyo = OverviewCompactResetText.make(
-            resetsAt: resetsAt,
-            now: now,
-            calendar: tokyoCalendar,
-            locale: self.locale)
-        #expect(textTokyo.clockDate == nil)
-        #expect(textTokyo.lines(showAbsolute: true, wrapClock: true).count == 1)
     }
 }

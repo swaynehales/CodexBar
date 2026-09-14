@@ -40,30 +40,64 @@ struct OverviewCompactResetText: Equatable, Sendable {
             countdownDesc
         }
 
-        let clock = UsageFormatter.resetDescription(
-            from: resetsAt,
-            now: now,
-            calendar: calendar,
-            locale: locale)
+        let delta = resetsAt.timeIntervalSince(now)
 
-        var timeStyle = Date.FormatStyle().hour().minute().locale(locale)
+        if delta <= 0 {
+            let formatter = RelativeDateTimeFormatter()
+            formatter.dateTimeStyle = .named
+            formatter.calendar = calendar
+            formatter.locale = locale
+            let localizedNow = formatter.localizedString(for: now, relativeTo: now).capitalized(with: locale)
+            return OverviewCompactResetText(
+                countdown: countdown,
+                clock: localizedNow,
+                clockDate: nil,
+                clockTime: localizedNow)
+        }
+
+        var timeStyle = Date.FormatStyle.dateTime.hour().minute().locale(locale)
         timeStyle.calendar = calendar
         timeStyle.timeZone = calendar.timeZone
-        var dateStyle = Date.FormatStyle().month(.abbreviated).day().locale(locale)
-        dateStyle.calendar = calendar
-        dateStyle.timeZone = calendar.timeZone
-        let clockTime = resetsAt.formatted(timeStyle)
-        let clockDate: String? = if calendar.isDate(resetsAt, inSameDayAs: now) {
-            nil
-        } else {
-            resetsAt.formatted(dateStyle)
+
+        if delta < 86400 {
+            let clockTime = resetsAt.formatted(timeStyle)
+            return OverviewCompactResetText(
+                countdown: countdown,
+                clock: clockTime,
+                clockDate: nil,
+                clockTime: clockTime)
         }
+
+        if delta <= 604_800 {
+            var weekdayTimeStyle = Date.FormatStyle.dateTime.weekday(.abbreviated).hour().minute().locale(locale)
+            weekdayTimeStyle.calendar = calendar
+            weekdayTimeStyle.timeZone = calendar.timeZone
+
+            var weekdayStyle = Date.FormatStyle.dateTime.weekday(.abbreviated).locale(locale)
+            weekdayStyle.calendar = calendar
+            weekdayStyle.timeZone = calendar.timeZone
+
+            let clock = resetsAt.formatted(weekdayTimeStyle)
+            let clockDate = resetsAt.formatted(weekdayStyle)
+            let clockTime = resetsAt.formatted(timeStyle)
+
+            return OverviewCompactResetText(
+                countdown: countdown,
+                clock: clock,
+                clockDate: clockDate,
+                clockTime: clockTime)
+        }
+
+        var monthDayStyle = Date.FormatStyle.dateTime.month(.abbreviated).day().locale(locale)
+        monthDayStyle.calendar = calendar
+        monthDayStyle.timeZone = calendar.timeZone
+        let clock = resetsAt.formatted(monthDayStyle)
 
         return OverviewCompactResetText(
             countdown: countdown,
             clock: clock,
-            clockDate: clockDate,
-            clockTime: clockTime)
+            clockDate: clock,
+            clockTime: nil)
     }
 
     func lines(showAbsolute: Bool, wrapClock: Bool) -> [String] {
