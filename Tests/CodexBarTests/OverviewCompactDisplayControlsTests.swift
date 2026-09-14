@@ -172,7 +172,7 @@ struct OverviewCompactDisplayControlsTests {
         #expect(headerHost.fittingSize.width == layout.width)
 
         // Header control row is a plain disabled item independent of data budgets.
-        let controlsItem = controller.makeOverviewHeaderControlsItem(menu: menu, width: layout.width, layout: layout)
+        let controlsItem = controller.makeOverviewHeaderControlsItem(menu: menu, width: layout.width)
         #expect(controlsItem.isEnabled == false)
         #expect(Self.headerSegments(in: controlsItem).count == 2)
     }
@@ -369,6 +369,28 @@ struct OverviewCompactDisplayControlsTests {
         }
     }
 
+    @Test
+    func `header controls item shows refresh status below control rows`() throws {
+        let (controller, _, menu) = Self
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-statusrow")
+        defer { controller.prepareForAppShutdown() }
+        controller.recordCompactGlobalRefreshCompletion(scope: .global, completed: true, providers: [])
+        let status = try #require(controller.compactGlobalRefreshStatus)
+        let item = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400)
+        let container = try #require(item.view)
+        var labels: [String] = []
+        func collect(_ view: NSView) {
+            for subview in view.subviews {
+                if let field = subview as? NSTextField {
+                    labels.append(field.stringValue)
+                }
+                collect(subview)
+            }
+        }
+        collect(container)
+        #expect(labels.contains(status.label()))
+    }
+
     private static func headerSegments(in item: NSMenuItem) -> [OverviewDisplayAxis: OverviewDisplaySegmentedControl] {
         var found: [OverviewDisplayAxis: OverviewDisplaySegmentedControl] = [:]
         func walk(_ view: NSView) {
@@ -391,9 +413,9 @@ struct OverviewCompactDisplayControlsTests {
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-stagger")
         defer { controller.prepareForAppShutdown() }
 
-        let wide = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400, layout: nil)
+        let wide = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400)
         let wideContainer = try #require(wide.view)
-        let narrow = controller.makeOverviewHeaderControlsItem(menu: menu, width: 100, layout: nil)
+        let narrow = controller.makeOverviewHeaderControlsItem(menu: menu, width: 100)
         let container = try #require(narrow.view)
         // Forced stagger: stacked rows are taller than the single row.
         #expect(container.frame.height > wideContainer.frame.height)
@@ -421,7 +443,7 @@ struct OverviewCompactDisplayControlsTests {
         settings.usageBarsFillOption = .remaining
         settings.resetTimesOption = .clock
 
-        let item = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400, layout: nil)
+        let item = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400)
         #expect(item.isEnabled == false)
         #expect(item.identifier == StatusItemController.overviewHeaderControlsItemID)
         let segments = Self.headerSegments(in: item)
@@ -429,6 +451,8 @@ struct OverviewCompactDisplayControlsTests {
         let reset = try #require(segments[.resetTime])
 
         // Short approved labels with full descriptive tooltips and accessible names.
+        #expect(OverviewDisplayAxis.usage.segmentTitles == [L("compact_header_used"), L("compact_header_free")])
+        #expect(OverviewDisplayAxis.resetTime.segmentTitles == [L("compact_header_wait"), L("compact_header_when")])
         for axis in OverviewDisplayAxis.allCases {
             let control = try #require(segments[axis])
             #expect((0..<control.segmentCount).map { control.label(forSegment: $0) } == axis.segmentTitles)

@@ -89,35 +89,18 @@ extension StatusItemController {
         let contentWidth = width - 2 * CompactTableMetrics.horizontalPadding
         // Grow the control itself, not just its padding: 42pt segment (roughly 2x the
         // original 22pt) with a 13pt label, inside a 48pt container for breathing room
-        // under the menu bar.
-        let refreshStatus = self.compactGlobalRefreshStatus
-        let statusLabel = refreshStatus.map { status -> NSTextField in
-            let label = NSTextField(wrappingLabelWithString: status.label())
-            label.font = NSFont.systemFont(ofSize: 10)
-            label.textColor = .secondaryLabelColor
-            label.alignment = .center
-            return label
-        }
-        let statusHeight: CGFloat = statusLabel.map {
-            ceil($0.cell?.cellSize(forBounds: NSRect(
-                x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
-        } ?? 0
+        // under the menu bar. The refresh status lives below the header control row.
         let container = OverviewGroupingContainer(
-            frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight))
+            frame: NSRect(x: 0, y: 0, width: width, height: 48))
         container.tableLayout = self.overviewCompactLayout(for: menu)
         control.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
-            y: 3 + statusHeight,
+            y: 3,
             width: contentWidth,
             height: 42)
         control.autoresizingMask = [.width]
         container.addSubview(control)
-        if let label = statusLabel {
-            label.frame = NSRect(x: 12, y: 2, width: contentWidth, height: statusHeight)
-            label.autoresizingMask = [.width]
-            container.addSubview(label)
-        }
         let item = NSMenuItem()
         item.view = container
         item.isEnabled = false
@@ -216,13 +199,9 @@ extension StatusItemController {
 
     /// Adds the header control row exactly once, above the table header of a compact
     /// menu — the same plain disabled host as the grouping switcher.
-    func ensureOverviewHeaderControlsInserted(
-        into menu: NSMenu,
-        width: CGFloat,
-        layout: OverviewCompactTableLayout? = nil)
-    {
+    func ensureOverviewHeaderControlsInserted(into menu: NSMenu, width: CGFloat) {
         guard !menu.items.contains(where: { $0.identifier == Self.overviewHeaderControlsItemID }) else { return }
-        menu.addItem(self.makeOverviewHeaderControlsItem(menu: menu, width: width, layout: layout))
+        menu.addItem(self.makeOverviewHeaderControlsItem(menu: menu, width: width))
     }
 
     /// Adds the global By-provider table header exactly once, above the first provider

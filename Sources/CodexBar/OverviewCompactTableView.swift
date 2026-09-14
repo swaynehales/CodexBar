@@ -61,9 +61,20 @@ struct OverviewCompactTableHeaderView: View {
                     Color.clear
                         .gridCellUnsizedAxes(.vertical)
                         .frame(width: self.percentageWidth)
-                    Color.clear
-                        .gridCellUnsizedAxes(.vertical)
-                        .frame(width: self.resetWidth)
+                    Text(L("section_usage"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .textCase(.uppercase)
+                        .lineLimit(1)
+                        .frame(width: self.percentageWidth, alignment: .trailing)
+                    // The full Reset times title cannot fit the measured reset column;
+                    // the short title is used here by operator approval, never a wider cell.
+                    Text(L("compact_header_reset"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .textCase(.uppercase)
+                        .lineLimit(1)
+                        .frame(width: self.resetWidth, alignment: .trailing)
                 }
             }
             Divider()
@@ -217,12 +228,18 @@ struct OverviewCompactPeriodTableView: View {
                             .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
-                        Color.clear
-                            .gridCellUnsizedAxes(.vertical)
-                            .frame(width: self.percentageWidth)
-                        Color.clear
-                            .gridCellUnsizedAxes(.vertical)
-                            .frame(width: self.resetWidth)
+                        Text(L("section_usage"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .lineLimit(1)
+                            .frame(width: self.percentageWidth, alignment: .trailing)
+                        Text(L("compact_header_reset"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                            .textCase(.uppercase)
+                            .lineLimit(1)
+                            .frame(width: self.resetWidth, alignment: .trailing)
                     }
                     GridRow {
                         Divider().gridCellColumns(4)

@@ -20,8 +20,8 @@ enum OverviewDisplayAxis: CaseIterable {
     /// Short segment labels for the restored header controls (approved copy).
     var segmentTitles: [String] {
         switch self {
-        case .usage: [L("compact_header_used"), L("compact_header_left")]
-        case .resetTime: [L("compact_header_in"), L("compact_header_at")]
+        case .usage: [L("compact_header_used"), L("compact_header_free")]
+        case .resetTime: [L("compact_header_wait"), L("compact_header_when")]
         }
     }
 
@@ -80,33 +80,45 @@ extension StatusItemController {
         self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.selectedSegment, menu: menu)
     }
 
-    /// Header control row: labeled usage/reset segments over the right-side columns in
-    /// a plain disabled item (the proven host). Control widths never feed data budgets;
+    /// Header control row: an independent top toolbar with the usage pair leading and
+    /// the reset pair after a clear gap, then the global refresh status below both rows.
+    /// A plain disabled item (the proven host). Control widths never feed data budgets;
     /// groups stagger vertically only when they cannot sit side by side.
-    func makeOverviewHeaderControlsItem(
-        menu: NSMenu,
-        width: CGFloat,
-        layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
-    {
-        let resetWidth = layout?.resetWidth ?? 68
+    func makeOverviewHeaderControlsItem(menu: NSMenu, width: CGFloat) -> NSMenuItem {
         let usageGroup = self.makeHeaderSegmentGroup(axis: .usage, menu: menu)
         let resetGroup = self.makeHeaderSegmentGroup(axis: .resetTime, menu: menu)
         let horizontalPadding = CompactTableMetrics.horizontalPadding
+        let pairGap: CGFloat = 20
         let contentWidth = max(0, width - 2 * horizontalPadding)
         // One measured extent per group drives positioning, stagger, and rendering, so
         // a clamped group can never render at its unclamped size.
         let usageWidth = min(max(usageGroup.labelWidth, usageGroup.segWidth), contentWidth)
         let resetWidthGroup = min(max(resetGroup.labelWidth, resetGroup.segWidth), contentWidth)
-        let resetX = max(horizontalPadding, width - horizontalPadding - resetWidthGroup)
-        let percentageRight = width - horizontalPadding - resetWidth - CompactTableMetrics.columnSpacing
-        let usageX = max(horizontalPadding, percentageRight - usageWidth)
-        // Stack the groups (usage above reset, same column alignment) when their
-        // extents — labels included — would collide side by side.
+        let usageX = horizontalPadding
+        let resetX = min(
+            usageX + usageWidth + pairGap,
+            max(horizontalPadding, width - horizontalPadding - resetWidthGroup))
+        // Stack the groups (usage above reset) when their extents — labels included —
+        // would collide side by side.
         let staggered = usageX + usageWidth > resetX
         let labelHeight = HeaderSegmentPlacement.labelHeight
         let singleRowHeight: CGFloat = 6 + labelHeight + HeaderSegmentPlacement.rowGap +
             usageGroup.control.frame.height + 6
-        let containerHeight = staggered ? 2 * singleRowHeight - 6 : singleRowHeight
+        var containerHeight = staggered ? 2 * singleRowHeight - 6 : singleRowHeight
+        let statusLabel = self.compactGlobalRefreshStatus.map { status -> NSTextField in
+            let label = NSTextField(wrappingLabelWithString: status.label())
+            label.font = NSFont.systemFont(ofSize: 10)
+            label.textColor = .secondaryLabelColor
+            label.alignment = .center
+            return label
+        }
+        let statusHeight: CGFloat = statusLabel.map {
+            ceil($0.cell?.cellSize(forBounds: NSRect(
+                x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
+        } ?? 0
+        if statusLabel != nil {
+            containerHeight += statusHeight + 2
+        }
         let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: containerHeight))
         container.autoresizingMask = [.width]
         self.placeHeaderSegmentGroup(
@@ -125,6 +137,11 @@ extension StatusItemController {
                 groupWidth: resetWidthGroup,
                 controlWidth: min(resetGroup.segWidth, resetWidthGroup),
                 top: staggered ? containerHeight - 6 - singleRowHeight : containerHeight - 6))
+        if let statusLabel {
+            statusLabel.frame = NSRect(x: horizontalPadding, y: 2, width: contentWidth, height: statusHeight)
+            statusLabel.autoresizingMask = [.width]
+            container.addSubview(statusLabel)
+        }
         let item = NSMenuItem()
         item.view = container
         item.isEnabled = false
