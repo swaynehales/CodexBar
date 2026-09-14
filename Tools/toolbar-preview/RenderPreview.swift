@@ -1,8 +1,11 @@
 // Offscreen preview renderer for the Overview header toolbar second row.
-// Compiled and run by the reviewer (not part of the app target):
+// Compiled and run by the reviewer (not part of the app target). swiftc only
+// allows top-level statements in a file named main.swift, so copy this file
+// under that name before compiling:
 //
+//   mkdir -p "$TMPDIR/preview-build" && cp Tools/toolbar-preview/RenderPreview.swift "$TMPDIR/preview-build/main.swift"
 //   cd codexbar && swiftc Sources/CodexBar/OverviewHeaderToolbarLayout.swift \
-//     Tools/toolbar-preview/RenderPreview.swift -framework AppKit \
+//     "$TMPDIR/preview-build/main.swift" -framework AppKit \
 //     -o "$TMPDIR/toolbar-preview" && "$TMPDIR/toolbar-preview" "$TMPDIR/toolbar-preview.png"
 //
 // Uses the actual shared layout code plus real NSSegmentedControls measured with
