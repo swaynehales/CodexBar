@@ -389,6 +389,17 @@ struct OverviewCompactDisplayControlsTests {
         }
         collect(container)
         #expect(labels.contains(status.label()))
+
+        // Operator-requested +4pt clearance: the status top edge sits 10pt below the
+        // segment pairs' bottom edge (6pt native inset plus the requested extra 4pt).
+        let statusLabelView = try #require(container.subviews.first {
+            $0 is NSTextField && ($0 as! NSTextField).stringValue == status.label()
+        })
+        let segmentBottom = container.subviews
+            .compactMap { $0 as? OverviewDisplaySegmentedControl }
+            .map(\.frame.minY)
+            .min()
+        #expect(try abs(#require(segmentBottom) - statusLabelView.frame.maxY - 10) < 0.5)
     }
 
     /// Base type name without generic parameters, so nested generics cannot

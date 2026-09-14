@@ -97,12 +97,14 @@ extension StatusItemController {
             ceil($0.cell?.cellSize(forBounds: NSRect(
                 x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
         } ?? 0
+        // Operator-requested +4pt clearance between the segment pairs and the status.
+        let statusClearance: CGFloat = 6
         if statusLabel != nil {
-            containerHeight += statusHeight + 2
+            containerHeight += statusHeight + statusClearance
         }
         // Controls stay top-anchored: when the status block is present the row floats
         // above it instead of overlapping it.
-        let rowLift: CGFloat = statusLabel != nil ? statusHeight + 2 : 0
+        let rowLift: CGFloat = statusLabel != nil ? statusHeight + statusClearance : 0
         usage.frame = usage.frame.offsetBy(dx: 0, dy: rowLift)
         reset.frame = reset.frame.offsetBy(dx: 0, dy: rowLift)
         let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: containerHeight))
