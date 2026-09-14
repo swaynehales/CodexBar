@@ -1579,7 +1579,10 @@
 "compact_header_model" = "模型";
 "compact_header_period" = "期間";
 "compact_header_used" = "已使用";
-"compact_header_left" = "剩餘";
+"compact_header_free" = "剩餘";
+"compact_header_wait" = "等待";
+"compact_header_when" = "時間";
+"compact_header_reset" = "重置";
 "compact_header_in" = "剩";
 "compact_header_at" = "於";
 "compact_period_session" = "工作階段";

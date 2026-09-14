@@ -1547,7 +1547,10 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Periode";
 "compact_header_used" = "Gebruikt";
-"compact_header_left" = "Resterend";
+"compact_header_free" = "Vrij";
+"compact_header_wait" = "Wachten";
+"compact_header_when" = "Wanneer";
+"compact_header_reset" = "Reset";
 "compact_header_in" = "Over";
 "compact_header_at" = "Om";
 "compact_period_session" = "Sessie";

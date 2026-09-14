@@ -1549,7 +1549,10 @@
 "compact_header_model" = "Mô hình";
 "compact_header_period" = "Giai đoạn";
 "compact_header_used" = "Đã dùng";
-"compact_header_left" = "Còn lại";
+"compact_header_free" = "Còn trống";
+"compact_header_wait" = "Chờ";
+"compact_header_when" = "Khi nào";
+"compact_header_reset" = "Reset";
 "compact_header_in" = "Còn";
 "compact_header_at" = "Lúc";
 "compact_period_session" = "Phiên";

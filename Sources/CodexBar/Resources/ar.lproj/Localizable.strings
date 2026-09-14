@@ -1552,7 +1552,10 @@
 "compact_header_model" = "النموذج";
 "compact_header_period" = "الفترة";
 "compact_header_used" = "المستخدم";
-"compact_header_left" = "المتبقي";
+"compact_header_free" = "المتبقي";
+"compact_header_wait" = "انتظار";
+"compact_header_when" = "متى";
+"compact_header_reset" = "تصفير";
 "compact_header_in" = "بعد";
 "compact_header_at" = "عند";
 "compact_period_session" = "جلسة";

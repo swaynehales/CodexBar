@@ -1548,7 +1548,10 @@
 "compact_header_model" = "モデル";
 "compact_header_period" = "期間";
 "compact_header_used" = "使用量";
-"compact_header_left" = "残り";
+"compact_header_free" = "残り";
+"compact_header_wait" = "待ち";
+"compact_header_when" = "時刻";
+"compact_header_reset" = "リセット";
 "compact_header_in" = "あと";
 "compact_header_at" = "時刻";
 "compact_period_session" = "セッション";

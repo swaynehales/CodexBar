@@ -1547,7 +1547,10 @@
 "compact_header_model" = "Modelo";
 "compact_header_period" = "Período";
 "compact_header_used" = "Usado";
-"compact_header_left" = "Restante";
+"compact_header_free" = "Libre";
+"compact_header_wait" = "Espera";
+"compact_header_when" = "Cando";
+"compact_header_reset" = "Reset";
 "compact_header_in" = "En";
 "compact_header_at" = "Ás";
 "compact_period_session" = "Sesión";
