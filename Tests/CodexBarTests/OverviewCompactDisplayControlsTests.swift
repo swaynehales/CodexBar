@@ -388,4 +388,77 @@ struct OverviewCompactDisplayControlsTests {
             CFRunLoopRunInMode(CFRunLoopMode(RunLoop.Mode.eventTracking.rawValue as CFString), 0.01, true)
         }
     }
+
+    @Test
+    func `usage popup factory builds titled pullsDown control with checked selection`() {
+        for showUsed in [true, false] {
+            let button = StatusItemController.makeUsagePopUpButton(showUsed: showUsed)
+            #expect(button.pullsDown)
+            #expect(!button.isBordered)
+            #expect(button.numberOfItems == 3)
+            #expect(button.itemTitle(at: 0) == (showUsed ? OverviewDisplayAxis.usage.choices[0] : "Left"))
+            #expect(button.itemTitle(at: 1) == OverviewDisplayAxis.usage.choices[0])
+            #expect(button.itemTitle(at: 2) == OverviewDisplayAxis.usage.choices[1])
+            #expect(button.indexOfSelectedItem == (showUsed ? 1 : 2))
+            #expect(button.target == nil)
+            #expect(button.accessibilityLabel() == OverviewDisplayAxis.usage.label)
+        }
+    }
+
+    @Test
+    func `usage popup coordinator maps title slot to current segment`() {
+        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
+        let coordinator = OverviewUsagePopUpCoordinator()
+        coordinator.selectedSegment = 0
+        var received: [Int] = []
+        coordinator.onSelect = { received.append($0) }
+        button.selectItem(at: 0)
+        coordinator.chose(button)
+        button.selectItem(at: 1)
+        coordinator.chose(button)
+        button.selectItem(at: 2)
+        coordinator.chose(button)
+        #expect(received == [0, 0, 1])
+        coordinator.selectedSegment = 1
+        button.selectItem(at: 0)
+        coordinator.chose(button)
+        #expect(received == [0, 0, 1, 1])
+    }
+
+    @Test
+    func `usage popup dispatch through production header closure flips the setting`() throws {
+        let (controller, settings, menu) = Self
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-popupwire")
+        defer { controller.prepareForAppShutdown() }
+        settings.usageBarsFillOption = .used
+        let header = controller.makeOverviewCompactTableHeaderView(menu: menu, width: 400, layout: nil)
+        let onSelect = try #require(header.onUsageChange)
+
+        // Bind exactly as the SwiftUI host does, then dispatch through the real
+        // AppKit action machinery instead of calling the closure directly.
+        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
+        let coordinator = OverviewUsagePopUpCoordinator()
+        coordinator.selectedSegment = 0
+        coordinator.onSelect = onSelect
+        button.target = coordinator
+        button.action = #selector(OverviewUsagePopUpCoordinator.chose(_:))
+        let action = try #require(button.action)
+        let target = try #require(button.target)
+
+        button.selectItem(at: 2)
+        NSApp.sendAction(action, to: target, from: button)
+        #expect(!settings.usageBarsShowUsed)
+
+        // Title slot re-affirms the now-current segment: no-op through the guard.
+        coordinator.selectedSegment = 1
+        button.selectItem(at: 0)
+        NSApp.sendAction(action, to: target, from: button)
+        #expect(!settings.usageBarsShowUsed)
+
+        // Closed menu: the production closure refuses the stale dispatch.
+        controller.openMenus.removeAll()
+        button.selectItem(at: 1)
+        NSApp.sendAction(action, to: target, from: button)
+        #expect(!settings.usageBarsShowUsed)
+    }
 }

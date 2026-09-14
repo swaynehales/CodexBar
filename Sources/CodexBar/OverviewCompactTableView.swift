@@ -102,12 +102,14 @@ struct OverviewCompactTableHeaderView: View {
                                 + self.percentageWidth
                                 + self.resetWidth,
                             gaps: 3))
-                    OverviewCompactDropdownHeader(
-                        axis: .usage,
-                        selectedIndex: self.showUsed ? 0 : 1,
+                    // Interaction experiment (recovery slice): the usage cell is a live AppKit
+                    // popup on the NSControl target/action path. Reset and By-period cells
+                    // keep the SwiftUI Menu views until this path proves out in the menu.
+                    OverviewUsagePopUpHeader(
+                        showUsed: self.showUsed,
                         width: self.percentageWidth,
-                        isHighlighted: self.isHighlighted,
-                        onChange: self.onUsageChange)
+                        onSelect: self.onUsageChange)
+                        .frame(width: self.percentageWidth, height: 28, alignment: .trailing)
                     OverviewCompactDropdownHeader(
                         axis: .resetTime,
                         selectedIndex: self.showAbsolute ? 1 : 0,
