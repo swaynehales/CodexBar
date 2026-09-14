@@ -9,7 +9,7 @@ extension StatusItemController {
         }
     }
 
-    func overviewCompactLayout(for menu: NSMenu) -> OverviewCompactTableLayout {
+    func overviewCompactLayout(for menu: NSMenu, now: Date = Date()) -> OverviewCompactTableLayout {
         let key = ObjectIdentifier(menu)
         if let layout = self.overviewDisplayState.layouts[key] {
             return layout
@@ -22,32 +22,42 @@ extension StatusItemController {
             .compactMap(\.tableRows).flatMap(\.self)
         let texts = tableRows.map(\.resetText)
         let font = NSFont.monospacedDigitSystemFont(ofSize: CompactTableMetrics.metadataFontSize, weight: .regular)
-        let headerFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
         let bodyFont = NSFont.monospacedDigitSystemFont(ofSize: CompactTableMetrics.emphasisFontSize, weight: .semibold)
 
         func measure(_ text: String, font: NSFont) -> CGFloat {
             (text as NSString).size(withAttributes: [.font: font]).width
         }
 
-        let usageChoices = OverviewDisplayAxis.usage.choices
-        let usageHeaderWidth = (usageChoices.map { measure($0.uppercased(), font: headerFont) + 12 }.max() ?? 0)
+        let usageHeaderWidth = Self.dropdownHeaderWidth(for: .usage)
         let bodyPercentageWidth = (tableRows.map { measure($0.usedText, font: bodyFont) } +
             tableRows.compactMap { $0.valueText.map { measure($0, font: bodyFont) } }).max() ?? 42
         let desiredPercentage = max(42, ceil(max(usageHeaderWidth, bodyPercentageWidth)))
 
-        let resetChoices = OverviewDisplayAxis.resetTime.choices
-        let resetHeaderWidth = (resetChoices.map { measure($0.uppercased(), font: headerFont) + 12 }.max() ?? 0)
-        let weekdaySample = OverviewCompactResetText.make(
-            resetsAt: Date().addingTimeInterval(86400),
-            now: Date(),
-            calendar: .current,
-            locale: codexBarLocalizedLocale()).clock
-        let sampleWeekdayWidth = measure(weekdaySample, font: font)
-        let clockWidths = texts.map { measure($0.clock, font: font) } + [sampleWeekdayWidth, resetHeaderWidth]
-        let maxClockWidth = clockWidths.max() ?? sampleWeekdayWidth
-        let clockLineWidth = texts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self).map { measure(
+        let resetHeaderWidth = Self.dropdownHeaderWidth(for: .resetTime)
+        let calendar = Calendar.current
+        let locale = codexBarLocalizedLocale()
+
+        var sampleWidths: [CGFloat] = []
+        // Sample across all 7 weekdays and wide hour/minute forms (12:59 and 23:59)
+        for dayOffset in 1...7 {
+            for timeOffset in [46740.0, 86340.0] {
+                let delta = Double(dayOffset) * 86400.0 - 86400.0 + timeOffset
+                guard delta >= 86400.0, delta <= 604_800.0 else { continue }
+                let sampleDate = now.addingTimeInterval(delta)
+                let sample = OverviewCompactResetText.make(
+                    resetsAt: sampleDate,
+                    now: now,
+                    calendar: calendar,
+                    locale: locale).clock
+                sampleWidths.append(measure(sample, font: font))
+            }
+        }
+        let maxWeekdayWidth = sampleWidths.max() ?? 0
+        let clockWidths = texts.map { measure($0.clock, font: font) } + [maxWeekdayWidth, resetHeaderWidth]
+        let maxClockWidth = clockWidths.max() ?? maxWeekdayWidth
+        let clockLineWidth = (texts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self).map { measure(
             $0,
-            font: font) } }.max() ?? 0
+            font: font) } } + [resetHeaderWidth]).max() ?? resetHeaderWidth
 
         let screen = self.statusItems.values.first(where: { $0.menu === menu })?.button?.window?.screen
             ?? self.statusItem.button?.window?.screen
@@ -56,7 +66,8 @@ extension StatusItemController {
             availableWidth: availableWidth,
             percentageWidth: desiredPercentage,
             clockWidth: maxClockWidth,
-            clockLineWidth: clockLineWidth)
+            clockLineWidth: clockLineWidth,
+            headerWidth: resetHeaderWidth)
         // NSMenu builds before menuWillOpen registers it in openMenus. Preserve that first budget too.
         self.overviewDisplayState.layouts[key] = layout
         return layout

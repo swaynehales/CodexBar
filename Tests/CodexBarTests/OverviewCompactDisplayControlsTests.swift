@@ -1,6 +1,7 @@
 import AppKit
 import CodexBarCore
 import Foundation
+import SwiftUI
 import Testing
 @testable import CodexBar
 
@@ -69,11 +70,9 @@ struct OverviewCompactDisplayControlsTests {
                 #expect(controller.compactGlobalRefreshStatus == initialRefresh)
                 #expect(controller.manualRefreshTasks.isEmpty)
 
-                let usageControl = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
-                #expect(usageControl.indexOfSelectedItem == config.usageSegment)
-
-                let resetControl = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
-                #expect(resetControl.indexOfSelectedItem == config.resetSegment)
+                let headerItem = controller.makeOverviewCompactHeaderItem(menu: menu, width: 468)
+                #expect(headerItem.identifier == StatusItemController.overviewCompactHeaderItemID)
+                #expect(headerItem.representedObject as? String == "overviewCompactHeader")
             }
         }
     }
@@ -120,7 +119,7 @@ struct OverviewCompactDisplayControlsTests {
     }
 
     @Test
-    func `settings adapters reflect on native controls`() {
+    func `settings adapters reflect on dropdown headers and trigger callback seam`() {
         let (controller, settings, menu) = Self
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-adapters")
         defer { controller.prepareForAppShutdown() }
@@ -128,20 +127,51 @@ struct OverviewCompactDisplayControlsTests {
         settings.usageBarsFillOption = .remaining
         settings.resetTimesOption = .clock
 
-        let usageControl1 = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
-        #expect(usageControl1.indexOfSelectedItem == 1)
+        var receivedUsage: Int?
+        var receivedReset: Int?
 
-        let resetControl1 = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
-        #expect(resetControl1.indexOfSelectedItem == 1)
+        let usageHeader = OverviewCompactDropdownHeader(
+            axis: .usage,
+            selectedIndex: settings.usageBarsShowUsed ? 0 : 1,
+            width: 78,
+            isHighlighted: false,
+            onChange: { receivedUsage = $0 })
+        #expect(usageHeader.selectedIndex == 1)
+        #expect(usageHeader.axis.choices[usageHeader.selectedIndex] == L("compact_header_remaining"))
+        usageHeader.onChange?(0)
+        #expect(receivedUsage == 0)
+        controller.applyOverviewDisplayChoice(axis: .usage, selectedSegment: 0, menu: menu)
+        #expect(settings.usageBarsShowUsed)
 
-        settings.usageBarsFillOption = .used
-        settings.resetTimesOption = .countdown
+        let resetHeader = OverviewCompactDropdownHeader(
+            axis: .resetTime,
+            selectedIndex: settings.resetTimesShowAbsolute ? 1 : 0,
+            width: 90,
+            isHighlighted: false,
+            onChange: { receivedReset = $0 })
+        #expect(resetHeader.selectedIndex == 1)
+        #expect(resetHeader.axis.choices[resetHeader.selectedIndex] == L("reset_times_clock"))
+        resetHeader.onChange?(0)
+        #expect(receivedReset == 0)
+        controller.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: 0, menu: menu)
+        #expect(!settings.resetTimesShowAbsolute)
+    }
 
-        let usageControl2 = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
-        #expect(usageControl2.indexOfSelectedItem == 0)
+    @Test
+    func `dropdown header sizes match resolved layout budgets`() {
+        let (controller, _, menu) = Self
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-budgets")
+        defer { controller.prepareForAppShutdown() }
 
-        let resetControl2 = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
-        #expect(resetControl2.indexOfSelectedItem == 0)
+        let usageWidth = StatusItemController.dropdownHeaderWidth(for: .usage)
+        let resetWidth = StatusItemController.dropdownHeaderWidth(for: .resetTime)
+
+        #expect(usageWidth >= 78)
+        #expect(resetWidth >= 90)
+
+        let layout = controller.overviewCompactLayout(for: menu)
+        #expect(layout.percentageWidth >= usageWidth)
+        #expect(layout.resetWidth >= resetWidth)
     }
 
     @Test

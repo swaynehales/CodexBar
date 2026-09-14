@@ -1,5 +1,6 @@
 import AppKit
 import CodexBarCore
+import SwiftUI
 
 enum OverviewDisplayAxis: CaseIterable {
     case usage
@@ -15,11 +16,6 @@ enum OverviewDisplayAxis: CaseIterable {
         case .resetTime: [L("reset_times_countdown"), L("reset_times_clock")]
         }
     }
-}
-
-final class OverviewDisplayPopUpButton: NSPopUpButton {
-    var axis: OverviewDisplayAxis = .usage
-    weak var trackedMenu: NSMenu?
 }
 
 struct OverviewDisplayState {
@@ -45,9 +41,15 @@ struct OverviewDisplayViewportRequest {
 }
 
 extension StatusItemController {
-    @objc func overviewDisplayChoiceChanged(_ sender: OverviewDisplayPopUpButton) {
-        guard let menu = sender.trackedMenu else { return }
-        self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.indexOfSelectedItem, menu: menu)
+    static func dropdownHeaderWidth(for axis: OverviewDisplayAxis) -> CGFloat {
+        axis.choices.indices.map { idx in
+            let view = OverviewCompactDropdownHeader(
+                axis: axis,
+                selectedIndex: idx,
+                width: 0,
+                isHighlighted: false)
+            return ceil(NSHostingView(rootView: view).fittingSize.width)
+        }.max() ?? 0
     }
 
     func applyOverviewDisplayChoice(axis: OverviewDisplayAxis, selectedSegment: Int, menu: NSMenu) {
@@ -80,27 +82,6 @@ extension StatusItemController {
                     flipped: document.isFlipped))
         }
         self.requestProviderSwitcherMenuRebuild(menu, provider: nil)
-    }
-
-    func makeOverviewDisplayPopUpButton(axis: OverviewDisplayAxis, menu: NSMenu) -> OverviewDisplayPopUpButton {
-        let control = OverviewDisplayPopUpButton(frame: .zero, pullsDown: false)
-        control.axis = axis
-        control.trackedMenu = menu
-        control.controlSize = .small
-        control.font = .systemFont(ofSize: NSFont.systemFontSize(for: .small), weight: .regular)
-        control.removeAllItems()
-        for choice in axis.choices {
-            control.addItem(withTitle: choice)
-        }
-        let selectedIndex = axis == .usage
-            ? (self.settings.usageBarsShowUsed ? 0 : 1)
-            : (self.settings.resetTimesShowAbsolute ? 1 : 0)
-        control.selectItem(at: selectedIndex)
-        control.target = self
-        control.action = #selector(self.overviewDisplayChoiceChanged(_:))
-        control.setAccessibilityLabel(axis.label)
-        control.sizeToFit()
-        return control
     }
 
     func restoreOverviewDisplayViewportAfterLayout(in menu: NSMenu) {

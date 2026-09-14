@@ -53,16 +53,12 @@ struct OverviewCompactDropdownHeader: View {
                 }
             }
         } label: {
-            HStack(spacing: 2) {
-                Text(currentTitle)
-                    .font(.caption2.weight(.semibold))
-                    .textCase(.uppercase)
-                    .lineLimit(1)
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 8, weight: .semibold))
-            }
-            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-            .frame(width: self.width, alignment: .trailing)
+            Text(currentTitle)
+                .font(.caption2.weight(.semibold))
+                .textCase(.uppercase)
+                .lineLimit(1)
+                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                .frame(width: self.width, alignment: .trailing)
         }
         .menuStyle(.borderlessButton)
         .fixedSize()

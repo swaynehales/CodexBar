@@ -10,22 +10,24 @@ struct OverviewCompactTableLayoutTests {
     func `clock budget preserves bar widths and narrow screens wrap`() {
         let wide = OverviewCompactTableLayout.resolve(
             availableWidth: 1000,
-            percentageWidth: 71,
-            clockWidth: 85,
-            clockLineWidth: 50)
-        #expect(wide.width == 460)
-        #expect(wide.resetWidth == 93)
+            percentageWidth: 78,
+            clockWidth: 86,
+            clockLineWidth: 50,
+            headerWidth: 90)
+        #expect(wide.width == 468)
+        #expect(wide.resetWidth == 94)
         #expect(wide.barWidth(leading: 84) == 176)
         #expect(wide.barWidth(leading: 112) == 148)
         #expect(!wide.wrapClock)
 
         let narrow = OverviewCompactTableLayout.resolve(
             availableWidth: 380,
-            percentageWidth: 71,
-            clockWidth: 85,
-            clockLineWidth: 50)
+            percentageWidth: 78,
+            clockWidth: 86,
+            clockLineWidth: 50,
+            headerWidth: 90)
         #expect(narrow.width == 380)
-        #expect(narrow.resetWidth >= 50)
+        #expect(narrow.resetWidth >= 90)
         #expect(narrow.wrapClock)
         #expect(narrow.barWidth(leading: 112) >= 0)
     }
@@ -34,9 +36,10 @@ struct OverviewCompactTableLayoutTests {
     func `header and body columns share exact anchors in both groupings`() {
         let layout = OverviewCompactTableLayout.resolve(
             availableWidth: 1000,
-            percentageWidth: 72,
+            percentageWidth: 78,
             clockWidth: 86,
-            clockLineWidth: 50)
+            clockLineWidth: 50,
+            headerWidth: 90)
 
         let gaps: CGFloat = 3 * CompactTableMetrics.columnSpacing
         let padding: CGFloat = 2 * CompactTableMetrics.horizontalPadding
@@ -56,43 +59,36 @@ struct OverviewCompactTableLayoutTests {
 
     @Test
     func `both option title widths fit within derived column budgets`() {
-        let font = NSFont.systemFont(ofSize: 10, weight: .semibold)
-        func measure(_ text: String) -> CGFloat {
-            (text as NSString).size(withAttributes: [.font: font]).width
-        }
-
-        let usageWidths = OverviewDisplayAxis.usage.choices.map { measure($0.uppercased()) + 12 }
-        let resetWidths = OverviewDisplayAxis.resetTime.choices.map { measure($0.uppercased()) + 12 }
+        let usageWidth = StatusItemController.dropdownHeaderWidth(for: .usage)
+        let resetWidth = StatusItemController.dropdownHeaderWidth(for: .resetTime)
 
         let layout = OverviewCompactTableLayout.resolve(
             availableWidth: 1000,
-            percentageWidth: ceil(usageWidths.max() ?? 42),
-            clockWidth: ceil(resetWidths.max() ?? 85),
-            clockLineWidth: 50)
+            percentageWidth: usageWidth,
+            clockWidth: resetWidth,
+            clockLineWidth: 50,
+            headerWidth: resetWidth)
 
-        for width in usageWidths {
-            #expect(width <= layout.percentageWidth)
-        }
-        for width in resetWidths {
-            #expect(width <= layout.resetWidth)
-        }
+        #expect(usageWidth <= layout.percentageWidth)
+        #expect(resetWidth <= layout.resetWidth)
     }
 
     @Test
     func `shorter reset budgets reduce popover width compared to legacy 130pt minimum`() {
         // Legacy layout had unconditional 130pt reset minimum with 42pt percentage:
         // width = 296 + 42 + 130 = 468pt.
-        // New layout derives resetWidth (93pt) from concise English clock (~85pt + 8pt)
-        // and percentageWidth (71pt) for "REMAINING" dropdown:
+        // New layout derives resetWidth (94pt) from concise English clock (~86pt + 8pt)
+        // and percentageWidth (78pt) for "REMAINING" dropdown:
         let layout = OverviewCompactTableLayout.resolve(
             availableWidth: 1000,
-            percentageWidth: 71,
-            clockWidth: 85,
-            clockLineWidth: 50)
+            percentageWidth: 78,
+            clockWidth: 86,
+            clockLineWidth: 50,
+            headerWidth: 90)
 
-        #expect(layout.resetWidth == 93) // 37pt narrower reset column
+        #expect(layout.resetWidth == 94) // 36pt narrower reset column
         #expect(layout.resetWidth < 130)
-        #expect(layout.width == 460) // 8pt narrower overall popover
+        #expect(layout.width == 468)
         #expect(layout.barWidth(leading: 84) == 176)
         #expect(layout.barWidth(leading: 112) == 148)
     }

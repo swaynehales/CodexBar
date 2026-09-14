@@ -10,18 +10,20 @@ struct OverviewCompactTableLayout: Equatable {
         availableWidth: CGFloat,
         percentageWidth: CGFloat = 42,
         clockWidth: CGFloat,
-        clockLineWidth: CGFloat) -> Self
+        clockLineWidth: CGFloat = 0,
+        headerWidth: CGFloat = 0) -> Self
     {
-        let desiredReset = ceil(clockWidth) + 8
+        let desiredReset = max(headerWidth, ceil(clockWidth) + 8)
         let baseWidth: CGFloat = 296 // 2 * 12 padding + 3 * 4 gaps + 260 (leading + bar)
         let desiredTotal = baseWidth + percentageWidth + desiredReset
         let width = min(desiredTotal, max(0, availableWidth))
         let constrained = width < desiredTotal
         // Reserve enough space for the leading/percentage columns and gaps.
         let resetBudget = max(0, width - 148 - percentageWidth)
+        let minResetWidth = max(headerWidth, 42)
         let resetWidth = min(
             resetBudget,
-            constrained ? max(42, ceil(clockLineWidth) + 8) : desiredReset)
+            constrained ? max(minResetWidth, ceil(clockLineWidth) + 8) : desiredReset)
         return Self(
             width: width,
             percentageWidth: percentageWidth,
