@@ -24,15 +24,17 @@ struct OverviewDisplayState {
 }
 
 /// Live AppKit usage control for the By-provider header interaction experiment.
-/// A borderless pullsDown NSPopUpButton on the NSControl target/action path — the same
-/// control class as the proven grouping switcher. The SwiftUI Menu equivalent rendered
-/// but never received clicks inside the open menu, with no callback failure behind it.
+/// A borderless pullsDown NSPopUpButton on the NSControl target/action path — sharing
+/// NSControl ancestry with the proven grouping switcher. The operator reported the
+/// SwiftUI Menu equivalent as inert to clicks; the delivery cause is unverified and
+/// callback tests pass behind it.
 /// Scope is one header cell only; reset and By-period controls keep their current views.
 final class OverviewUsagePopUpButton: NSPopUpButton {}
 
 /// Maps popup indexes to usage segments. Index 0 is the pullsDown title slot and
 /// re-affirms the current segment (a no-op through the existing settings guard);
 /// indexes 1... map to segments 0....
+@MainActor
 final class OverviewUsagePopUpCoordinator: NSObject {
     var selectedSegment = 0
     var onSelect: ((Int) -> Void)?
@@ -117,12 +119,16 @@ extension StatusItemController {
     }
 
     static func retitleUsagePopUpButton(_ button: OverviewUsagePopUpButton, showUsed: Bool) {
-        // EXPERIMENT (interaction proof only): the title slot shows the short proposal
-        // copy while the menu keeps the full descriptive names. "Left" is an unapproved
-        // proposal with no localization key; it intentionally stays a literal until copy
-        // is approved, then gains a key in every complete locale. Do not copy this pattern.
-        button.item(at: 0)?.title = showUsed ? L("compact_header_used") : "Left"
+        // Interaction experiment only: the title slot mirrors the selected full name while
+        // short-copy visuals stay deferred to the layout slice (spec rev3/4 selects Left,
+        // which still needs a key in every complete locale). Set item states explicitly
+        // rather than relying on pullsDown checkmark behavior.
+        let choices = OverviewDisplayAxis.usage.choices
+        button.item(at: 0)?.title = showUsed ? choices[0] : choices[1]
         button.selectItem(at: showUsed ? 1 : 2)
+        button.item(at: 0)?.state = .off
+        button.item(at: 1)?.state = showUsed ? .on : .off
+        button.item(at: 2)?.state = showUsed ? .off : .on
     }
 
     func applyOverviewDisplayChoice(axis: OverviewDisplayAxis, selectedSegment: Int, menu: NSMenu) {

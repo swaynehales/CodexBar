@@ -396,13 +396,32 @@ struct OverviewCompactDisplayControlsTests {
             #expect(button.pullsDown)
             #expect(!button.isBordered)
             #expect(button.numberOfItems == 3)
-            #expect(button.itemTitle(at: 0) == (showUsed ? OverviewDisplayAxis.usage.choices[0] : "Left"))
+            #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[showUsed ? 0 : 1])
             #expect(button.itemTitle(at: 1) == OverviewDisplayAxis.usage.choices[0])
             #expect(button.itemTitle(at: 2) == OverviewDisplayAxis.usage.choices[1])
             #expect(button.indexOfSelectedItem == (showUsed ? 1 : 2))
+            #expect(button.item(at: 0)?.state == .off)
+            #expect(button.item(at: 1)?.state == (showUsed ? .on : .off))
+            #expect(button.item(at: 2)?.state == (showUsed ? .off : .on))
             #expect(button.target == nil)
             #expect(button.accessibilityLabel() == OverviewDisplayAxis.usage.label)
         }
+    }
+
+    @Test
+    func `usage popup retitle flips title slot selection and states`() {
+        let button = StatusItemController.makeUsagePopUpButton(showUsed: true)
+        StatusItemController.retitleUsagePopUpButton(button, showUsed: false)
+        #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[1])
+        #expect(button.indexOfSelectedItem == 2)
+        #expect(button.item(at: 0)?.state == .off)
+        #expect(button.item(at: 1)?.state == .off)
+        #expect(button.item(at: 2)?.state == .on)
+        StatusItemController.retitleUsagePopUpButton(button, showUsed: true)
+        #expect(button.itemTitle(at: 0) == OverviewDisplayAxis.usage.choices[0])
+        #expect(button.indexOfSelectedItem == 1)
+        #expect(button.item(at: 1)?.state == .on)
+        #expect(button.item(at: 2)?.state == .off)
     }
 
     @Test
