@@ -1517,6 +1517,7 @@
 "compact_header_model" = "모델";
 "compact_header_period" = "기간";
 "compact_header_used" = "사용량";
+"compact_header_left" = "남은";
 "compact_header_in" = "남음";
 "compact_header_at" = "시각";
 "compact_period_session" = "세션";

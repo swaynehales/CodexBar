@@ -635,6 +635,7 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Period";
 "compact_header_used" = "Used";
+"compact_header_left" = "Left";
 "compact_header_in" = "In";
 "compact_header_at" = "At";
 "configure" = "Configure…";

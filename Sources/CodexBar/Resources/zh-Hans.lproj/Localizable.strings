@@ -1560,6 +1560,7 @@
 "compact_header_model" = "模型";
 "compact_header_period" = "周期";
 "compact_header_used" = "已使用";
+"compact_header_left" = "剩余";
 "compact_header_in" = "剩";
 "compact_header_at" = "于";
 "compact_period_session" = "会话";

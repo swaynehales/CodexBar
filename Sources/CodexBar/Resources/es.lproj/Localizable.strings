@@ -1546,6 +1546,7 @@
 "compact_header_model" = "Modelo";
 "compact_header_period" = "Período";
 "compact_header_used" = "Usado";
+"compact_header_left" = "Restante";
 "compact_header_in" = "En";
 "compact_header_at" = "A las";
 "compact_period_session" = "Sesión";

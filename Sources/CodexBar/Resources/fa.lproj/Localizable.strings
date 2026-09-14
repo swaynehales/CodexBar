@@ -1552,6 +1552,7 @@
 "compact_header_model" = "مدل";
 "compact_header_period" = "دوره";
 "compact_header_used" = "استفاده‌شده";
+"compact_header_left" = "باقیمانده";
 "compact_header_in" = "تا";
 "compact_header_at" = "در ساعت";
 "compact_period_session" = "جلسه";

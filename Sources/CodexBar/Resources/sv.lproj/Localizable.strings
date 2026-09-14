@@ -1547,6 +1547,7 @@
 "compact_header_model" = "Modell";
 "compact_header_period" = "Period";
 "compact_header_used" = "Använt";
+"compact_header_left" = "Kvar";
 "compact_header_in" = "Om";
 "compact_header_at" = "Kl.";
 "compact_period_session" = "Session";

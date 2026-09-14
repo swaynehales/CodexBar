@@ -1550,6 +1550,7 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Període";
 "compact_header_used" = "Usat";
+"compact_header_left" = "Restant";
 "compact_header_in" = "Dins";
 "compact_header_at" = "A";
 "compact_period_session" = "Sessió";
