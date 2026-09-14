@@ -127,38 +127,33 @@ struct OverviewCompactDisplayControlsTests {
         settings.usageBarsFillOption = .remaining
         settings.resetTimesOption = .clock
 
-        var receivedUsage: Int?
-        var receivedReset: Int?
+        let layout = controller.overviewCompactLayout(for: menu)
 
-        let usageHeader = OverviewCompactDropdownHeader(
-            axis: .usage,
-            selectedIndex: settings.usageBarsShowUsed ? 0 : 1,
-            width: 78,
-            isHighlighted: false,
-            onChange: { receivedUsage = $0 })
-        #expect(usageHeader.selectedIndex == 1)
-        #expect(usageHeader.axis.choices[usageHeader.selectedIndex] == L("compact_header_remaining"))
-        usageHeader.onChange?(0)
-        #expect(receivedUsage == 0)
-        controller.applyOverviewDisplayChoice(axis: .usage, selectedSegment: 0, menu: menu)
+        // Production By-provider header view wiring
+        let tableHeader = controller.makeOverviewCompactTableHeaderView(menu: menu, width: layout.width, layout: layout)
+        tableHeader.onUsageChange?(0)
         #expect(settings.usageBarsShowUsed)
-
-        let resetHeader = OverviewCompactDropdownHeader(
-            axis: .resetTime,
-            selectedIndex: settings.resetTimesShowAbsolute ? 1 : 0,
-            width: 90,
-            isHighlighted: false,
-            onChange: { receivedReset = $0 })
-        #expect(resetHeader.selectedIndex == 1)
-        #expect(resetHeader.axis.choices[resetHeader.selectedIndex] == L("reset_times_clock"))
-        resetHeader.onChange?(0)
-        #expect(receivedReset == 0)
-        controller.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: 0, menu: menu)
+        tableHeader.onUsageChange?(1)
+        #expect(!settings.usageBarsShowUsed)
+        tableHeader.onResetChange?(1)
+        #expect(settings.resetTimesShowAbsolute)
+        tableHeader.onResetChange?(0)
         #expect(!settings.resetTimesShowAbsolute)
+
+        // Production By-period table view wiring
+        let periodTable = controller.makeOverviewPeriodTableView(
+            menu: menu,
+            rows: [],
+            width: layout.width,
+            layout: layout)
+        periodTable.onUsageChange?(0)
+        #expect(settings.usageBarsShowUsed)
+        periodTable.onResetChange?(1)
+        #expect(settings.resetTimesShowAbsolute)
     }
 
     @Test
-    func `dropdown header sizes match resolved layout budgets`() {
+    func `production header and controls fitting sizes match column budgets and popover width`() {
         let (controller, _, menu) = Self
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-budgets")
         defer { controller.prepareForAppShutdown() }
@@ -172,6 +167,78 @@ struct OverviewCompactDisplayControlsTests {
         let layout = controller.overviewCompactLayout(for: menu)
         #expect(layout.percentageWidth >= usageWidth)
         #expect(layout.resetWidth >= resetWidth)
+        #expect(layout.width == 472)
+        #expect(layout.barWidth(leading: 84) == 176)
+        #expect(layout.barWidth(leading: 112) == 148)
+
+        // Full production table header fits exact popover width
+        let headerView = controller.makeOverviewCompactTableHeaderView(menu: menu, width: layout.width, layout: layout)
+        let headerHost = NSHostingView(rootView: headerView)
+        headerHost.layoutSubtreeIfNeeded()
+        #expect(headerHost.fittingSize.width == layout.width)
+
+        // Dropdown headers with resolved column widths fit within column bounds
+        let usageDropdown = OverviewCompactDropdownHeader(
+            axis: .usage,
+            selectedIndex: 1,
+            width: layout.percentageWidth,
+            isHighlighted: false)
+        let usageHost = NSHostingView(rootView: usageDropdown)
+        usageHost.layoutSubtreeIfNeeded()
+        #expect(usageHost.fittingSize.width <= layout.percentageWidth)
+
+        let resetDropdown = OverviewCompactDropdownHeader(
+            axis: .resetTime,
+            selectedIndex: 0,
+            width: layout.resetWidth,
+            isHighlighted: false)
+        let resetHost = NSHostingView(rootView: resetDropdown)
+        resetHost.layoutSubtreeIfNeeded()
+        #expect(resetHost.fittingSize.width <= layout.resetWidth)
+    }
+
+    @Test
+    func `candidate reset sample dates cover all weekdays and wide times with various anchors`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/New_York"))
+
+        let midnight = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 9,
+            day: 14,
+            hour: 0,
+            minute: 0,
+            second: 0)))
+        let nonMidnight = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 9,
+            day: 14,
+            hour: 15,
+            minute: 30,
+            second: 0)))
+
+        for anchor in [midnight, nonMidnight] {
+            let candidates = StatusItemController.candidateResetSampleDates(now: anchor, calendar: calendar)
+            #expect(!candidates.isEmpty)
+
+            // All candidates strictly within the 1d to 7d window
+            for date in candidates {
+                let delta = date.timeIntervalSince(anchor)
+                #expect(delta >= 86400 && delta <= 604_800)
+            }
+
+            // Must cover all 7 calendar weekdays
+            let weekdays = Set(candidates.map { calendar.component(.weekday, from: $0) })
+            #expect(weekdays.count == 7)
+
+            // Hours must include local 12:59 and 23:59
+            let hours = Set(candidates.map { calendar.component(.hour, from: $0) })
+            #expect(hours.contains(12))
+            #expect(hours.contains(23))
+
+            // Must include exact +7d boundary
+            #expect(candidates.contains(anchor.addingTimeInterval(604_800)))
+        }
     }
 
     @Test

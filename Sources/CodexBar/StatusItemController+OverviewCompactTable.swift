@@ -137,31 +137,40 @@ extension StatusItemController {
         return true
     }
 
+    func makeOverviewPeriodTableView(
+        menu: NSMenu,
+        rows: [CompactTableRow],
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil) -> OverviewCompactPeriodTableView
+    {
+        let sections = OverviewCompactTableModel.periodSections(rows: rows)
+        return OverviewCompactPeriodTableView(
+            sections: sections,
+            showsHeader: true,
+            showUsed: self.settings.usageBarsShowUsed,
+            width: width,
+            showAbsolute: self.settings.resetTimesShowAbsolute,
+            percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
+            resetWidth: layout?.resetWidth ?? 130,
+            wrapClock: layout?.wrapClock ?? false,
+            onUsageChange: { [weak self, weak menu] segment in
+                guard let self, let menu else { return }
+                self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
+            },
+            onResetChange: { [weak self, weak menu] segment in
+                guard let self, let menu else { return }
+                self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
+            })
+    }
+
     func makeOverviewPeriodTableItem(
         menu: NSMenu,
         rows: [CompactTableRow],
         width: CGFloat,
         layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
     {
-        let sections = OverviewCompactTableModel.periodSections(rows: rows)
-        return self.makeMenuCardItem(
-            OverviewCompactPeriodTableView(
-                sections: sections,
-                showsHeader: true,
-                showUsed: self.settings.usageBarsShowUsed,
-                width: width,
-                showAbsolute: self.settings.resetTimesShowAbsolute,
-                percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
-                resetWidth: layout?.resetWidth ?? 130,
-                wrapClock: layout?.wrapClock ?? false,
-                onUsageChange: { [weak self, weak menu] segment in
-                    guard let self, let menu else { return }
-                    self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
-                },
-                onResetChange: { [weak self, weak menu] segment in
-                    guard let self, let menu else { return }
-                    self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
-                }),
+        self.makeMenuCardItem(
+            self.makeOverviewPeriodTableView(menu: menu, rows: rows, width: width, layout: layout),
             id: "overviewCompactPeriod",
             width: width,
             heightCacheScope: "overview-compact-period",
@@ -226,27 +235,35 @@ extension StatusItemController {
 
     /// Global By-provider header row, hosted as its own item above the first provider
     /// block; adding it to the menu exactly once is the caller's job.
+    func makeOverviewCompactTableHeaderView(
+        menu: NSMenu,
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil) -> OverviewCompactTableHeaderView
+    {
+        OverviewCompactTableHeaderView(
+            showUsed: self.settings.usageBarsShowUsed,
+            width: width,
+            showAbsolute: self.settings.resetTimesShowAbsolute,
+            percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
+            resetWidth: layout?.resetWidth ?? 130,
+            wrapClock: layout?.wrapClock ?? false,
+            onUsageChange: { [weak self, weak menu] segment in
+                guard let self, let menu else { return }
+                self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
+            },
+            onResetChange: { [weak self, weak menu] segment in
+                guard let self, let menu else { return }
+                self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
+            })
+    }
+
     func makeOverviewCompactHeaderItem(
         menu: NSMenu,
         width: CGFloat,
         layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
     {
         let item = self.makeMenuCardItem(
-            OverviewCompactTableHeaderView(
-                showUsed: self.settings.usageBarsShowUsed,
-                width: width,
-                showAbsolute: self.settings.resetTimesShowAbsolute,
-                percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
-                resetWidth: layout?.resetWidth ?? 130,
-                wrapClock: layout?.wrapClock ?? false,
-                onUsageChange: { [weak self, weak menu] segment in
-                    guard let self, let menu else { return }
-                    self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
-                },
-                onResetChange: { [weak self, weak menu] segment in
-                    guard let self, let menu else { return }
-                    self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
-                }),
+            self.makeOverviewCompactTableHeaderView(menu: menu, width: width, layout: layout),
             id: "overviewCompactHeader",
             width: width,
             heightCacheScope: "overview-compact-header",

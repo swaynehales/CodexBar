@@ -37,20 +37,14 @@ extension StatusItemController {
         let calendar = Calendar.current
         let locale = codexBarLocalizedLocale()
 
-        var sampleWidths: [CGFloat] = []
-        // Sample across all 7 weekdays and wide hour/minute forms (12:59 and 23:59)
-        for dayOffset in 1...7 {
-            for timeOffset in [46740.0, 86340.0] {
-                let delta = Double(dayOffset) * 86400.0 - 86400.0 + timeOffset
-                guard delta >= 86400.0, delta <= 604_800.0 else { continue }
-                let sampleDate = now.addingTimeInterval(delta)
-                let sample = OverviewCompactResetText.make(
-                    resetsAt: sampleDate,
-                    now: now,
-                    calendar: calendar,
-                    locale: locale).clock
-                sampleWidths.append(measure(sample, font: font))
-            }
+        let sampleDates = Self.candidateResetSampleDates(now: now, calendar: calendar)
+        let sampleWidths = sampleDates.map { sampleDate in
+            let sample = OverviewCompactResetText.make(
+                resetsAt: sampleDate,
+                now: now,
+                calendar: calendar,
+                locale: locale).clock
+            return measure(sample, font: font)
         }
         let maxWeekdayWidth = sampleWidths.max() ?? 0
         let clockWidths = texts.map { measure($0.clock, font: font) } + [maxWeekdayWidth, resetHeaderWidth]
@@ -71,5 +65,29 @@ extension StatusItemController {
         // NSMenu builds before menuWillOpen registers it in openMenus. Preserve that first budget too.
         self.overviewDisplayState.layouts[key] = layout
         return layout
+    }
+
+    static func candidateResetSampleDates(now: Date, calendar: Calendar) -> [Date] {
+        var dates: [Date] = []
+        let startOfDay = calendar.startOfDay(for: now)
+
+        // Generate candidate local times for the next 8 days at 12:59:00 and 23:59:00
+        for dayOffset in 1...8 {
+            guard let dayDate = calendar.date(byAdding: .day, value: dayOffset, to: startOfDay) else { continue }
+            for (hour, minute) in [(12, 59), (23, 59)] {
+                if let candidate = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: dayDate) {
+                    let delta = candidate.timeIntervalSince(now)
+                    if delta >= 86400, delta <= 604_800 {
+                        dates.append(candidate)
+                    }
+                }
+            }
+        }
+
+        // Include exact +7d boundary (604,800s)
+        let exactSevenDays = now.addingTimeInterval(604_800)
+        dates.append(exactSevenDays)
+
+        return dates
     }
 }

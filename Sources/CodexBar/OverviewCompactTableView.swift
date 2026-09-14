@@ -58,10 +58,10 @@ struct OverviewCompactDropdownHeader: View {
                 .textCase(.uppercase)
                 .lineLimit(1)
                 .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                .frame(width: self.width, alignment: .trailing)
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .frame(width: self.width > 0 ? self.width : nil, alignment: .trailing)
         .menuCardInteractiveControl()
         .accessibilityLabel(self.axis.label)
         .accessibilityValue(currentTitle)
