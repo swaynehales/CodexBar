@@ -391,6 +391,76 @@ struct OverviewCompactDisplayControlsTests {
         #expect(labels.contains(status.label()))
     }
 
+    /// Base type name without generic parameters, so nested generics cannot
+    /// false-match a substring search.
+    private static func baseName(of value: Any) -> String {
+        String(String(describing: type(of: value)).prefix(while: { $0 != "<" }))
+    }
+
+    /// Arity of the first GridRow in a header view, found by reflecting the built view
+    /// value. Catches stray placeholder cells that shift headers past body anchors.
+    private static func firstGridRowArity(in root: Any) -> Int? {
+        let mirror = Mirror(reflecting: root)
+        if Self.baseName(of: root) == "GridRow" {
+            for child in mirror.children where Self.baseName(of: child.value) == "TupleView" {
+                for element in Mirror(reflecting: child.value).children {
+                    return Mirror(reflecting: element.value).children.count
+                }
+            }
+            return nil
+        }
+        for child in mirror.children {
+            if let arity = Self.firstGridRowArity(in: child.value) {
+                return arity
+            }
+        }
+        return nil
+    }
+
+    @Test
+    func `production headers use four cells aligned to body column anchors`() {
+        let (controller, _, menu) = Self
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-headergrid")
+        defer { controller.prepareForAppShutdown() }
+        let layout = controller.overviewCompactLayout(for: menu)
+
+        // By-provider header: Period, bar, usage, reset — no leftover placeholder.
+        let providerHeader = controller.makeOverviewCompactTableHeaderView(
+            menu: menu,
+            width: layout.width,
+            layout: layout)
+        let providerArity = Self.firstGridRowArity(in: providerHeader.body)
+        #expect(providerArity == 4, "provider arity \(String(describing: providerArity))")
+
+        // By-period header: Provider, bar, usage, reset.
+        let periodTable = controller.makeOverviewPeriodTableView(
+            menu: menu,
+            rows: [],
+            width: layout.width,
+            layout: layout)
+        let periodArity = Self.firstGridRowArity(in: periodTable.body)
+        #expect(periodArity == 4, "period arity \(String(describing: periodArity))")
+
+        // Header bar spacers share the body anchors: total closes at layout width.
+        let gaps: CGFloat = 3 * CompactTableMetrics.columnSpacing
+        let padding: CGFloat = 2 * CompactTableMetrics.horizontalPadding
+        for leading in [CompactTableMetrics.periodColumnWidth, CompactTableMetrics.providerMaxWidth] {
+            let bar = CompactTableMetrics.measureWidth(
+                totalWidth: layout.width,
+                fixedColumns: leading + layout.percentageWidth + layout.resetWidth,
+                gaps: 3)
+            #expect(bar == layout.barWidth(leading: leading))
+            #expect(leading + bar + layout.percentageWidth + layout.resetWidth + gaps + padding == layout.width)
+        }
+
+        // Rendered headers fit within the layout width.
+        for view in [AnyView(providerHeader), AnyView(periodTable)] {
+            let host = NSHostingView(rootView: view)
+            host.layoutSubtreeIfNeeded()
+            #expect(host.fittingSize.width <= layout.width)
+        }
+    }
+
     private static func headerSegments(in item: NSMenuItem) -> [OverviewDisplayAxis: OverviewDisplaySegmentedControl] {
         var found: [OverviewDisplayAxis: OverviewDisplaySegmentedControl] = [:]
         func walk(_ view: NSView) {

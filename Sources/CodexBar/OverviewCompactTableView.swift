@@ -58,9 +58,6 @@ struct OverviewCompactTableHeaderView: View {
                                 + self.percentageWidth
                                 + self.resetWidth,
                             gaps: 3))
-                    Color.clear
-                        .gridCellUnsizedAxes(.vertical)
-                        .frame(width: self.percentageWidth)
                     Text(L("section_usage"))
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
