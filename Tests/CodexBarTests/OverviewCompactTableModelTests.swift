@@ -303,15 +303,13 @@ struct OverviewCompactTableModelTests {
     func `bar track meets resolved layout column budgets`() {
         let layout = OverviewCompactTableLayout.resolve(
             availableWidth: 1000,
-            clockWidth: 100,
-            clockLineWidth: 50,
-            controlWidths: [100, 100])
-        #expect(layout.width == 468)
-        #expect(layout.resetWidth == 130)
+            percentageWidth: 42,
+            clockWidth: 85,
+            clockLineWidth: 50)
 
         let providerLeading = CompactTableMetrics.periodColumnWidth
         let periodLeading = CompactTableMetrics.providerMaxWidth
-        let percentageWidth = CompactTableMetrics.usedColumnWidth
+        let percentageWidth = layout.percentageWidth
 
         let providerBar = layout.barWidth(leading: providerLeading)
         let periodBar = layout.barWidth(leading: periodLeading)

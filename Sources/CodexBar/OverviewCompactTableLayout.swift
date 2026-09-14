@@ -2,34 +2,34 @@ import Foundation
 
 struct OverviewCompactTableLayout: Equatable {
     let width: CGFloat
+    let percentageWidth: CGFloat
     let resetWidth: CGFloat
     let wrapClock: Bool
-    let stacksControls: Bool
 
     static func resolve(
         availableWidth: CGFloat,
+        percentageWidth: CGFloat = 42,
         clockWidth: CGFloat,
-        clockLineWidth: CGFloat,
-        controlWidths: [CGFloat]) -> Self
+        clockLineWidth: CGFloat) -> Self
     {
-        let desiredReset = max(130, ceil(clockWidth) + 8)
-        let width = min(338 + desiredReset, max(0, availableWidth))
-        let constrained = width < 338 + desiredReset
-        // Reserve enough space for the existing leading/percentage columns and gaps.
-        let resetBudget = max(0, width - 190)
+        let desiredReset = ceil(clockWidth) + 8
+        let baseWidth: CGFloat = 296 // 2 * 12 padding + 3 * 4 gaps + 260 (leading + bar)
+        let desiredTotal = baseWidth + percentageWidth + desiredReset
+        let width = min(desiredTotal, max(0, availableWidth))
+        let constrained = width < desiredTotal
+        // Reserve enough space for the leading/percentage columns and gaps.
+        let resetBudget = max(0, width - 148 - percentageWidth)
         let resetWidth = min(
             resetBudget,
             constrained ? max(42, ceil(clockLineWidth) + 8) : desiredReset)
-        let controlSpace = max(0, width - 24)
-        let required = controlWidths.reduce(0, +) + CGFloat(max(0, controlWidths.count - 1)) * 12
         return Self(
             width: width,
+            percentageWidth: percentageWidth,
             resetWidth: resetWidth,
-            wrapClock: constrained,
-            stacksControls: required > controlSpace)
+            wrapClock: constrained)
     }
 
     func barWidth(leading: CGFloat) -> CGFloat {
-        max(0, self.width - 36 - leading - 42 - self.resetWidth)
+        max(0, self.width - 36 - leading - self.percentageWidth - self.resetWidth)
     }
 }

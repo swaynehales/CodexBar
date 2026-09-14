@@ -69,15 +69,11 @@ struct OverviewCompactDisplayControlsTests {
                 #expect(controller.compactGlobalRefreshStatus == initialRefresh)
                 #expect(controller.manualRefreshTasks.isEmpty)
 
-                let usageGroup = controller.makeOverviewDisplayGroup(axis: .usage, menu: menu)
-                let usageControl = usageGroup.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }
-                    .first
-                #expect(usageControl?.selectedSegment == config.usageSegment)
+                let usageControl = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
+                #expect(usageControl.indexOfSelectedItem == config.usageSegment)
 
-                let resetGroup = controller.makeOverviewDisplayGroup(axis: .resetTime, menu: menu)
-                let resetControl = resetGroup.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }
-                    .first
-                #expect(resetControl?.selectedSegment == config.resetSegment)
+                let resetControl = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
+                #expect(resetControl.indexOfSelectedItem == config.resetSegment)
             }
         }
     }
@@ -132,24 +128,20 @@ struct OverviewCompactDisplayControlsTests {
         settings.usageBarsFillOption = .remaining
         settings.resetTimesOption = .clock
 
-        let usageGroup1 = controller.makeOverviewDisplayGroup(axis: .usage, menu: menu)
-        let usageControl1 = usageGroup1.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }.first
-        #expect(usageControl1?.selectedSegment == 1)
+        let usageControl1 = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
+        #expect(usageControl1.indexOfSelectedItem == 1)
 
-        let resetGroup1 = controller.makeOverviewDisplayGroup(axis: .resetTime, menu: menu)
-        let resetControl1 = resetGroup1.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }.first
-        #expect(resetControl1?.selectedSegment == 1)
+        let resetControl1 = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
+        #expect(resetControl1.indexOfSelectedItem == 1)
 
         settings.usageBarsFillOption = .used
         settings.resetTimesOption = .countdown
 
-        let usageGroup2 = controller.makeOverviewDisplayGroup(axis: .usage, menu: menu)
-        let usageControl2 = usageGroup2.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }.first
-        #expect(usageControl2?.selectedSegment == 0)
+        let usageControl2 = controller.makeOverviewDisplayPopUpButton(axis: .usage, menu: menu)
+        #expect(usageControl2.indexOfSelectedItem == 0)
 
-        let resetGroup2 = controller.makeOverviewDisplayGroup(axis: .resetTime, menu: menu)
-        let resetControl2 = resetGroup2.arrangedSubviews.compactMap { $0 as? OverviewDisplaySegmentedControl }.first
-        #expect(resetControl2?.selectedSegment == 0)
+        let resetControl2 = controller.makeOverviewDisplayPopUpButton(axis: .resetTime, menu: menu)
+        #expect(resetControl2.indexOfSelectedItem == 0)
     }
 
     @Test

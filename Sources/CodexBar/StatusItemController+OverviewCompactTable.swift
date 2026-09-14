@@ -102,25 +102,22 @@ extension StatusItemController {
             ceil($0.cell?.cellSize(forBounds: NSRect(
                 x: 0, y: 0, width: contentWidth, height: .greatestFiniteMagnitude)).height ?? 20) + 8
         } ?? 0
-        let displayControls = self.makeOverviewDisplayControls(menu: menu, width: width)
-        let controlsHeight = displayControls.frame.height
         let container = OverviewGroupingContainer(
-            frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight + controlsHeight))
+            frame: NSRect(x: 0, y: 0, width: width, height: 48 + statusHeight))
         container.tableLayout = self.overviewCompactLayout(for: menu)
         control.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         control.frame = NSRect(
             x: CompactTableMetrics.horizontalPadding,
-            y: 3 + statusHeight + controlsHeight,
+            y: 3 + statusHeight,
             width: contentWidth,
             height: 42)
         control.autoresizingMask = [.width]
         container.addSubview(control)
         if let label = statusLabel {
-            label.frame = NSRect(x: 12, y: 2 + controlsHeight, width: contentWidth, height: statusHeight)
+            label.frame = NSRect(x: 12, y: 2, width: contentWidth, height: statusHeight)
             label.autoresizingMask = [.width]
             container.addSubview(label)
         }
-        container.addSubview(displayControls)
         let item = NSMenuItem()
         item.view = container
         item.isEnabled = false
@@ -136,12 +133,15 @@ extension StatusItemController {
     {
         let allRows = displayRows.compactMap(\.tableRows).flatMap(\.self)
         guard !allRows.isEmpty else { return false }
-        menu.addItem(self.makeOverviewPeriodTableItem(rows: allRows, width: width, layout: layout))
+        menu.addItem(self.makeOverviewPeriodTableItem(menu: menu, rows: allRows, width: width, layout: layout))
         return true
     }
 
     func makeOverviewPeriodTableItem(
-        rows: [CompactTableRow], width: CGFloat, layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
+        menu: NSMenu,
+        rows: [CompactTableRow],
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
     {
         let sections = OverviewCompactTableModel.periodSections(rows: rows)
         return self.makeMenuCardItem(
@@ -151,8 +151,17 @@ extension StatusItemController {
                 showUsed: self.settings.usageBarsShowUsed,
                 width: width,
                 showAbsolute: self.settings.resetTimesShowAbsolute,
+                percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
                 resetWidth: layout?.resetWidth ?? 130,
-                wrapClock: layout?.wrapClock ?? false),
+                wrapClock: layout?.wrapClock ?? false,
+                onUsageChange: { [weak self, weak menu] segment in
+                    guard let self, let menu else { return }
+                    self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
+                },
+                onResetChange: { [weak self, weak menu] segment in
+                    guard let self, let menu else { return }
+                    self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
+                }),
             id: "overviewCompactPeriod",
             width: width,
             heightCacheScope: "overview-compact-period",
@@ -169,6 +178,7 @@ extension StatusItemController {
                 ].joined(separator: ",") }
                 .joined(separator: "|"),
             submenu: nil,
+            containsInteractiveControls: true,
             usesGPUSelection: true)
     }
 
@@ -211,26 +221,38 @@ extension StatusItemController {
         guard row.tableRows != nil,
               !menu.items.contains(where: { $0.identifier == Self.overviewCompactHeaderItemID })
         else { return }
-        menu.addItem(self.makeOverviewCompactHeaderItem(width: width, layout: layout))
+        menu.addItem(self.makeOverviewCompactHeaderItem(menu: menu, width: width, layout: layout))
     }
 
     /// Global By-provider header row, hosted as its own item above the first provider
     /// block; adding it to the menu exactly once is the caller's job.
     func makeOverviewCompactHeaderItem(
-        width: CGFloat, layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
+        menu: NSMenu,
+        width: CGFloat,
+        layout: OverviewCompactTableLayout? = nil) -> NSMenuItem
     {
         let item = self.makeMenuCardItem(
             OverviewCompactTableHeaderView(
                 showUsed: self.settings.usageBarsShowUsed,
                 width: width,
                 showAbsolute: self.settings.resetTimesShowAbsolute,
+                percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
                 resetWidth: layout?.resetWidth ?? 130,
-                wrapClock: layout?.wrapClock ?? false),
+                wrapClock: layout?.wrapClock ?? false,
+                onUsageChange: { [weak self, weak menu] segment in
+                    guard let self, let menu else { return }
+                    self.applyOverviewDisplayChoice(axis: .usage, selectedSegment: segment, menu: menu)
+                },
+                onResetChange: { [weak self, weak menu] segment in
+                    guard let self, let menu else { return }
+                    self.applyOverviewDisplayChoice(axis: .resetTime, selectedSegment: segment, menu: menu)
+                }),
             id: "overviewCompactHeader",
             width: width,
             heightCacheScope: "overview-compact-header",
             heightCacheFingerprint: self.overviewDisplayFingerprint(layout: layout),
             submenu: nil,
+            containsInteractiveControls: true,
             usesGPUSelection: true)
         item.identifier = Self.overviewCompactHeaderItemID
         return item
@@ -249,6 +271,7 @@ extension StatusItemController {
                 rows: tableRows,
                 width: menuWidth,
                 showAbsolute: self.settings.resetTimesShowAbsolute,
+                percentageWidth: layout?.percentageWidth ?? CompactTableMetrics.usedColumnWidth,
                 resetWidth: layout?.resetWidth ?? 130,
                 wrapClock: layout?.wrapClock ?? false),
             id: "\(Self.overviewRowIdentifierPrefix)\(row.provider.rawValue)",

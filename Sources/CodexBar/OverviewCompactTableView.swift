@@ -28,7 +28,51 @@ enum CompactTableMetrics {
     }
 }
 
-/// Global By-provider table header (PERIOD | bar | USED | IN) plus its single divider.
+/// Compact native dropdown header cell for table percentage and reset columns.
+struct OverviewCompactDropdownHeader: View {
+    let axis: OverviewDisplayAxis
+    let selectedIndex: Int
+    let width: CGFloat
+    let isHighlighted: Bool
+    var onChange: ((Int) -> Void)?
+
+    var body: some View {
+        let choices = self.axis.choices
+        let currentTitle = (0..<choices.count).contains(self.selectedIndex) ? choices[self.selectedIndex] : ""
+        Menu {
+            ForEach(0..<choices.count, id: \.self) { index in
+                Button {
+                    self.onChange?(index)
+                } label: {
+                    HStack {
+                        Text(choices[index])
+                        if index == self.selectedIndex {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 2) {
+                Text(currentTitle)
+                    .font(.caption2.weight(.semibold))
+                    .textCase(.uppercase)
+                    .lineLimit(1)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 8, weight: .semibold))
+            }
+            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+            .frame(width: self.width, alignment: .trailing)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .menuCardInteractiveControl()
+        .accessibilityLabel(self.axis.label)
+        .accessibilityValue(currentTitle)
+    }
+}
+
+/// Global By-provider table header (PERIOD | bar | percentage dropdown | reset dropdown) plus its single divider.
 /// Hosted as its own non-interactive menu item above the first provider block so the
 /// header can never land inside a provider group. Column widths reuse the body's declared
 /// constants (the bar cell keeps its computed track width) so the two hosted views align.
@@ -36,8 +80,11 @@ struct OverviewCompactTableHeaderView: View {
     let showUsed: Bool
     let width: CGFloat
     var showAbsolute = false
+    var percentageWidth: CGFloat = CompactTableMetrics.usedColumnWidth
     var resetWidth: CGFloat = 130
     var wrapClock = false
+    var onUsageChange: ((Int) -> Void)?
+    var onResetChange: ((Int) -> Void)?
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -56,25 +103,21 @@ struct OverviewCompactTableHeaderView: View {
                         .frame(width: CompactTableMetrics.measureWidth(
                             totalWidth: self.width,
                             fixedColumns: CompactTableMetrics.periodColumnWidth
-                                + CompactTableMetrics.usedColumnWidth
+                                + self.percentageWidth
                                 + self.resetWidth,
                             gaps: 3))
-                    Color.clear
-                        .frame(width: CompactTableMetrics.usedColumnWidth, height: 14)
-                        .overlay(alignment: .trailing) {
-                            Text(OverviewCompactTableModel.percentageHeader(showUsed: self.showUsed))
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                .textCase(.uppercase)
-                                .fixedSize()
-                        }
-                        .gridColumnAlignment(.trailing)
-                    Text(L(self.showAbsolute ? "compact_header_at" : "compact_header_in"))
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                        .textCase(.uppercase)
-                        .frame(width: self.resetWidth, alignment: .trailing)
-                        .gridColumnAlignment(.trailing)
+                    OverviewCompactDropdownHeader(
+                        axis: .usage,
+                        selectedIndex: self.showUsed ? 0 : 1,
+                        width: self.percentageWidth,
+                        isHighlighted: self.isHighlighted,
+                        onChange: self.onUsageChange)
+                    OverviewCompactDropdownHeader(
+                        axis: .resetTime,
+                        selectedIndex: self.showAbsolute ? 1 : 0,
+                        width: self.resetWidth,
+                        isHighlighted: self.isHighlighted,
+                        onChange: self.onResetChange)
                 }
             }
             Divider()
@@ -93,6 +136,7 @@ struct OverviewCompactTableBlockView: View {
     let rows: [CompactTableRow]
     let width: CGFloat
     var showAbsolute = false
+    var percentageWidth: CGFloat = CompactTableMetrics.usedColumnWidth
     var resetWidth: CGFloat = 130
     var wrapClock = false
     @Environment(\.menuItemHighlighted) private var isHighlighted
@@ -151,7 +195,7 @@ struct OverviewCompactTableBlockView: View {
             Text(row.usedText)
                 .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
-                .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                .frame(width: self.percentageWidth, alignment: .trailing)
         case .value:
             // Balance text right-aligns in the USED column (mock placement); the bar
             // cell keeps the declared track width so USED/IN anchors never shift.
@@ -159,7 +203,7 @@ struct OverviewCompactTableBlockView: View {
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
-                        + CompactTableMetrics.usedColumnWidth
+                        + self.percentageWidth
                         + self.resetWidth,
                     gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
@@ -167,10 +211,10 @@ struct OverviewCompactTableBlockView: View {
                     .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                    .frame(width: self.percentageWidth, alignment: .trailing)
             } else {
                 Color.clear.gridCellUnsizedAxes(.vertical)
-                    .frame(width: CompactTableMetrics.usedColumnWidth)
+                    .frame(width: self.percentageWidth)
             }
         }
         OverviewCompactResetCell(
@@ -196,7 +240,7 @@ struct OverviewCompactTableBlockView: View {
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.periodColumnWidth
-                        + CompactTableMetrics.usedColumnWidth
+                        + self.percentageWidth
                         + self.resetWidth,
                     gaps: 3))
         }
@@ -211,8 +255,11 @@ struct OverviewCompactPeriodTableView: View {
     let showUsed: Bool
     let width: CGFloat
     var showAbsolute = false
+    var percentageWidth: CGFloat = CompactTableMetrics.usedColumnWidth
     var resetWidth: CGFloat = 130
     var wrapClock = false
+    var onUsageChange: ((Int) -> Void)?
+    var onResetChange: ((Int) -> Void)?
     @Environment(\.menuItemHighlighted) private var isHighlighted
 
     var body: some View {
@@ -227,22 +274,18 @@ struct OverviewCompactPeriodTableView: View {
                             .frame(width: CompactTableMetrics.providerMaxWidth, alignment: .leading)
                             .gridColumnAlignment(.leading)
                         Color.clear.gridCellUnsizedAxes(.vertical)
-                        Color.clear
-                            .frame(width: CompactTableMetrics.usedColumnWidth, height: 14)
-                            .overlay(alignment: .trailing) {
-                                Text(OverviewCompactTableModel.percentageHeader(showUsed: self.showUsed))
-                                    .font(.caption2.weight(.semibold))
-                                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                                    .textCase(.uppercase)
-                                    .fixedSize()
-                            }
-                            .gridColumnAlignment(.trailing)
-                        Text(L(self.showAbsolute ? "compact_header_at" : "compact_header_in"))
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
-                            .textCase(.uppercase)
-                            .frame(width: self.resetWidth, alignment: .trailing)
-                            .gridColumnAlignment(.trailing)
+                        OverviewCompactDropdownHeader(
+                            axis: .usage,
+                            selectedIndex: self.showUsed ? 0 : 1,
+                            width: self.percentageWidth,
+                            isHighlighted: self.isHighlighted,
+                            onChange: self.onUsageChange)
+                        OverviewCompactDropdownHeader(
+                            axis: .resetTime,
+                            selectedIndex: self.showAbsolute ? 1 : 0,
+                            width: self.resetWidth,
+                            isHighlighted: self.isHighlighted,
+                            onChange: self.onResetChange)
                     }
                     GridRow {
                         Divider().gridCellColumns(4)
@@ -308,14 +351,14 @@ struct OverviewCompactPeriodTableView: View {
                     .frame(width: CompactTableMetrics.measureWidth(
                         totalWidth: self.width,
                         fixedColumns: CompactTableMetrics.providerMaxWidth
-                            + CompactTableMetrics.usedColumnWidth
+                            + self.percentageWidth
                             + self.resetWidth,
                         gaps: 3))
             }
             Text(row.usedText)
                 .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
-                .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                .frame(width: self.percentageWidth, alignment: .trailing)
         case .value:
             // Balance right-aligns in the USED column (mock placement); the bar cell
             // keeps the declared track width so USED/IN anchors never shift.
@@ -323,7 +366,7 @@ struct OverviewCompactPeriodTableView: View {
                 .frame(width: CompactTableMetrics.measureWidth(
                     totalWidth: self.width,
                     fixedColumns: CompactTableMetrics.providerMaxWidth
-                        + CompactTableMetrics.usedColumnWidth
+                        + self.percentageWidth
                         + self.resetWidth,
                     gaps: 3))
             if let valueText = row.valueText, !valueText.isEmpty {
@@ -331,10 +374,10 @@ struct OverviewCompactPeriodTableView: View {
                     .font(.system(size: CompactTableMetrics.emphasisFontSize, weight: .semibold).monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(width: CompactTableMetrics.usedColumnWidth, alignment: .trailing)
+                    .frame(width: self.percentageWidth, alignment: .trailing)
             } else {
                 Color.clear
-                    .frame(width: CompactTableMetrics.usedColumnWidth)
+                    .frame(width: self.percentageWidth)
             }
         }
         OverviewCompactResetCell(

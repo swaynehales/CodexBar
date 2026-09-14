@@ -17,7 +17,7 @@ enum OverviewDisplayAxis: CaseIterable {
     }
 }
 
-final class OverviewDisplaySegmentedControl: NSSegmentedControl {
+final class OverviewDisplayPopUpButton: NSPopUpButton {
     var axis: OverviewDisplayAxis = .usage
     weak var trackedMenu: NSMenu?
 }
@@ -45,9 +45,9 @@ struct OverviewDisplayViewportRequest {
 }
 
 extension StatusItemController {
-    @objc func overviewDisplayChoiceChanged(_ sender: OverviewDisplaySegmentedControl) {
+    @objc func overviewDisplayChoiceChanged(_ sender: OverviewDisplayPopUpButton) {
         guard let menu = sender.trackedMenu else { return }
-        self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.selectedSegment, menu: menu)
+        self.applyOverviewDisplayChoice(axis: sender.axis, selectedSegment: sender.indexOfSelectedItem, menu: menu)
     }
 
     func applyOverviewDisplayChoice(axis: OverviewDisplayAxis, selectedSegment: Int, menu: NSMenu) {
@@ -82,45 +82,25 @@ extension StatusItemController {
         self.requestProviderSwitcherMenuRebuild(menu, provider: nil)
     }
 
-    func makeOverviewDisplayGroup(axis: OverviewDisplayAxis, menu: NSMenu) -> NSStackView {
-        let control = OverviewDisplaySegmentedControl(
-            labels: axis.choices,
-            trackingMode: .selectOne,
-            target: self,
-            action: #selector(self.overviewDisplayChoiceChanged(_:)))
+    func makeOverviewDisplayPopUpButton(axis: OverviewDisplayAxis, menu: NSMenu) -> OverviewDisplayPopUpButton {
+        let control = OverviewDisplayPopUpButton(frame: .zero, pullsDown: false)
         control.axis = axis
         control.trackedMenu = menu
         control.controlSize = .small
-        control.font = .systemFont(ofSize: 11)
-        control.segmentDistribution = .fillEqually
-        control.selectedSegment = axis == .usage
+        control.font = .systemFont(ofSize: NSFont.systemFontSize(for: .small), weight: .regular)
+        control.removeAllItems()
+        for choice in axis.choices {
+            control.addItem(withTitle: choice)
+        }
+        let selectedIndex = axis == .usage
             ? (self.settings.usageBarsShowUsed ? 0 : 1)
             : (self.settings.resetTimesShowAbsolute ? 1 : 0)
+        control.selectItem(at: selectedIndex)
+        control.target = self
+        control.action = #selector(self.overviewDisplayChoiceChanged(_:))
         control.setAccessibilityLabel(axis.label)
         control.sizeToFit()
-        let label = NSTextField(labelWithString: axis.label)
-        label.font = .systemFont(ofSize: 10)
-        label.textColor = .secondaryLabelColor
-        let group = NSStackView(views: [label, control])
-        group.orientation = .vertical
-        group.alignment = .leading
-        group.spacing = 4
-        return group
-    }
-
-    func makeOverviewDisplayControls(menu: NSMenu, width: CGFloat) -> NSView {
-        let groups = OverviewDisplayAxis.allCases.map { self.makeOverviewDisplayGroup(axis: $0, menu: menu) }
-        let content = NSStackView(views: groups)
-        let stacks = self.overviewCompactLayout(for: menu).stacksControls
-        content.orientation = stacks ? .vertical : .horizontal
-        content.alignment = stacks ? .leading : .top
-        content.spacing = stacks ? 8 : 12
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: width, height: content.fittingSize.height + 12))
-        content.frame = NSRect(x: 12, y: 6, width: max(0, width - 24), height: content.fittingSize.height)
-        container.autoresizingMask = [.width]
-        content.autoresizingMask = [.width]
-        container.addSubview(content)
-        return container
+        return control
     }
 
     func restoreOverviewDisplayViewportAfterLayout(in menu: NSMenu) {
