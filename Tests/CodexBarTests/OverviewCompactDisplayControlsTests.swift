@@ -386,6 +386,34 @@ struct OverviewCompactDisplayControlsTests {
     }
 
     @Test
+    func `narrow widths stagger groups and contain every frame`() throws {
+        let (controller, _, menu) = Self
+            .makeController(suiteName: "OverviewCompactDisplayControlsTests-stagger")
+        defer { controller.prepareForAppShutdown() }
+
+        let wide = controller.makeOverviewHeaderControlsItem(menu: menu, width: 400, layout: nil)
+        let wideContainer = try #require(wide.view)
+        let narrow = controller.makeOverviewHeaderControlsItem(menu: menu, width: 100, layout: nil)
+        let container = try #require(narrow.view)
+        // Forced stagger: stacked rows are taller than the single row.
+        #expect(container.frame.height > wideContainer.frame.height)
+        // Every placed frame stays inside the container horizontally.
+        var frames: [CGRect] = []
+        func collect(_ view: NSView) {
+            for subview in view.subviews {
+                frames.append(subview.frame)
+                collect(subview)
+            }
+        }
+        collect(container)
+        #expect(!frames.isEmpty)
+        for frame in frames {
+            #expect(frame.minX >= 0)
+            #expect(frame.maxX <= container.frame.width)
+        }
+    }
+
+    @Test
     func `production segmented controls carry approved copy and flip settings through the action seam`() throws {
         let (controller, settings, menu) = Self
             .makeController(suiteName: "OverviewCompactDisplayControlsTests-segments")

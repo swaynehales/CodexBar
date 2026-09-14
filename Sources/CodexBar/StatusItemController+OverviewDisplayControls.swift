@@ -45,11 +45,15 @@ final class OverviewDisplaySegmentedControl: NSSegmentedControl {
     weak var trackedMenu: NSMenu?
 }
 
-/// Placement of one labeled segment group inside the header control row.
+/// Measured extent of one labeled segment group. Placement, stagger detection, and
+/// rendering all use these extents, so narrow or localized content stays contained
+/// instead of overflowing the row.
 private struct HeaderSegmentPlacement {
     static let labelHeight: CGFloat = 13
     static let rowGap: CGFloat = 4
-    let segmentX: CGFloat
+    let groupX: CGFloat
+    let groupWidth: CGFloat
+    let controlWidth: CGFloat
     let top: CGFloat
 }
 
@@ -89,14 +93,16 @@ extension StatusItemController {
         let resetGroup = self.makeHeaderSegmentGroup(axis: .resetTime, menu: menu)
         let horizontalPadding = CompactTableMetrics.horizontalPadding
         let contentWidth = max(0, width - 2 * horizontalPadding)
-        let usageSegW = min(usageGroup.control.frame.width, contentWidth)
-        let resetSegW = min(resetGroup.control.frame.width, contentWidth)
-        let resetSegX = max(horizontalPadding, width - horizontalPadding - resetSegW)
+        // One measured extent per group drives positioning, stagger, and rendering, so
+        // a clamped group can never render at its unclamped size.
+        let usageWidth = min(max(usageGroup.labelWidth, usageGroup.segWidth), contentWidth)
+        let resetWidthGroup = min(max(resetGroup.labelWidth, resetGroup.segWidth), contentWidth)
+        let resetX = max(horizontalPadding, width - horizontalPadding - resetWidthGroup)
         let percentageRight = width - horizontalPadding - resetWidth - CompactTableMetrics.columnSpacing
-        let usageSegX = max(horizontalPadding, percentageRight - usageSegW)
-        // Segments overlap when the usage cell cannot clear the reset group; stack the
-        // groups (usage above reset, same column alignment) instead of compressing them.
-        let staggered = percentageRight > resetSegX
+        let usageX = max(horizontalPadding, percentageRight - usageWidth)
+        // Stack the groups (usage above reset, same column alignment) when their
+        // extents — labels included — would collide side by side.
+        let staggered = usageX + usageWidth > resetX
         let labelHeight = HeaderSegmentPlacement.labelHeight
         let singleRowHeight: CGFloat = 6 + labelHeight + HeaderSegmentPlacement.rowGap +
             usageGroup.control.frame.height + 6
@@ -106,12 +112,18 @@ extension StatusItemController {
         self.placeHeaderSegmentGroup(
             usageGroup,
             in: container,
-            placement: HeaderSegmentPlacement(segmentX: usageSegX, top: containerHeight - 6))
+            placement: HeaderSegmentPlacement(
+                groupX: usageX,
+                groupWidth: usageWidth,
+                controlWidth: min(usageGroup.segWidth, usageWidth),
+                top: containerHeight - 6))
         self.placeHeaderSegmentGroup(
             resetGroup,
             in: container,
             placement: HeaderSegmentPlacement(
-                segmentX: resetSegX,
+                groupX: resetX,
+                groupWidth: resetWidthGroup,
+                controlWidth: min(resetGroup.segWidth, resetWidthGroup),
                 top: staggered ? containerHeight - 6 - singleRowHeight : containerHeight - 6))
         let item = NSMenuItem()
         item.view = container
@@ -122,11 +134,16 @@ extension StatusItemController {
 
     private func makeHeaderSegmentGroup(
         axis: OverviewDisplayAxis,
-        menu: NSMenu) -> (label: NSTextField, control: OverviewDisplaySegmentedControl)
+        menu: NSMenu) -> (
+        label: NSTextField,
+        control: OverviewDisplaySegmentedControl,
+        labelWidth: CGFloat,
+        segWidth: CGFloat)
     {
         let label = NSTextField(labelWithString: axis.label)
         label.font = NSFont.systemFont(ofSize: 10)
         label.textColor = .secondaryLabelColor
+        label.lineBreakMode = .byTruncatingTail
         label.sizeToFit()
         let control = OverviewDisplaySegmentedControl(
             labels: axis.segmentTitles,
@@ -145,11 +162,15 @@ extension StatusItemController {
         }
         control.setAccessibilityLabel(axis.label)
         control.sizeToFit()
-        return (label, control)
+        return (label, control, label.frame.width, control.frame.width)
     }
 
     private func placeHeaderSegmentGroup(
-        _ group: (label: NSTextField, control: OverviewDisplaySegmentedControl),
+        _ group: (
+            label: NSTextField,
+            control: OverviewDisplaySegmentedControl,
+            labelWidth: CGFloat,
+            segWidth: CGFloat),
         in container: NSView,
         placement: HeaderSegmentPlacement)
     {
@@ -157,15 +178,15 @@ extension StatusItemController {
         let rowGap = HeaderSegmentPlacement.rowGap
         let segH = group.control.frame.height
         group.control.frame = NSRect(
-            x: placement.segmentX,
+            x: placement.groupX + placement.groupWidth - placement.controlWidth,
             y: placement.top - labelHeight - rowGap - segH,
-            width: group.control.frame.width,
+            width: placement.controlWidth,
             height: segH)
         group.control.autoresizingMask = [.minXMargin]
         group.label.frame = NSRect(
-            x: placement.segmentX,
+            x: placement.groupX,
             y: placement.top - labelHeight,
-            width: max(group.label.frame.width, group.control.frame.width),
+            width: placement.groupWidth,
             height: labelHeight)
         group.label.autoresizingMask = [.minXMargin]
         container.addSubview(group.control)

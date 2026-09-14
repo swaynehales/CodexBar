@@ -75,6 +75,27 @@ struct OverviewCompactTableLayoutTests {
     }
 
     @Test
+    func `tier exemplars always include a future time-only sample`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
+        // Late-night anchor: both of today's 12:59/23:59 are already past.
+        let lateNight = Date(timeIntervalSince1970: 1_789_428_600) // Monday 23:30 UTC
+        let midday = Date(timeIntervalSince1970: 1_789_387_200 + 7200) // Monday 14:00 UTC
+        for localeID in ["en_US_POSIX", "de_DE"] {
+            let locale = Locale(identifier: localeID)
+            for anchor in [lateNight, midday] {
+                let clocks = StatusItemController.compactResetTierExemplars(
+                    now: anchor,
+                    calendar: calendar,
+                    locale: locale).map(\.clock)
+                #expect(
+                    clocks.contains(where: { $0.contains(":") }),
+                    "no time-only exemplar for \(anchor) in \(localeID)")
+            }
+        }
+    }
+
+    @Test
     func `shorter reset budgets reduce popover width compared to legacy 130pt minimum`() {
         // Legacy layout had unconditional 130pt reset minimum with 42pt percentage:
         // width = 296 + 42 + 130 = 468pt.

@@ -34,18 +34,19 @@ extension StatusItemController {
         let fullScaleWidth = measure("100%", font: bodyFont)
         let desiredPercentage = ceil(max(bodyPercentageWidth, fullScaleWidth)) + 8
 
-        // Reset budget: row countdown/clock strings plus tier exemplars rendered through
-        // the real formatter, so every compact tier is covered in the current locale.
-        // One budget across countdown/clock modes; no header-derived floors.
+        // Reset budget: row countdown/clock strings plus exemplar CLOCK strings rendered
+        // through the real formatter, so every compact tier is covered in the current
+        // locale. Distant exemplar countdowns stay out of the budget: only actual rows
+        // size the countdown column. One budget across countdown/clock modes.
         let calendar = Calendar.current
         let locale = codexBarLocalizedLocale()
-        let allTexts = tableRows.map(\.resetText) + Self.compactResetTierExemplars(
-            now: now,
-            calendar: calendar,
-            locale: locale)
-        let maxResetWidth = allTexts.flatMap { [$0.countdown, $0.clock] }.map { measure($0, font: font) }
-            .max() ?? 0
-        let clockLineWidth = allTexts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self) }
+        let rowTexts = tableRows.map(\.resetText)
+        let exemplarClocks = Self.compactResetTierExemplars(now: now, calendar: calendar, locale: locale)
+            .map(\.clock)
+        let maxResetWidth = (rowTexts.flatMap { [$0.countdown, $0.clock] } + exemplarClocks)
+            .map { measure($0, font: font) }.max() ?? 0
+        let clockLineWidth = (rowTexts.flatMap { [$0.clockDate, $0.clockTime].compactMap(\.self) } +
+            exemplarClocks)
             .map { measure($0, font: font) }.max() ?? 0
 
         let screen = self.statusItems.values.first(where: { $0.menu === menu })?.button?.window?.screen
@@ -67,10 +68,19 @@ extension StatusItemController {
     static func compactResetTierExemplars(now: Date, calendar: Calendar, locale: Locale) -> [OverviewCompactResetText] {
         var dates: [Date] = []
         let startOfDay = calendar.startOfDay(for: now)
-        for (hour, minute) in [(12, 59), (23, 59)] {
-            // Past times fall into the Now tier; still valid samples of a live tier.
-            if let candidate = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: startOfDay) {
-                dates.append(candidate)
+        // Guaranteed future time-only samples: today and tomorrow each contribute the
+        // 12:59/23:59 times that still fall inside 0 < delta < 86,400, so every anchor
+        // (including late night, when both of today's times are past) yields at least
+        // one time-only exemplar.
+        for dayOffset in 0...1 {
+            guard let day = calendar.date(byAdding: .day, value: dayOffset, to: startOfDay) else { continue }
+            for (hour, minute) in [(12, 59), (23, 59)] {
+                if let candidate = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) {
+                    let delta = candidate.timeIntervalSince(now)
+                    if delta > 0, delta < 86400 {
+                        dates.append(candidate)
+                    }
+                }
             }
         }
         dates += Self.candidateResetSampleDates(now: now, calendar: calendar)
