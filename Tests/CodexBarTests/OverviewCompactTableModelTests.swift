@@ -183,7 +183,7 @@ struct OverviewCompactTableModelTests {
         #expect(rows.count == 2)
         #expect(rows.allSatisfy { $0.presentation == .value && $0.period == .credits })
         #expect(rows[0].valueText == "$12.50 left")
-        #expect(rows[1].resetsInText == "1h")
+        #expect(rows[1].resetText.countdown == "1h")
     }
 
     @Test
@@ -197,7 +197,7 @@ struct OverviewCompactTableModelTests {
         #expect(rows[0].id == "openrouter:balance")
         #expect(rows[0].period == .credits)
         #expect(rows[0].valueText == "$4.96")
-        #expect(rows[0].resetsInText == "—")
+        #expect(rows[0].resetText.countdown == "—")
     }
 
     @Test
@@ -210,8 +210,14 @@ struct OverviewCompactTableModelTests {
             ]),
             snapshot: Self.snapshot(),
             now: Self.now)
-        #expect(rows[0].resetsInText == "4h")
-        #expect(rows[1].resetsInText == "—")
+        #expect(rows[0].resetText.countdown == "4h")
+        #expect(rows[1].resetText.countdown == "—")
+        #expect(rows[0].resetText.countdown == "4h")
+        #expect(rows[1].resetText.countdown == "—")
+        #expect(rows[0].resetText.clock == UsageFormatter.resetDescription(
+            from: Self.now.addingTimeInterval(4 * 3600),
+            now: Self.now))
+        #expect(rows[1].resetText.clock == "—")
     }
 
     @Test
@@ -259,8 +265,8 @@ struct OverviewCompactTableModelTests {
             ]),
             snapshot: Self.snapshot(),
             now: Self.now)
-        #expect(rows[0].resetsInText == "26d")
-        #expect(rows[1].resetsInText == "2d")
+        #expect(rows[0].resetText.countdown == "26d")
+        #expect(rows[1].resetText.countdown == "2d")
     }
 
     /// The By-provider period cell renders the full localized period label plus an optional
@@ -291,32 +297,33 @@ struct OverviewCompactTableModelTests {
             "PERIOD header at \(headerWidth)pt does not fit \(Int(CompactTableMetrics.periodColumnWidth))pt")
     }
 
-    /// Operator column budget for the By-provider view: 84pt PERIOD and USED+IN tracks around
-    /// a 176pt bar, computed from the declared remaining menu width (padding and gaps included).
+    /// Shared 84pt leading column: both groupings resolve identical 170pt bar tracks
+    /// computed from the resolved layout width and reset column width.
     @Test
-    func `bar track meets the 84 176 84 column budget`() {
-        // Mirrors StatusItemController.compactOverviewMenuWidth (main-actor isolated,
-        // so the value is restated here); keep in sync when the menu width changes.
-        let menuWidth: CGFloat = 380
-        let leadingTrack = CompactTableMetrics.periodColumnWidth
-        let trailingGroup = CompactTableMetrics.usedColumnWidth + CompactTableMetrics.inColumnWidth
-        let gaps = 3
-        let bar = CompactTableMetrics.measureWidth(
-            totalWidth: menuWidth,
-            fixedColumns: leadingTrack + trailingGroup,
-            gaps: gaps)
-        #expect(bar == 176, "bar track \(bar) is not the 176pt budget")
-        #expect(
-            abs(trailingGroup - leadingTrack) <= 2,
-            "USED+IN anchors (\(trailingGroup)) drift from the period track (\(leadingTrack))")
-        // The bar is the declared remainder: padding and gaps must be charged to it, not
-        // forgotten, or the row overflows the menu.
-        let accounted = bar + leadingTrack + trailingGroup
-            + CGFloat(gaps) * CompactTableMetrics.columnSpacing
-            + 2 * CompactTableMetrics.horizontalPadding
-        #expect(
-            accounted == menuWidth,
-            "width accounting closes on \(accounted), not the \(menuWidth)pt menu")
+    func `bar track meets resolved layout column budgets`() {
+        let layout = OverviewCompactTableLayout.resolve(
+            availableWidth: 1000,
+            percentageWidth: 42,
+            clockWidth: 85,
+            clockLineWidth: 50)
+
+        let providerLeading = CompactTableMetrics.periodColumnWidth
+        let periodLeading = CompactTableMetrics.providerMaxWidth
+        let percentageWidth = layout.percentageWidth
+
+        let providerBar = layout.barWidth(leading: providerLeading)
+        let periodBar = layout.barWidth(leading: periodLeading)
+
+        #expect(providerBar == 170, "By-provider bar track \(providerBar) is not the 170pt budget")
+        #expect(periodBar == providerBar, "By-period bar track \(periodBar) does not match By-provider")
+
+        let gaps: CGFloat = 3 * CompactTableMetrics.columnSpacing
+        let padding: CGFloat = 2 * CompactTableMetrics.horizontalPadding
+        let totalProvider = providerLeading + providerBar + percentageWidth + layout.resetWidth + gaps + padding
+        let totalPeriod = periodLeading + periodBar + percentageWidth + layout.resetWidth + gaps + padding
+
+        #expect(totalProvider == layout.width, "total provider budget \(totalProvider) != \(layout.width)")
+        #expect(totalPeriod == layout.width, "total period budget \(totalPeriod) != \(layout.width)")
     }
 
     /// The model qualifier rides after the period label as an SF Symbol; the named

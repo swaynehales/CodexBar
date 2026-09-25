@@ -21,7 +21,8 @@ struct CompactTableRow: Identifiable {
     let valueText: String?
     let statusText: String?
     let usedText: String
-    let resetsInText: String
+    let resetText: OverviewCompactResetText
+
     let resetsAt: Date?
     let tint: ProviderColor
     let metric: UsageMenuCardView.Model.Metric?
@@ -107,7 +108,7 @@ enum OverviewCompactTableModel {
                 valueText: nil,
                 statusText: nil,
                 usedText: UsageFormatter.percentString(metric.percent),
-                resetsInText: Self.resetsInText(resetsAt: metric.resetsAt, now: now),
+                resetText: OverviewCompactResetText.make(resetsAt: metric.resetsAt, now: now),
                 resetsAt: metric.resetsAt,
                 tint: tint,
                 metric: metric))
@@ -130,7 +131,7 @@ enum OverviewCompactTableModel {
                 valueText: balance,
                 statusText: nil,
                 usedText: "",
-                resetsInText: "—",
+                resetText: OverviewCompactResetText.make(resetsAt: nil, now: now),
                 resetsAt: nil,
                 tint: tint,
                 metric: nil))
@@ -193,7 +194,7 @@ enum OverviewCompactTableModel {
             valueText: spec.valueText,
             statusText: spec.metric?.statusText,
             usedText: "",
-            resetsInText: self.resetsInText(resetsAt: spec.metric?.resetsAt, now: now),
+            resetText: OverviewCompactResetText.make(resetsAt: spec.metric?.resetsAt, now: now),
             resetsAt: spec.metric?.resetsAt,
             tint: tint,
             metric: spec.metric)
@@ -233,17 +234,6 @@ enum OverviewCompactTableModel {
                 title: Self.periodLabel(period),
                 groups: groups)
         }
-    }
-
-    private static func resetsInText(resetsAt: Date?, now: Date) -> String {
-        guard let resetsAt else { return "—" }
-        let countdown = UsageFormatter.resetCountdownDescription(from: resetsAt, now: now)
-        if countdown.hasPrefix("in ") {
-            // Largest unit only ("in 1d 2h" -> "1d"): the IN column is 32pt wide and the
-            // full multi-unit string truncates.
-            return String(countdown.dropFirst(3).split(separator: " ").first ?? "—")
-        }
-        return countdown
     }
 
     /// Full localized period label. Internal so tests can pin the By-provider period

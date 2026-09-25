@@ -37,19 +37,6 @@ extension StatusItemController {
     static let storageBreakdownID = "storageBreakdown"
     static let statusComponentsID = "statusComponents"
 
-    func shortcut(for action: MenuDescriptor.MenuAction) -> (key: String, modifiers: NSEvent.ModifierFlags)? {
-        switch action {
-        case .refresh:
-            ("r", [.command])
-        case .settings:
-            (",", [.command])
-        case .quit:
-            ("q", [.command])
-        default:
-            nil
-        }
-    }
-
     func makeMenu() -> NSMenu {
         guard self.shouldMergeIcons else {
             return self.makeMenu(for: nil)
@@ -174,6 +161,8 @@ extension StatusItemController {
 
     func forgetClosedMenu(_ menu: NSMenu) {
         let key = ObjectIdentifier(menu)
+        self.overviewDisplayState.viewportRequests.removeValue(forKey: key)
+        self.overviewDisplayState.layouts.removeValue(forKey: key)
         let wasMergedMenu = menu === self.mergedMenu
 
         self.endMenuTrackingSession(for: menu)
@@ -421,7 +410,10 @@ extension StatusItemController {
         context: MenuRebuildContext)
     {
         self.performMenuMutationWithoutAnimation {
-            defer { self.flushHostedMenuRowRendering(in: menu) }
+            defer {
+                self.flushHostedMenuRowRendering(in: menu)
+                self.restoreOverviewDisplayViewportAfterLayout(in: menu)
+            }
             let displacedSelection = self.lastMergedMenuContentSelection
             self.lastMergedMenuContentSelection = nil
             self.harvestRecyclableMenuCardViews(in: menu, fromIndex: 0, displacedSelection: displacedSelection)
@@ -429,7 +421,9 @@ extension StatusItemController {
             menu.removeAllItems()
             let contentSelection = context.switcherSelection ?? .provider(context.currentProvider.instanceID)
             if contentSelection == .overview, self.settings.overviewCompactTableEnabled {
-                menu.addItem(self.makeOverviewGroupingToggleItem(menu: menu, width: Self.compactOverviewMenuWidth))
+                menu.addItem(self.makeOverviewGroupingToggleItem(
+                    menu: menu,
+                    width: self.overviewCompactLayout(for: menu).width))
             } else {
                 self.addProviderSwitcherIfNeeded(
                     to: menu,
@@ -571,9 +565,8 @@ extension StatusItemController {
         let interactionMenu = captureMenu ?? menu
         let compactEnabled = self.settings.overviewCompactTableEnabled
         let providerScopes = self.overviewProviderScopes(enabledProviders: enabledProviders)
-        // Fixed wide frame: the descriptor-derived width is sized for stacked cards and
-        // starves the six-column layout.
-        let tableMenuWidth = compactEnabled ? Self.compactOverviewMenuWidth : menuWidth
+        let tableLayout = compactEnabled ? self.overviewCompactLayout(for: interactionMenu) : nil
+        let tableMenuWidth = tableLayout?.width ?? menuWidth
         let rows: [(provider: UsageProvider, model: UsageMenuCardView.Model)] = providerScopes.visible
             .compactMap { provider in
                 guard let model = self.menuCardModel(for: provider) else { return nil }
@@ -583,8 +576,15 @@ extension StatusItemController {
         guard !rows.isEmpty else { return false }
         let displayRows = self.overviewDisplayRows(rows: rows, compactEnabled: compactEnabled)
         guard !displayRows.isEmpty else { return false }
+        if compactEnabled {
+            self.ensureOverviewHeaderControlsInserted(into: menu, width: tableMenuWidth)
+        }
         if compactEnabled, self.overviewTableGrouping == .period {
-            return self.addOverviewPeriodTableItem(displayRows: displayRows, menu: menu, width: tableMenuWidth)
+            return self.addOverviewPeriodTableItem(
+                displayRows: displayRows,
+                menu: menu,
+                width: tableMenuWidth,
+                layout: tableLayout)
         }
 
         let t0 = CACurrentMediaTime()
@@ -629,13 +629,14 @@ extension StatusItemController {
                 provider: row.provider,
                 model: row.model,
                 width: tableMenuWidth)
-            self.ensureOverviewCompactHeaderInserted(row: row, into: menu, width: tableMenuWidth)
+            self.ensureOverviewCompactHeaderInserted(row: row, into: menu, width: tableMenuWidth, layout: tableLayout)
             let item: NSMenuItem = if row.tableRows != nil {
                 self.makeOverviewCompactItem(
                     row: row,
                     submenu: submenu,
                     menuWidth: tableMenuWidth,
-                    interactionMenu: interactionMenu)
+                    interactionMenu: interactionMenu,
+                    layout: tableLayout)
             } else {
                 self.makeMenuCardItem(
                     OverviewMenuCardRowView(model: row.model, storageText: storageText, width: menuWidth),

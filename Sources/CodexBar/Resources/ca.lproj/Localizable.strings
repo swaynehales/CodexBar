@@ -1550,7 +1550,12 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Període";
 "compact_header_used" = "Usat";
+"compact_header_free" = "Lliure";
+"compact_header_wait" = "Espera";
+"compact_header_when" = "Quan";
+"compact_header_reset" = "Reset";
 "compact_header_in" = "Dins";
+"compact_header_at" = "A";
 "compact_period_session" = "Sessió";
 "compact_period_weekly" = "Setmanal";
 "compact_period_monthly" = "Mensual";

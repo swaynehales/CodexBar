@@ -2,6 +2,19 @@ import AppKit
 import CodexBarCore
 
 extension StatusItemController {
+    func shortcut(for action: MenuDescriptor.MenuAction) -> (key: String, modifiers: NSEvent.ModifierFlags)? {
+        switch action {
+        case .refresh:
+            ("r", [.command])
+        case .settings:
+            (",", [.command])
+        case .quit:
+            ("q", [.command])
+        default:
+            nil
+        }
+    }
+
     /// Identifies which manual refresh a task belongs to, so per-provider refreshes stay independent
     /// of each other and of the all-providers refresh.
     enum ManualRefreshScope: Hashable {

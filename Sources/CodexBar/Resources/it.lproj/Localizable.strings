@@ -1551,7 +1551,12 @@
 "compact_header_model" = "Modello";
 "compact_header_period" = "Periodo";
 "compact_header_used" = "Usato";
+"compact_header_free" = "Libero";
+"compact_header_wait" = "Attesa";
+"compact_header_when" = "Quando";
+"compact_header_reset" = "Reset";
 "compact_header_in" = "Tra";
+"compact_header_at" = "Alle";
 "compact_period_session" = "Sessione";
 "compact_period_weekly" = "Settimanale";
 "compact_period_monthly" = "Mensile";

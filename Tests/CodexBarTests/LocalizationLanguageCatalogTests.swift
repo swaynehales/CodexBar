@@ -618,6 +618,7 @@ struct LocalizationLanguageCatalogTests {
             "session_quota_estimate_value_format",
             "tab_menu",
             "OpenCodex",
+            "compact_header_reset",
         ]
         let unchanged = Set(english.keys.filter { italian[$0] == english[$0] })
         #expect(unchanged == intentionallyUnchanged)

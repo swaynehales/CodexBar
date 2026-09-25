@@ -1517,7 +1517,12 @@
 "compact_header_model" = "모델";
 "compact_header_period" = "기간";
 "compact_header_used" = "사용량";
+"compact_header_free" = "남은";
+"compact_header_wait" = "대기";
+"compact_header_when" = "언제";
+"compact_header_reset" = "재설정";
 "compact_header_in" = "남음";
+"compact_header_at" = "시각";
 "compact_period_session" = "세션";
 "compact_period_weekly" = "주간";
 "compact_period_monthly" = "월간";

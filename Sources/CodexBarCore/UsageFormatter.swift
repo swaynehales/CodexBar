@@ -127,19 +127,31 @@ public enum UsageFormatter {
         return "in \(totalMinutes)m"
     }
 
-    public static func resetDescription(from date: Date, now: Date = .init()) -> String {
+    public static func resetDescription(
+        from date: Date,
+        now: Date = .init(),
+        calendar: Calendar = .current,
+        locale: Locale? = nil) -> String
+    {
         // Human-friendly phrasing: today / tomorrow / date+time.
-        let calendar = Calendar.current
+        let targetLocale = locale ?? self.currentLocale()
+        var timeStyle = Date.FormatStyle.dateTime.hour().minute().locale(targetLocale)
+        timeStyle.calendar = calendar
+        timeStyle.timeZone = calendar.timeZone
+
         if calendar.isDate(date, inSameDayAs: now) {
-            return date.formatted(.dateTime.hour().minute().locale(self.currentLocale()))
+            return date.formatted(timeStyle)
         }
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
            calendar.isDate(date, inSameDayAs: tomorrow)
         {
-            let timeStr = date.formatted(.dateTime.hour().minute().locale(self.currentLocale()))
+            let timeStr = date.formatted(timeStyle)
             return self.localized("reset_tomorrow_format", timeStr)
         }
-        return date.formatted(.dateTime.month(.abbreviated).day().hour().minute().locale(self.currentLocale()))
+        var dateTimeStyle = Date.FormatStyle.dateTime.month(.abbreviated).day().hour().minute().locale(targetLocale)
+        dateTimeStyle.calendar = calendar
+        dateTimeStyle.timeZone = calendar.timeZone
+        return date.formatted(dateTimeStyle)
     }
 
     public static func resetLine(
