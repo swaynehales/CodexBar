@@ -1548,9 +1548,9 @@
 "compact_header_model" = "Модель";
 "compact_header_period" = "Період";
 "compact_header_used" = "Використано";
-"compact_header_free" = "Вільно";
-"compact_header_wait" = "Чекати";
-"compact_header_when" = "Коли";
+"compact_header_free" = "Залишок";
+"compact_header_wait" = "Відлік";
+"compact_header_when" = "Час";
 "compact_header_reset" = "Скидання";
 "compact_header_in" = "Через";
 "compact_header_at" = "О";

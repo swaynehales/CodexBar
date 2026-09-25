@@ -30,11 +30,11 @@ func makeControl(labels: [String], toolTips: [String], accessibilityLabel: Strin
 }
 
 let usage = makeControl(
-    labels: ["Used", "Free"],
+    labels: ["Used", "Remains"],
     toolTips: ["Used", "Remaining"],
     accessibilityLabel: "Usage")
 let reset = makeControl(
-    labels: ["Wait", "When"],
+    labels: ["Countdown", "Clock"],
     toolTips: ["Countdown", "Clock time"],
     accessibilityLabel: "Reset times")
 let controlHeight = max(usage.frame.height, reset.frame.height)

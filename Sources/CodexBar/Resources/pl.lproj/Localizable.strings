@@ -1551,9 +1551,9 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Okres";
 "compact_header_used" = "Użyte";
-"compact_header_free" = "Wolne";
-"compact_header_wait" = "Czekaj";
-"compact_header_when" = "Kiedy";
+"compact_header_free" = "Pozostało";
+"compact_header_wait" = "Odliczanie";
+"compact_header_when" = "Zegar";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "Za";
 "compact_header_at" = "O";

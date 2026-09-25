@@ -17,7 +17,7 @@ enum OverviewDisplayAxis: CaseIterable {
         }
     }
 
-    /// Short segment labels for the restored header controls (approved copy).
+    /// Short segment labels for the header controls (CDX-042: Used/Remains, Countdown/Clock).
     var segmentTitles: [String] {
         switch self {
         case .usage: [L("compact_header_used"), L("compact_header_free")]

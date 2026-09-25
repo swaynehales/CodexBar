@@ -1551,9 +1551,9 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Periode";
 "compact_header_used" = "Digunakan";
-"compact_header_free" = "Sisa";
-"compact_header_wait" = "Tunggu";
-"compact_header_when" = "Kapan";
+"compact_header_free" = "Tersisa";
+"compact_header_wait" = "Countdown";
+"compact_header_when" = "Jam";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "Dalam";
 "compact_header_at" = "Pukul";

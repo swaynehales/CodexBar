@@ -1,7 +1,7 @@
 import Foundation
 
-/// Pure geometry for the Overview header toolbar second row: the Used/Free pair fills
-/// the entire left half and the Wait/When pair fills the entire right half, with the
+/// Pure geometry for the Overview header toolbar second row: the Used/Remains pair fills
+/// the entire left half and the Countdown/Clock pair fills the entire right half, with the
 /// same outer edges and midpoint and equal segments within each pair. No captions.
 ///
 /// Kept free of AppKit so the offscreen preview harness compiles this file directly

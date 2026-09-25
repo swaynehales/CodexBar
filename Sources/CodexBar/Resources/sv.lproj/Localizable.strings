@@ -1547,9 +1547,9 @@
 "compact_header_model" = "Modell";
 "compact_header_period" = "Period";
 "compact_header_used" = "Använt";
-"compact_header_free" = "Fri";
-"compact_header_wait" = "Väntar";
-"compact_header_when" = "När";
+"compact_header_free" = "Kvar";
+"compact_header_wait" = "Nedräkning";
+"compact_header_when" = "Klocka";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "Om";
 "compact_header_at" = "Kl.";

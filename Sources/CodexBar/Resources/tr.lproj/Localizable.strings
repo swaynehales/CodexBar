@@ -1550,9 +1550,9 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Dönem";
 "compact_header_used" = "Kullanılan";
-"compact_header_free" = "Boş";
-"compact_header_wait" = "Bekleme";
-"compact_header_when" = "Ne zaman";
+"compact_header_free" = "Kalan";
+"compact_header_wait" = "Geri sayım";
+"compact_header_when" = "Saat";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "Kalan";
 "compact_header_at" = "Saat";

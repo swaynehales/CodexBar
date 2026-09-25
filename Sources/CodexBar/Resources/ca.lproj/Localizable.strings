@@ -1550,9 +1550,9 @@
 "compact_header_model" = "Model";
 "compact_header_period" = "Període";
 "compact_header_used" = "Usat";
-"compact_header_free" = "Lliure";
-"compact_header_wait" = "Espera";
-"compact_header_when" = "Quan";
+"compact_header_free" = "Restant";
+"compact_header_wait" = "Enrere";
+"compact_header_when" = "Rellotge";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "Dins";
 "compact_header_at" = "A";

@@ -1580,8 +1580,8 @@
 "compact_header_period" = "期間";
 "compact_header_used" = "已使用";
 "compact_header_free" = "剩餘";
-"compact_header_wait" = "等待";
-"compact_header_when" = "時間";
+"compact_header_wait" = "倒數計時";
+"compact_header_when" = "時鐘";
 "compact_header_reset" = "重置";
 "compact_header_in" = "剩";
 "compact_header_at" = "於";

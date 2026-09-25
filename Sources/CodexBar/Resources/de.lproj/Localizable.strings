@@ -1548,9 +1548,9 @@
 "compact_header_model" = "Modell";
 "compact_header_period" = "Zeitraum";
 "compact_header_used" = "Verwendet";
-"compact_header_free" = "Frei";
-"compact_header_wait" = "Warten";
-"compact_header_when" = "Wann";
+"compact_header_free" = "Rest";
+"compact_header_wait" = "Countdown";
+"compact_header_when" = "Uhrzeit";
 "compact_header_reset" = "Reset";
 "compact_header_in" = "In";
 "compact_header_at" = "Um";

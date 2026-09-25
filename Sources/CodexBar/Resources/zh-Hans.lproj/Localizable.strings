@@ -1561,8 +1561,8 @@
 "compact_header_period" = "周期";
 "compact_header_used" = "已使用";
 "compact_header_free" = "剩余";
-"compact_header_wait" = "等待";
-"compact_header_when" = "时间";
+"compact_header_wait" = "倒计时";
+"compact_header_when" = "时钟";
 "compact_header_reset" = "重置";
 "compact_header_in" = "剩";
 "compact_header_at" = "于";

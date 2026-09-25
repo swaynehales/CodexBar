@@ -1552,9 +1552,9 @@
 "compact_header_model" = "โมเดล";
 "compact_header_period" = "ช่วงเวลา";
 "compact_header_used" = "ใช้ไป";
-"compact_header_free" = "ว่าง";
-"compact_header_wait" = "รอ";
-"compact_header_when" = "เมื่อใด";
+"compact_header_free" = "คงเหลือ";
+"compact_header_wait" = "นับถอยหลัง";
+"compact_header_when" = "นาฬิกา";
 "compact_header_reset" = "รีเซ็ต";
 "compact_header_in" = "อีก";
 "compact_header_at" = "เวลา";

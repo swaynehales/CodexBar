@@ -1552,9 +1552,9 @@
 "compact_header_model" = "مدل";
 "compact_header_period" = "دوره";
 "compact_header_used" = "استفاده‌شده";
-"compact_header_free" = "آزاد";
-"compact_header_wait" = "انتظار";
-"compact_header_when" = "کی";
+"compact_header_free" = "باقی‌مانده";
+"compact_header_wait" = "شمارش معکوس";
+"compact_header_when" = "ساعت";
 "compact_header_reset" = "بازنشانی";
 "compact_header_in" = "تا";
 "compact_header_at" = "در ساعت";
